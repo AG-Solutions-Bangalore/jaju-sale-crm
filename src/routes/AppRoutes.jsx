@@ -1,0 +1,69 @@
+import { Route, Routes, Navigate } from "react-router-dom";
+import AuthRoute from "./AuthRoute";
+import Login from "@/app/auth/Login";
+import ForgotPassword from "@/app/auth/ForgotPassword";
+import Maintenance from "@/components/common/Maintenance";
+import ProtectedRoute from "./ProtectedRoute";
+
+import NotFound from "@/app/errors/NotFound";
+import EstimateList from "@/app/estimate/EstimateList";
+import StocksReport from "@/app/stocks/StocksReport";
+import SalesList from "@/app/sales/SalesList";
+import PurchaseGraniteList from "@/app/purchaseGranite/PurchaseGraniteList";
+import ProductList from "@/app/product/ProductList";
+import EstimateView from "@/app/estimate/EstimateView";
+import PurchaseGraniteView from "@/app/purchaseGranite/PurchaseGraniteView";
+import SalesView from "@/app/sales/SalesView";
+import EstimateAdd from "@/app/estimate/EstimateAdd";
+import ProductAdd from "@/app/product/ProductAdd";
+import ProductEdit from "@/app/product/ProductEdit";
+import PurchaseGraniteAdd from "@/app/purchaseGranite/PurchaseGraniteAdd";
+import PurchaseGraniteEdit from "@/app/purchaseGranite/PurchaseGraniteEdit";
+import SalesAdd from "@/app/sales/SalesAdd";
+import SalesEdit from "@/app/sales/SalesEdit";
+import EstimateSalesAdd from "@/app/sales/EstimateSalesAdd";
+import PiaeceReport from "@/app/stocks/PiaeceReport";
+import SaleDashboard from "@/app/home/SaleDashboard";
+import SingleItemStockReport from "@/app/stocks/SingleItemStockReport";
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<AuthRoute />}>
+        <Route path="/" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/maintenance" element={<Maintenance />} />
+      </Route>
+
+      <Route path="/" element={<ProtectedRoute />}>
+        <Route path="/home" element={<Navigate to="/sale-dashboard" replace />} />
+        <Route path="/estimate" element={<EstimateList />} />
+        <Route path="/sale-dashboard" element={<SaleDashboard />} />
+        <Route path="/estimate/create" element={<EstimateAdd />} />
+        <Route path="/estimate/view/:id" element={<EstimateView />} />
+        <Route path="/stocks-piece" element={<PiaeceReport />} />
+        <Route path="/product" element={<ProductList />} />
+        <Route path="/product/create" element={<ProductAdd />} />
+        <Route path="/product/edit/:id" element={<ProductEdit />} />
+        <Route path="/purchase" element={<PurchaseGraniteList />} />
+        <Route path="/purchase/create" element={<PurchaseGraniteAdd />} />
+        <Route path="/purchase/edit/:id" element={<PurchaseGraniteEdit />} />
+        <Route path="/purchase/view/:id" element={<PurchaseGraniteView />} />
+        <Route path="/sales" element={<SalesList />} />
+        <Route path="/sales/create" element={<SalesAdd />} />
+        <Route
+          path="/sales/estimate-create/:id"
+          element={<EstimateSalesAdd />}
+        />
+        <Route path="/sales/view/:id" element={<SalesView />} />
+        <Route path="/sales/edit/:id" element={<SalesEdit />} />
+        <Route path="/stocks" element={<StocksReport />} />
+        <Route path="/single-item-stock" element={<SingleItemStockReport />} />
+      </Route>
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
+export default AppRoutes;
