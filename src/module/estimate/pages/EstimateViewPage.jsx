@@ -20,8 +20,10 @@ const EstimateViewPage = () => {
     const input = tableRef.current;
     if (!input) return;
 
+    input.classList.add("pdf-export-mode");
+
     const options = {
-      margin: [5, 5, 5, 5],
+      margin: [10, 20, 10, 10],
       filename: `estimate-${estimateData?.estimate?.estimate_no}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: {
@@ -58,10 +60,15 @@ const EstimateViewPage = () => {
       })
       .save()
       .then(() => {
+        input.classList.remove("pdf-export-mode");
         toast({
           title: "PDF Generated",
           description: "Estimate saved as PDF",
         });
+      })
+      .catch((err) => {
+        input.classList.remove("pdf-export-mode");
+        console.error("PDF generation failed:", err);
       });
   };
 

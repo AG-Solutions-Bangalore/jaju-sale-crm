@@ -41,6 +41,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+import { useToast } from "@/hooks/use-toast";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import { usePurchaseList } from "../hooks/usePurchase";
 
@@ -53,12 +55,35 @@ const PurchaseListPage = () => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
+
 
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
-  const filteredPurchases =
-    purchaseGranite?.filter((purchase) => {
+  const parseBillNumber = (billNo) => {
+    if (billNo === undefined || billNo === null) return 0;
+    const str = String(billNo);
+    const match = str.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  };
+
+  const sortedPurchases = React.useMemo(() => {
+    if (!purchaseGranite) return [];
+    return [...purchaseGranite].sort((a, b) => {
+      const numA = parseBillNumber(a.purchase_bill_no);
+      const numB = parseBillNumber(b.purchase_bill_no);
+      if (numA !== numB) {
+        return numA - numB;
+      }
+      const dateA = new Date(a.purchase_date || 0);
+      const dateB = new Date(b.purchase_date || 0);
+      return dateA - dateB;
+    });
+  }, [purchaseGranite]);
+
+  const filteredPurchases = React.useMemo(() => {
+    return sortedPurchases.filter((purchase) => {
       if (!searchQuery) return true;
       return (
         purchase.purchase_supplier
@@ -68,7 +93,8 @@ const PurchaseListPage = () => {
           ?.toLowerCase()
           .includes(searchQuery.toLowerCase())
       );
-    }) || [];
+    });
+  }, [sortedPurchases, searchQuery]);
 
   const columns = [
     {
@@ -150,7 +176,7 @@ const PurchaseListPage = () => {
   ];
 
   const table = useReactTable({
-    data: purchaseGranite || [],
+    data: sortedPurchases || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -213,13 +239,16 @@ const PurchaseListPage = () => {
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center px-2 py-2">
                 <h1 className="text-base font-bold text-gray-800">Add</h1>
-                <Button
-                  size="sm"
-                  className={`h-8 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
-                  onClick={() => navigate("/purchase/create")}
-                >
-                  <SquarePlus className="h-3.5 w-3.5" />
-                </Button>
+                <div className="flex gap-2">
+
+                  <Button
+                    size="sm"
+                    className={`h-8 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
+                    onClick={() => navigate("/purchase/create")}
+                  >
+                    <SquarePlus className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
               <div className="relative px-2 pb-2">
                 <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-500" />
@@ -378,6 +407,7 @@ const PurchaseListPage = () => {
                     ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
               <Button
                 variant="default"
                 className={`ml-2 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
@@ -466,6 +496,7 @@ const PurchaseListPage = () => {
           </div>
         </div>
       </div>
+
     </Page>
   );
 };

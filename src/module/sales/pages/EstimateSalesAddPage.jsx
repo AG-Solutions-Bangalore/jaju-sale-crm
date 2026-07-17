@@ -38,6 +38,9 @@ const formSchema = z.object({
   sales_gross: z.string(),
   sales_advance: z.string(),
   sales_balance: z.string(),
+  sales_temp_amount: z.string().optional(),
+  sales_amount_round: z.string().optional(),
+  sales_amount_received: z.string().optional(),
 });
 
 const EstimateSalesAddPage = () => {
@@ -69,6 +72,9 @@ const EstimateSalesAddPage = () => {
       sales_gross: "",
       sales_advance: "",
       sales_balance: "",
+      sales_temp_amount: "",
+      sales_amount_round: "",
+      sales_amount_received: "",
     },
   });
 
@@ -124,6 +130,9 @@ const EstimateSalesAddPage = () => {
         sales_unloading: formatToInteger(sId.estimate_unloading),
         sales_advance: formatToInteger(sId.estimate_advance),
         sales_balance: formatToInteger(sId.estimate_balance),
+        sales_temp_amount: formatToInteger(sId.estimate_gross),
+        sales_amount_round: "",
+        sales_amount_received: formatToInteger(sId.estimate_advance),
       };
       form.reset(formValues);
 
@@ -144,6 +153,29 @@ const EstimateSalesAddPage = () => {
     }
   }, [salesEstimateId, currentYear]);
 
+  const calculateAndSetTotals = (entries) => {
+    const itemsTotal = entries.reduce(
+      (sum, entry) => sum + parseFloat(entry.estimate_sub_amount || 0),
+      0
+    );
+    const tax = parseFloat(form.getValues("sales_tax") || 0);
+    const tempo = parseFloat(form.getValues("sales_tempo") || 0);
+    const loading = parseFloat(form.getValues("sales_loading") || 0);
+    const unloading = parseFloat(form.getValues("sales_unloading") || 0);
+    const other = parseFloat(form.getValues("sales_other") || 0);
+
+    const netTotal = itemsTotal + tax + tempo + loading + unloading + other;
+    form.setValue("sales_temp_amount", netTotal.toString());
+
+    const roundOff = parseFloat(form.getValues("sales_amount_round") || 0);
+    const finalAmount = netTotal + roundOff;
+
+    form.setValue("sales_gross", finalAmount.toString());
+    const amountReceived = parseFloat(form.getValues("sales_amount_received") || 0);
+    form.setValue("sales_advance", amountReceived.toString());
+    form.setValue("sales_balance", (finalAmount - amountReceived).toString());
+  };
+
   const handleItemChange = (index, field, value) => {
     const updatedEntries = [...itemEntries];
     updatedEntries[index][field] = value;
@@ -160,56 +192,63 @@ const EstimateSalesAddPage = () => {
       ).toString();
       setItemEntries([...updatedEntries]);
     }
-
-    const itemsTotal = updatedEntries.reduce(
-      (sum, entry) => sum + parseFloat(entry.estimate_sub_amount || 0),
-      0
-    );
-    const chargesTotal =
-      parseFloat(form.watch("sales_tax") || 0) +
-      parseFloat(form.watch("sales_tempo") || 0) +
-      parseFloat(form.watch("sales_loading") || 0) +
-      parseFloat(form.watch("sales_unloading") || 0) +
-      parseFloat(form.watch("sales_other") || 0);
-
-    const newGross = Math.round(itemsTotal + chargesTotal);
-    form.setValue("sales_gross", newGross.toString());
-
-    const newBalance = Math.round(newGross - parseFloat(form.watch("sales_advance") || 0));
-    form.setValue("sales_balance", newBalance.toString());
+    calculateAndSetTotals(updatedEntries);
   };
 
   const handleChargeChange = (field, value) => {
     form.setValue(field, value);
-
-    const itemsTotal = itemEntries.reduce(
-      (sum, entry) => sum + parseFloat(entry.estimate_sub_amount || 0),
-      0
-    );
-    const chargesTotal =
-      parseFloat(form.watch("sales_tax") || 0) +
-      parseFloat(form.watch("sales_tempo") || 0) +
-      parseFloat(form.watch("sales_loading") || 0) +
-      parseFloat(form.watch("sales_unloading") || 0) +
-      parseFloat(form.watch("sales_other") || 0);
-
-    const newGross = Math.round(itemsTotal + chargesTotal);
-    form.setValue("sales_gross", newGross.toString());
-
-    const newBalance = Math.round(newGross - parseFloat(form.watch("sales_advance") || 0));
-    form.setValue("sales_balance", newBalance.toString());
+    calculateAndSetTotals(itemEntries);
   };
 
-  const handleAdvanceChange = (value) => {
-    form.setValue("sales_advance", value);
-    const newBalance = Math.round(
-      parseFloat(form.watch("sales_gross") || 0) - parseFloat(value || 0)
-    );
-    form.setValue("sales_balance", newBalance.toString());
+  const handleRoundOffChange = (e) => {
+    const value = e.target.value;
+    if (value === "" || value === "-" || value === "-." || value === ".") {
+      form.setValue("sales_amount_round", value);
+      const netTotal = parseFloat(form.getValues("sales_temp_amount") || 0);
+      form.setValue("sales_gross", netTotal.toString());
+      const amountReceived = parseFloat(form.getValues("sales_amount_received") || 0);
+      form.setValue("sales_balance", (netTotal - amountReceived).toString());
+      return;
+    }
+
+    if (/^-?\d*\.?\d*$/.test(value)) {
+      const roundOffVal = parseFloat(value) || 0;
+      form.setValue("sales_amount_round", value);
+
+      const netTotal = parseFloat(form.getValues("sales_temp_amount") || 0);
+      const finalAmount = netTotal + roundOffVal;
+      form.setValue("sales_gross", finalAmount.toString());
+      const amountReceived = parseFloat(form.getValues("sales_amount_received") || 0);
+      form.setValue("sales_balance", (finalAmount - amountReceived).toString());
+    }
+  };
+
+  const handleAmountReceivedChange = (e) => {
+    const value = e.target.value;
+    if (value === "" || value === ".") {
+      form.setValue("sales_amount_received", value);
+      form.setValue("sales_advance", "0");
+      const netTotal = parseFloat(form.getValues("sales_temp_amount") || 0);
+      const roundOffVal = parseFloat(form.getValues("sales_amount_round") || 0);
+      const finalAmount = netTotal + roundOffVal;
+      form.setValue("sales_balance", finalAmount.toString());
+      return;
+    }
+
+    if (/^\d*\.?\d*$/.test(value)) {
+      const receivedVal = parseFloat(value) || 0;
+      form.setValue("sales_amount_received", value);
+      form.setValue("sales_advance", receivedVal.toString());
+
+      const netTotal = parseFloat(form.getValues("sales_temp_amount") || 0);
+      const roundOffVal = parseFloat(form.getValues("sales_amount_round") || 0);
+      const finalAmount = netTotal + roundOffVal;
+      form.setValue("sales_balance", (finalAmount - receivedVal).toString());
+    }
   };
 
   const addItemEntry = () => {
-    setItemEntries([
+    const updated = [
       ...itemEntries,
       {
         estimate_sub_type: "",
@@ -220,30 +259,16 @@ const EstimateSalesAddPage = () => {
         estimate_sub_amount: "",
         sales_sub_item_original: "",
       },
-    ]);
+    ];
+    setItemEntries(updated);
+    calculateAndSetTotals(updated);
   };
 
   const removeItemEntry = (index) => {
     const updatedEntries = [...itemEntries];
     updatedEntries.splice(index, 1);
     setItemEntries(updatedEntries);
-
-    const itemsTotal = updatedEntries.reduce(
-      (sum, entry) => sum + parseFloat(entry.estimate_sub_amount || 0),
-      0
-    );
-    const chargesTotal =
-      parseFloat(form.watch("sales_tax") || 0) +
-      parseFloat(form.watch("sales_tempo") || 0) +
-      parseFloat(form.watch("sales_loading") || 0) +
-      parseFloat(form.watch("sales_unloading") || 0) +
-      parseFloat(form.watch("sales_other") || 0);
-
-    const newGross = Math.round(itemsTotal + chargesTotal);
-    form.setValue("sales_gross", newGross.toString());
-
-    const newBalance = Math.round(newGross - parseFloat(form.watch("sales_advance") || 0));
-    form.setValue("sales_balance", newBalance.toString());
+    calculateAndSetTotals(updatedEntries);
   };
 
   const validateForm = (data) => {
@@ -400,6 +425,12 @@ const EstimateSalesAddPage = () => {
     try {
       const payload = {
         ...data,
+        sales_gross: form.getValues("sales_gross")?.toString() || "0",
+        sales_balance: form.getValues("sales_balance")?.toString() || "0",
+        sales_advance: form.getValues("sales_advance")?.toString() || "0",
+        sales_amount_round: form.getValues("sales_amount_round")?.toString() || "0",
+        sales_amount_received: form.getValues("sales_amount_received")?.toString() || "0",
+        sales_temp_amount: form.getValues("sales_temp_amount")?.toString() || "0",
         sales_year: currentYear || "",
         sales_no_of_count: itemEntries.length,
         sales_sub_data: itemEntries.map((e) => ({
@@ -448,7 +479,8 @@ const EstimateSalesAddPage = () => {
     addItemEntry,
     removeItemEntry,
     handleChargeChange,
-    handleAdvanceChange,
+    handleRoundOffChange,
+    handleAmountReceivedChange,
     handleCancel,
     handleFormSubmit,
     productTypeGroup,

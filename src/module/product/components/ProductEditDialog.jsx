@@ -31,6 +31,10 @@ const ProductEditDialog = ({ productId }) => {
     product_type: "",
     product_type_group: "",
     product_type_status: "",
+    openpurch_pcs: "",
+    openpurch_sqr: "",
+    closesale_pcs: "",
+    closesale_sqr: "",
   });
 
   const { data: prodData, isFetching } = useProductById(open ? productId : null);
@@ -42,6 +46,10 @@ const ProductEditDialog = ({ productId }) => {
         product_type: prodData.product_type || "",
         product_type_group: prodData.product_type_group || "",
         product_type_status: prodData.product_type_status || "",
+        openpurch_pcs: prodData.openpurch_pcs?.toString() || "",
+        openpurch_sqr: prodData.openpurch_sqr?.toString() || "",
+        closesale_pcs: prodData.closesale_pcs?.toString() || "",
+        closesale_sqr: prodData.closesale_sqr?.toString() || "",
       });
     }
   }, [prodData]);
@@ -176,6 +184,60 @@ const ProductEditDialog = ({ productId }) => {
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
+            </div>
+
+            <div className="border-t pt-3 mt-2">
+              <h4 className="text-xs font-bold text-blue-900 mb-3 uppercase tracking-wider">Opening Stock & Historical Data</h4>
+              <div className="grid grid-cols-2 gap-2 bg-gray-50 p-2.5 rounded-lg border">
+                <div className="grid gap-1">
+                  <Label htmlFor="openpurch_pcs" className="text-xs">Opening Pieces</Label>
+                  <Input
+                    id="openpurch_pcs"
+                    name="openpurch_pcs"
+                    type="number"
+                    value={formData.openpurch_pcs}
+                    onChange={handleInputChange}
+                    placeholder="Pieces"
+                    className="bg-white text-xs h-8"
+                  />
+                </div>
+                <div className="grid gap-1">
+                  <Label htmlFor="openpurch_sqr" className="text-xs">Opening SQFT</Label>
+                  <Input
+                    id="openpurch_sqr"
+                    name="openpurch_sqr"
+                    type="number"
+                    value={formData.openpurch_sqr}
+                    onChange={handleInputChange}
+                    placeholder="SQFT"
+                    className="bg-white text-xs h-8"
+                  />
+                </div>
+                <div className="grid gap-1 mt-2">
+                  <Label htmlFor="closesale_pcs" className="text-xs">Prev Year Sale Pcs</Label>
+                  <Input
+                    id="closesale_pcs"
+                    name="closesale_pcs"
+                    type="number"
+                    value={formData.closesale_pcs}
+                    onChange={handleInputChange}
+                    placeholder="Pieces"
+                    className="bg-white text-xs h-8"
+                  />
+                </div>
+                <div className="grid gap-1 mt-2">
+                  <Label htmlFor="closesale_sqr" className="text-xs">Prev Year Sale SQFT</Label>
+                  <Input
+                    id="closesale_sqr"
+                    name="closesale_sqr"
+                    type="number"
+                    value={formData.closesale_sqr}
+                    onChange={handleInputChange}
+                    placeholder="SQFT"
+                    className="bg-white text-xs h-8"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}

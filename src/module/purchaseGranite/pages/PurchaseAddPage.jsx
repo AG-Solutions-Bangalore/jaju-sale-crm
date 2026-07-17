@@ -13,6 +13,7 @@ import {
   useProductTypeGroup,
   useProductTypeGroupNew,
   useCreatePurchase,
+  usePurchaseList,
 } from "../hooks/usePurchase";
 import MobilePurchaseForm from "../components/MobilePurchaseForm";
 import DesktopPurchaseForm from "../components/DesktopPurchaseForm";
@@ -24,6 +25,7 @@ const formSchema = z.object({
   purchase_item_type: z.string(),
   purchase_supplier: z.string().min(1, "Supplier is required"),
   purchase_bill_no: z.string().min(1, "Bill number is required"),
+  purchase_no: z.string().optional(),
   purchase_amount: z.string().min(1, "Total Amount is required"),
   purchase_other: z.string().optional(),
   purchase_other1: z.string().optional(),
@@ -57,6 +59,7 @@ const PurchaseAddPage = () => {
   const { data: productTypeGroup = [] } = useProductTypeGroup();
   const { data: product = [], isLoading: isProductLoading } = useProductTypeGroupNew();
   const createMutation = useCreatePurchase();
+  const { data: purchaseList = [] } = usePurchaseList();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -67,6 +70,7 @@ const PurchaseAddPage = () => {
       purchase_item_type: "",
       purchase_supplier: "",
       purchase_bill_no: "",
+      purchase_no: "",
       purchase_amount: "",
       purchase_other: "",
       purchase_other1: "",
@@ -92,6 +96,7 @@ const PurchaseAddPage = () => {
       form.setValue("purchase_year", currentYear);
     }
   }, [currentYear, form]);
+
 
   const [itemEntries, setItemEntries] = useState([
     {
@@ -151,7 +156,7 @@ const PurchaseAddPage = () => {
     form.setValue("purchase_temp_amount", netTotal.toFixed(2));
 
     const roundOff = parseFloat(form.getValues("purchase_amount_round") || 0);
-    const finalAmount = netTotal - roundOff;
+    const finalAmount = netTotal + roundOff;
 
     form.setValue("purchase_gross", finalAmount.toString());
     form.setValue("purchase_balance", finalAmount.toString());
@@ -174,7 +179,7 @@ const PurchaseAddPage = () => {
   const displayNetTotal = displayGrandTotal + displayGst;
 
   const roundOff = parseFloat(form.watch("purchase_amount_round") || 0);
-  const amountToBePaid = displayNetTotal - roundOff;
+  const amountToBePaid = displayNetTotal + roundOff;
 
   const handleItemChange = (index, field, value) => {
     const updatedEntries = [...itemEntries];
@@ -214,7 +219,7 @@ const PurchaseAddPage = () => {
     setRoundOffEdited(true);
 
     const netTotal = parseFloat(form.getValues("purchase_temp_amount") || 0);
-    const finalAmount = netTotal - roundOffVal;
+    const finalAmount = netTotal + roundOffVal;
     form.setValue("purchase_gross", finalAmount.toString());
     form.setValue("purchase_balance", finalAmount.toString());
   };
@@ -437,7 +442,7 @@ const PurchaseAddPage = () => {
       const gstAmount = parseFloat(form.watch("purchase_tax") || 0);
       const netTotal = grandTotal + gstAmount;
       const roundOff = parseFloat(form.watch("purchase_amount_round") || 0);
-      const finalAmount = netTotal - roundOff;
+      const finalAmount = netTotal + roundOff;
 
       const payload = {
         ...restData,
@@ -510,6 +515,7 @@ const PurchaseAddPage = () => {
     handleCustomItemChange,
     handleToggleCustomItem,
     isSubmitting,
+    purchaseList,
     title: "Add Purchases",
   };
 

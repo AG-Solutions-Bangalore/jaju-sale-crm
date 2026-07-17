@@ -24,6 +24,7 @@ const DesktopSalesForm = ({
   handleChargeChange,
   handleTaxChange,
   handleRoundOffChange,
+  handleAmountReceivedChange,
   handleCancel,
   handleFormSubmit,
   productOptions,
@@ -471,7 +472,7 @@ const DesktopSalesForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <Label className="font-medium">Round Off</Label>
                   <Input
-                    className="w-[150px] text-right font-medium bg-gray-100 shrink-0"
+                    className="w-[150px] text-right font-medium bg-white border border-gray-200 shrink-0"
                     type="text"
                     {...form.register("sales_amount_round")}
                     onChange={handleRoundOffChange}
@@ -492,13 +493,14 @@ const DesktopSalesForm = ({
                   />
                 </div>
 
-                {/* Final Amount Received */}
+                {/* Amount Collected */}
                 <div className="flex items-center justify-between gap-2">
-                  <Label className="font-medium">Final Amount Received</Label>
+                  <Label className="font-medium">Amount Collected</Label>
                   <Input
                     className="w-[150px] text-right shrink-0 bg-white"
                     type="tel"
                     {...form.register("sales_amount_received")}
+                    onChange={handleAmountReceivedChange}
                     onKeyDown={handleKeyDown}
                     maxLength={10}
                     placeholder="0"

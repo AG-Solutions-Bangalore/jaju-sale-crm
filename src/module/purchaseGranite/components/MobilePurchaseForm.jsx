@@ -36,6 +36,7 @@ const MobilePurchaseForm = ({
   handleCustomItemChange,
   handleToggleCustomItem,
   isSubmitting,
+  purchaseList = [],
   title = "Add Purchases",
 }) => {
   return (
@@ -85,6 +86,7 @@ const MobilePurchaseForm = ({
                   className="mt-1 bg-white"
                   placeholder="Enter Supplier Name"
                   maxLength={50}
+                  disabled={form.watch("purchase_type") === "Opening Stock"}
                 />
               </div>
               <div>
@@ -98,6 +100,36 @@ const MobilePurchaseForm = ({
                   placeholder="Enter Bill Number"
                   maxLength={10}
                 />
+              </div>
+              <div>
+                <Label htmlFor="mob_purchase_no">Purchase No</Label>
+                <Input
+                  id="mob_purchase_no"
+                  {...form.register("purchase_no")}
+                  className="mt-1 bg-white"
+                  placeholder="Purchase Number"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="mob_is_opening_stock"
+                  checked={form.watch("purchase_type") === "Opening Stock"}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      form.setValue("purchase_type", "Opening Stock");
+                      form.setValue("purchase_supplier", "Opening Stock");
+                    } else {
+                      form.setValue("purchase_type", "");
+                      form.setValue("purchase_supplier", "");
+                    }
+                  }}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <Label htmlFor="mob_is_opening_stock" className="font-semibold cursor-pointer text-gray-700 text-xs">
+                  Is Opening Stock Entry (Separate sequence)
+                </Label>
               </div>
             </div>
           </div>

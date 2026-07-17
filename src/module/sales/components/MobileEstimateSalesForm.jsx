@@ -21,7 +21,8 @@ const MobileEstimateSalesForm = ({
   addItemEntry,
   removeItemEntry,
   handleChargeChange,
-  handleAdvanceChange,
+  handleRoundOffChange,
+  handleAmountReceivedChange,
   handleCancel,
   handleFormSubmit,
   productTypeGroup,
@@ -352,15 +353,42 @@ const MobileEstimateSalesForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="mob_est_sales_advance">Advance Received</Label>
+                <Label>Net Total</Label>
                 <Input
-                  id="mob_est_sales_advance"
+                  type="text"
+                  value={form.watch("sales_temp_amount") || 0}
+                  disabled
+                  className="mt-1 text-right bg-gray-50 font-bold"
+                />
+              </div>
+              <div>
+                <Label>Round Off</Label>
+                <Input
+                  type="text"
+                  {...form.register("sales_amount_round")}
+                  onChange={handleRoundOffChange}
+                  className="mt-1 text-right bg-white"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <Label>Amount Collected</Label>
+                <Input
                   type="tel"
-                  value={form.watch("sales_advance") || ""}
-                  onChange={(e) => handleAdvanceChange(e.target.value)}
+                  {...form.register("sales_amount_received")}
+                  onChange={handleAmountReceivedChange}
                   onKeyDown={handleKeyDown}
                   className="mt-1 text-right bg-white"
                   placeholder="0"
+                />
+              </div>
+              <div>
+                <Label>Pending Amount</Label>
+                <Input
+                  type="text"
+                  value={form.watch("sales_balance") || 0}
+                  disabled
+                  className="mt-1 text-right bg-red-50 text-red-900 font-bold"
                 />
               </div>
             </div>

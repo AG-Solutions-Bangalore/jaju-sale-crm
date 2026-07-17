@@ -290,6 +290,7 @@ const StocksReportPage = () => {
     setShowNewItemDialog,
     tableRef,
     formatStockValue,
+    productTypes,
   };
 
   return (

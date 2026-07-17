@@ -23,6 +23,7 @@ const MobileSalesForm = ({
   handleChargeChange,
   handleTaxChange,
   handleRoundOffChange,
+  handleAmountReceivedChange,
   handleCancel,
   handleFormSubmit,
   productOptions,
@@ -467,14 +468,15 @@ const MobileSalesForm = ({
             </div>
 
             <div>
-              <Label>Final Amount Received</Label>
+              <Label>Amount Collected</Label>
               <Input
                 type="tel"
                 {...form.register("sales_amount_received")}
+                onChange={handleAmountReceivedChange}
                 onKeyDown={handleKeyDown}
-                className="mt-1 text-right bg-white"
                 maxLength={10}
                 placeholder="0"
+                className="mt-1 text-right bg-white"
               />
             </div>
           </div>
