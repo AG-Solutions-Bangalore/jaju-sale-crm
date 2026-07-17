@@ -24,12 +24,15 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      Cookies.remove("token");
-      Cookies.remove("id");
-      Cookies.remove("name");
-      Cookies.remove("userType");
-      Cookies.remove("email");
-      window.location.href = "/";
+      const isLoginRequest = error.config?.url?.includes("/api/web-login");
+      if (!isLoginRequest) {
+        Cookies.remove("token");
+        Cookies.remove("id");
+        Cookies.remove("name");
+        Cookies.remove("userType");
+        Cookies.remove("email");
+        window.location.href = "/";
+      }
     }
     return Promise.reject(error);
   }
