@@ -18,6 +18,16 @@ import {
 import MobileSalesForm from "../components/MobileSalesForm";
 import DesktopSalesForm from "../components/DesktopSalesForm";
 
+const getActualRoundOff = (tempAmount, grossAmount, storedRoundOff) => {
+  const temp = parseFloat(tempAmount || 0);
+  const gross = parseFloat(grossAmount || 0);
+  const round = parseFloat(storedRoundOff || 0);
+  if (round > 0 && Math.abs(gross - (temp - round)) < 1.0) {
+    return -round; // Old style: positive roundOff was subtracted
+  }
+  return round; // New style: signed roundOff is added
+};
+
 const formSchema = z.object({
   sales_date: z.string(),
   sales_year: z.string(),
@@ -138,10 +148,7 @@ const SalesEditPage = () => {
 
       const savedGross = parseFloat(sales.sales_gross || 0);
       const savedTempAmount = parseFloat(sales.sales_temp_amount || sales.sales_gross || 0);
-      const savedRoundOff =
-        sales.sales_amount_round !== undefined && sales.sales_amount_round !== null
-          ? Math.round(parseFloat(sales.sales_amount_round))
-          : Math.round(savedGross - savedTempAmount);
+      const savedRoundOff = getActualRoundOff(savedTempAmount, savedGross, sales.sales_amount_round);
 
       if (sales.sales_unloading && parseFloat(sales.sales_unloading) > 0) {
         setLoadingType("Loading & Unloading");
@@ -239,11 +246,12 @@ const SalesEditPage = () => {
     form.setValue("sales_temp_amount", netTotal.toFixed(2));
 
     const roundOff = parseFloat(form.getValues("sales_amount_round") || 0);
-    const finalAmount = netTotal - roundOff;
+    const finalAmount = netTotal + roundOff;
 
     form.setValue("sales_gross", finalAmount.toString());
-    form.setValue("sales_balance", finalAmount.toString());
-    form.setValue("sales_advance", "0");
+    const amountReceived = parseFloat(form.getValues("sales_amount_received") || 0);
+    form.setValue("sales_balance", (finalAmount - amountReceived).toString());
+    form.setValue("sales_advance", amountReceived.toString());
   };
 
   const itemsTotal = itemEntries.reduce(
@@ -262,7 +270,7 @@ const SalesEditPage = () => {
   const displayNetTotal = displayGrandTotal + displayGst;
 
   const roundOff = parseFloat(form.watch("sales_amount_round") || 0);
-  const amountToBeCollected = displayNetTotal - roundOff;
+  const amountToBeCollected = displayNetTotal + roundOff;
 
   const handleItemChange = (index, field, value) => {
     const updatedEntries = [...itemEntries];
@@ -297,14 +305,51 @@ const SalesEditPage = () => {
 
   const handleRoundOffChange = (e) => {
     const value = e.target.value;
-    const roundOffVal = parseFloat(value) || 0;
-    form.setValue("sales_amount_round", roundOffVal.toString());
-    setRoundOffEdited(true);
+    if (value === "" || value === "-" || value === "-." || value === ".") {
+      form.setValue("sales_amount_round", value);
+      setRoundOffEdited(true);
+      const netTotal = parseFloat(form.getValues("sales_temp_amount") || 0);
+      form.setValue("sales_gross", netTotal.toString());
+      const amountReceived = parseFloat(form.getValues("sales_amount_received") || 0);
+      form.setValue("sales_balance", (netTotal - amountReceived).toString());
+      return;
+    }
 
-    const netTotal = parseFloat(form.getValues("sales_temp_amount") || 0);
-    const finalAmount = netTotal - roundOffVal;
-    form.setValue("sales_gross", finalAmount.toString());
-    form.setValue("sales_balance", finalAmount.toString());
+    if (/^-?\d*\.?\d*$/.test(value)) {
+      const roundOffVal = parseFloat(value) || 0;
+      form.setValue("sales_amount_round", value);
+      setRoundOffEdited(true);
+
+      const netTotal = parseFloat(form.getValues("sales_temp_amount") || 0);
+      const finalAmount = netTotal + roundOffVal;
+      form.setValue("sales_gross", finalAmount.toString());
+      const amountReceived = parseFloat(form.getValues("sales_amount_received") || 0);
+      form.setValue("sales_balance", (finalAmount - amountReceived).toString());
+    }
+  };
+
+  const handleAmountReceivedChange = (e) => {
+    const value = e.target.value;
+    if (value === "" || value === ".") {
+      form.setValue("sales_amount_received", value);
+      form.setValue("sales_advance", "0");
+      const netTotal = parseFloat(form.getValues("sales_temp_amount") || 0);
+      const roundOffVal = parseFloat(form.getValues("sales_amount_round") || 0);
+      const finalAmount = netTotal + roundOffVal;
+      form.setValue("sales_balance", finalAmount.toString());
+      return;
+    }
+
+    if (/^\d*\.?\d*$/.test(value)) {
+      const receivedVal = parseFloat(value) || 0;
+      form.setValue("sales_amount_received", value);
+      form.setValue("sales_advance", receivedVal.toString());
+
+      const netTotal = parseFloat(form.getValues("sales_temp_amount") || 0);
+      const roundOffVal = parseFloat(form.getValues("sales_amount_round") || 0);
+      const finalAmount = netTotal + roundOffVal;
+      form.setValue("sales_balance", (finalAmount - receivedVal).toString());
+    }
   };
 
   const addItemEntry = () => {
@@ -518,7 +563,7 @@ const SalesEditPage = () => {
       const gstAmount = parseFloat(form.watch("sales_tax") || 0);
       const netTotal = grandTotal + gstAmount;
       const roundOff = parseFloat(form.watch("sales_amount_round") || 0);
-      const finalAmount = netTotal - roundOff;
+      const finalAmount = netTotal + roundOff;
 
       const payload = {
         ...restData,
@@ -529,11 +574,11 @@ const SalesEditPage = () => {
         sales_other1: other1.toString(),
         sales_tax: gstAmount.toString(),
         sales_temp_amount: netTotal.toString(),
-        sales_gross: restData.sales_amount_received || "0",
-        sales_balance: finalAmount.toString(),
+        sales_gross: finalAmount.toString(), // Bill Amount (Final Total)
+        sales_balance: (finalAmount - parseFloat(restData.sales_amount_received || 0)).toString(), // Pending Amount
         sales_amount_round: roundOff.toString(),
-        sales_advance: "0",
-        sales_amount_received: restData.sales_amount_received || "0",
+        sales_advance: (restData.sales_amount_received || "0").toString(), // Amount Collected
+        sales_amount_received: (restData.sales_amount_received || "0").toString(), // Amount Collected
         sales_no_of_count: formattedItemEntries.length,
         sales_sub_data: formattedItemEntries,
       };
@@ -574,6 +619,7 @@ const SalesEditPage = () => {
     handleChargeChange,
     handleTaxChange,
     handleRoundOffChange,
+    handleAmountReceivedChange,
     handleCancel,
     handleFormSubmit,
     productOptions,

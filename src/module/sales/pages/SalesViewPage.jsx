@@ -8,6 +8,16 @@ import { useSalesById } from "../hooks/useSales";
 import MobileSalesView from "../components/MobileSalesView";
 import DesktopSalesView from "../components/DesktopSalesView";
 
+const getActualRoundOff = (tempAmount, grossAmount, storedRoundOff) => {
+  const temp = parseFloat(tempAmount || 0);
+  const gross = parseFloat(grossAmount || 0);
+  const round = parseFloat(storedRoundOff || 0);
+  if (round > 0 && Math.abs(gross - (temp - round)) < 1.0) {
+    return -round; // Old style: positive roundOff was subtracted
+  }
+  return round; // New style: signed roundOff is added
+};
+
 const SalesViewPage = () => {
   const { toast } = useToast();
   const { id } = useParams();
@@ -20,8 +30,10 @@ const SalesViewPage = () => {
     const input = tableRef.current;
     if (!input) return;
 
+    input.classList.add("pdf-export-mode");
+
     const options = {
-      margin: [5, 5, 5, 5],
+      margin: [10, 20, 10, 10],
       filename: `sales-${salesData?.sales?.sales_no}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: {
@@ -58,10 +70,15 @@ const SalesViewPage = () => {
       })
       .save()
       .then(() => {
+        input.classList.remove("pdf-export-mode");
         toast({
           title: "PDF Generated",
           description: "Sales saved as PDF",
         });
+      })
+      .catch((err) => {
+        input.classList.remove("pdf-export-mode");
+        console.error("PDF generation failed:", err);
       });
   };
 
@@ -95,14 +112,14 @@ const SalesViewPage = () => {
   const grandTotal = subTotal + tempo + loading + unloading + other + other1;
   const autoGst = grandTotal * 0.18;
 
-  const roundOff =
-    salesData?.sales?.sales_amount_round !== undefined &&
-    salesData?.sales?.sales_amount_round !== null
-      ? parseFloat(salesData.sales.sales_amount_round)
-      : gross - parseFloat(salesData?.sales?.sales_temp_amount || unroundedTotal);
+  const roundOff = getActualRoundOff(
+    salesData?.sales?.sales_temp_amount || unroundedTotal,
+    gross,
+    salesData?.sales?.sales_amount_round
+  );
 
   const displayNetTotal = grandTotal + tax;
-  const amountToBeCollected = displayNetTotal - roundOff;
+  const amountToBeCollected = displayNetTotal + roundOff;
 
   const commonProps = {
     salesData,

@@ -3,6 +3,7 @@ import moment from "moment";
 import { Printer, Search, Plus, Pencil, Loader2 } from "lucide-react";
 import { FaRegFilePdf, FaRegFileExcel } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
+import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import ProductEditDialog from "@/module/product/components/ProductEditDialog";
 
 const DesktopStocksReport = ({
   form,
@@ -31,7 +33,9 @@ const DesktopStocksReport = ({
   setShowNewItemDialog,
   tableRef,
   formatStockValue,
+  productTypes = [],
 }) => {
+  const navigate = useNavigate();
   return (
     <div className="hidden sm:block">
       <Card className="shadow-sm">
@@ -234,15 +238,27 @@ const DesktopStocksReport = ({
                         >
                           <TableCell className="text-left border-r">
                             <span className="flex items-center gap-1">
-                              {item.item_name}
-                              <button
-                                type="button"
-                                onClick={() => handleEditItem(item.item_name)}
-                                data-html2canvas-ignore="true"
-                                className="text-gray-400 hover:text-blue-600 print:hidden"
-                              >
-                                <Pencil className="h-3 w-3" />
-                              </button>
+                              {(() => {
+                                const matchedProduct = productTypes?.find(
+                                  (p) =>
+                                    (p.product_type || p.item_name || "").toLowerCase() ===
+                                    item.item_name?.toLowerCase()
+                                );
+                                return matchedProduct ? (
+                                  <div className="flex items-center gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/single-item-stock?productId=${matchedProduct.id}`)}
+                                      className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold"
+                                    >
+                                      {item.item_name}
+                                    </button>
+                                    <ProductEditDialog productId={matchedProduct.id} />
+                                  </div>
+                                ) : (
+                                  <span>{item.item_name}</span>
+                                );
+                              })()}
                             </span>
                           </TableCell>
                           <TableCell className="text-center border-r">

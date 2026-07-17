@@ -51,8 +51,29 @@ const SalesListPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
-  const filteredSales =
-    sales?.filter((sale) => {
+  const parseBillNumber = (billNo) => {
+    if (billNo === undefined || billNo === null) return 0;
+    const str = String(billNo);
+    const match = str.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  };
+
+  const sortedSales = React.useMemo(() => {
+    if (!sales) return [];
+    return [...sales].sort((a, b) => {
+      const numA = parseBillNumber(a.sales_no);
+      const numB = parseBillNumber(b.sales_no);
+      if (numA !== numB) {
+        return numA - numB;
+      }
+      const dateA = new Date(a.sales_date || 0);
+      const dateB = new Date(b.sales_date || 0);
+      return dateA - dateB;
+    });
+  }, [sales]);
+
+  const filteredSales = React.useMemo(() => {
+    return sortedSales.filter((sale) => {
       if (!searchQuery) return true;
       return (
         sale.sales_customer
@@ -60,7 +81,8 @@ const SalesListPage = () => {
           .includes(searchQuery.toLowerCase()) ||
         sale.sales_no?.toLowerCase().includes(searchQuery.toLowerCase())
       );
-    }) || [];
+    });
+  }, [sortedSales, searchQuery]);
 
   const columns = [
     {
@@ -142,7 +164,7 @@ const SalesListPage = () => {
   ];
 
   const table = useReactTable({
-    data: sales || [],
+    data: sortedSales || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -160,7 +182,7 @@ const SalesListPage = () => {
     },
     initialState: {
       pagination: {
-        pageSize: 7,
+        pageSize: 10,
       },
     },
   });

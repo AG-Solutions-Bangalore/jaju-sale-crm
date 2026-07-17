@@ -8,6 +8,16 @@ import { usePurchaseById } from "../hooks/usePurchase";
 import MobilePurchaseView from "../components/MobilePurchaseView";
 import DesktopPurchaseView from "../components/DesktopPurchaseView";
 
+const getActualRoundOff = (tempAmount, grossAmount, storedRoundOff) => {
+  const temp = parseFloat(tempAmount || 0);
+  const gross = parseFloat(grossAmount || 0);
+  const round = parseFloat(storedRoundOff || 0);
+  if (round > 0 && Math.abs(gross - (temp - round)) < 1.0) {
+    return -round; // Old style: positive roundOff was subtracted
+  }
+  return round; // New style: signed roundOff is added
+};
+
 const PurchaseViewPage = () => {
   const { toast } = useToast();
   const { id } = useParams();
@@ -95,14 +105,14 @@ const PurchaseViewPage = () => {
   const grandTotal = subTotal + tempo + loading + unloading + other + other1;
   const autoGst = grandTotal * 0.18;
 
-  const roundOff =
-    purchaseData?.purchase?.purchase_amount_round !== undefined &&
-    purchaseData?.purchase?.purchase_amount_round !== null
-      ? parseFloat(purchaseData.purchase.purchase_amount_round)
-      : gross - parseFloat(purchaseData?.purchase?.purchase_temp_amount || unroundedTotal);
+  const roundOff = getActualRoundOff(
+    purchaseData?.purchase?.purchase_temp_amount || unroundedTotal,
+    gross,
+    purchaseData?.purchase?.purchase_amount_round
+  );
 
   const displayNetTotal = grandTotal + tax;
-  const amountToBeCollected = displayNetTotal - roundOff;
+  const amountToBeCollected = displayNetTotal + roundOff;
 
   const commonProps = {
     purchaseData,

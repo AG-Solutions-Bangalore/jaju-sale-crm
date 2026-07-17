@@ -22,7 +22,8 @@ const DesktopEstimateSalesForm = ({
   addItemEntry,
   removeItemEntry,
   handleChargeChange,
-  handleAdvanceChange,
+  handleRoundOffChange,
+  handleAmountReceivedChange,
   handleCancel,
   handleFormSubmit,
   productTypeGroup,
@@ -371,30 +372,48 @@ const DesktopEstimateSalesForm = ({
                     placeholder="0"
                   />
                 </div>
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="font-semibold text-green-700">Gross Total</Label>
+                 <div className="flex items-center justify-between gap-2">
+                  <Label className="font-semibold text-gray-700">Net Total</Label>
                   <Input
-                    className="w-[150px] bg-green-50 font-bold border-green-200 text-green-900 text-right rounded-md shrink-0"
+                    className="w-[150px] font-bold text-right rounded-md shrink-0 bg-gray-50"
+                    type="text"
+                    value={form.watch("sales_temp_amount") || 0}
+                    disabled
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="font-medium text-gray-700">Round Off</Label>
+                  <Input
+                    className="w-[150px] text-right font-medium bg-white border border-gray-200 shrink-0"
+                    type="text"
+                    {...form.register("sales_amount_round")}
+                    onChange={handleRoundOffChange}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="font-semibold text-blue-900">Amount to be Collected</Label>
+                  <Input
+                    className="w-[150px] bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
                     type="text"
                     value={form.watch("sales_gross") || 0}
                     disabled
                   />
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="sales_advance">Advance Received</Label>
+                  <Label className="font-medium text-gray-700">Amount Collected</Label>
                   <Input
                     className="w-[150px] text-right shrink-0 bg-white"
-                    id="sales_advance"
                     type="tel"
-                    value={form.watch("sales_advance") || ""}
-                    onChange={(e) => handleAdvanceChange(e.target.value)}
+                    {...form.register("sales_amount_received")}
+                    onChange={handleAmountReceivedChange}
                     maxLength={10}
                     onKeyDown={handleKeyDown}
                     placeholder="0"
                   />
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <Label className="font-semibold text-red-700">Balance Amount</Label>
+                  <Label className="font-semibold text-red-700">Pending Amount</Label>
                   <Input
                     className="w-[150px] bg-red-50 font-bold border-red-200 text-red-900 text-right rounded-md shrink-0"
                     type="text"

@@ -1,8 +1,9 @@
 import React from "react";
 import moment from "moment";
-import { Printer, Search, Plus, Pencil, Loader2, CalendarDays } from "lucide-react";
+import { Printer, Search, Plus, Pencil, Loader2, CalendarDays, Eye } from "lucide-react";
 import { FaRegFilePdf, FaRegFileExcel } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { MemoizedSelect } from "@/components/common/MemoizedSelect";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import { cn } from "@/lib/utils";
+import ProductEditDialog from "@/module/product/components/ProductEditDialog";
+import { encryptId } from "@/components/common/Encryption";
 
 const MobileSingleItemStockReport = ({
   form,
@@ -33,7 +36,9 @@ const MobileSingleItemStockReport = ({
   tableRef,
   formatCellValue,
   formatClosingBalanceText,
+  productId,
 }) => {
+  const navigate = useNavigate();
   return (
     <div className="sm:hidden space-y-4">
       {/* Title Controls */}
@@ -222,7 +227,8 @@ const MobileSingleItemStockReport = ({
                   <th className="text-right font-bold border-r p-1.5 text-red-800 bg-red-50/30">OUT (pcs)</th>
                   <th className="text-right font-bold border-r p-1.5 text-red-800 bg-red-50/30">OUT (sqft)</th>
                   <th className="text-right font-bold border-r p-1.5 text-blue-800 bg-blue-50/30">BAL (pcs)</th>
-                  <th className="text-right font-bold p-1.5 text-blue-800 bg-blue-50/30">BAL (sqft)</th>
+                  <th className="text-right font-bold border-r p-1.5 text-blue-800 bg-blue-50/30">BAL (sqft)</th>
+                  <th className="text-center font-bold p-1.5 text-gray-700 w-12 print:hidden">ACT</th>
                 </tr>
               </thead>
               <tbody>
@@ -256,14 +262,53 @@ const MobileSingleItemStockReport = ({
                       <td className="text-right border-r p-1.5 font-bold">
                         {formatCellValue(t.balance_pieces)}
                       </td>
-                      <td className="text-right p-1.5 font-bold">
+                      <td className="text-right p-1.5 font-bold border-r">
                         {formatCellValue(t.balance_sqft)}
+                      </td>
+                      <td className="text-center p-0.5 print:hidden">
+                        {t.isOpening ? (
+                          <ProductEditDialog productId={productId} />
+                        ) : t.type === "purchase" ? (
+                          <div className="flex justify-center space-x-0.5">
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/purchase/view/${encryptId(t.purchase_id)}`)}
+                              className="text-blue-600 hover:text-blue-800 p-0.5"
+                            >
+                              <Eye className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/purchase/edit/${encryptId(t.purchase_id)}`)}
+                              className="text-gray-600 hover:text-gray-800 p-0.5"
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : t.type === "sale" ? (
+                          <div className="flex justify-center space-x-0.5">
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/sales/view/${encryptId(t.sales_id)}`)}
+                              className="text-blue-600 hover:text-blue-800 p-0.5"
+                            >
+                              <Eye className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/sales/edit/${encryptId(t.sales_id)}`)}
+                              className="text-gray-600 hover:text-gray-800 p-0.5"
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : null}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="text-center py-6 text-gray-500">
+                    <td colSpan={9} className="text-center py-6 text-gray-500">
                       No transaction history found
                     </td>
                   </tr>
@@ -281,9 +326,10 @@ const MobileSingleItemStockReport = ({
                     <td className="text-right border-r p-1.5">
                       {closingPieces}
                     </td>
-                    <td className="text-right p-1.5">
+                    <td className="text-right border-r p-1.5">
                       {closingSqft}
                     </td>
+                    <td className="print:hidden"></td>
                   </tr>
                 )}
               </tbody>

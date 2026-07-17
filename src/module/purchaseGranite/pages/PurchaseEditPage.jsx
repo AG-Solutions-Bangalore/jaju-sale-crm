@@ -15,9 +15,20 @@ import {
   usePurchaseById,
   useDeletePurchaseSubItem,
   useUpdatePurchase,
+  usePurchaseList,
 } from "../hooks/usePurchase";
 import MobilePurchaseForm from "../components/MobilePurchaseForm";
 import DesktopPurchaseForm from "../components/DesktopPurchaseForm";
+
+const getActualRoundOff = (tempAmount, grossAmount, storedRoundOff) => {
+  const temp = parseFloat(tempAmount || 0);
+  const gross = parseFloat(grossAmount || 0);
+  const round = parseFloat(storedRoundOff || 0);
+  if (round > 0 && Math.abs(gross - (temp - round)) < 1.0) {
+    return -round; // Old style: positive roundOff was subtracted
+  }
+  return round; // New style: signed roundOff is added
+};
 
 const formSchema = z.object({
   purchase_date: z.string(),
@@ -26,6 +37,7 @@ const formSchema = z.object({
   purchase_item_type: z.string(),
   purchase_supplier: z.string().min(1, "Supplier is required"),
   purchase_bill_no: z.string().min(1, "Bill number is required"),
+  purchase_no: z.string().optional(),
   purchase_amount: z.string().min(1, "Total Amount is required"),
   purchase_other: z.string().optional(),
   purchase_other1: z.string().optional(),
@@ -63,6 +75,7 @@ const PurchaseEditPage = () => {
 
   const deleteSubMutation = useDeletePurchaseSubItem();
   const updateMutation = useUpdatePurchase(id);
+  const { data: purchaseList = [] } = usePurchaseList();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -73,6 +86,7 @@ const PurchaseEditPage = () => {
       purchase_item_type: "",
       purchase_supplier: "",
       purchase_bill_no: "",
+      purchase_no: "",
       purchase_amount: "",
       purchase_other: "",
       purchase_other1: "",
@@ -143,10 +157,7 @@ const PurchaseEditPage = () => {
       const savedTempAmount = parseFloat(
         pId.purchase_temp_amount || pId.purchase_gross || pId.purchase_amount || 0
       );
-      const savedRoundOff =
-        pId.purchase_amount_round !== undefined && pId.purchase_amount_round !== null
-          ? Math.round(parseFloat(pId.purchase_amount_round))
-          : Math.round(savedGross - savedTempAmount);
+      const savedRoundOff = getActualRoundOff(savedTempAmount, savedGross, pId.purchase_amount_round);
 
       const formValues = {
         purchase_date: moment(pId.purchase_date).format("YYYY-MM-DD"),
@@ -155,6 +166,7 @@ const PurchaseEditPage = () => {
         purchase_item_type: pId.purchase_item_type || "",
         purchase_supplier: pId.purchase_supplier || "",
         purchase_bill_no: pId.purchase_bill_no || "",
+        purchase_no: pId.purchase_no || "",
         purchase_amount: formatToInteger(pId.purchase_amount),
         purchase_other: formatToInteger(pId.purchase_other),
         purchase_other1: formatToInteger(pId.purchase_other1),
@@ -249,7 +261,7 @@ const PurchaseEditPage = () => {
     form.setValue("purchase_temp_amount", netTotal.toFixed(2));
 
     const roundOff = parseFloat(form.getValues("purchase_amount_round") || 0);
-    const finalAmount = netTotal - roundOff;
+    const finalAmount = netTotal + roundOff;
 
     form.setValue("purchase_gross", finalAmount.toString());
     form.setValue("purchase_balance", finalAmount.toString());
@@ -272,7 +284,7 @@ const PurchaseEditPage = () => {
   const displayNetTotal = displayGrandTotal + displayGst;
 
   const roundOff = parseFloat(form.watch("purchase_amount_round") || 0);
-  const amountToBePaid = displayNetTotal - roundOff;
+  const amountToBePaid = displayNetTotal + roundOff;
 
   const handleItemChange = (index, field, value) => {
     const updatedEntries = [...itemEntries];
@@ -312,7 +324,7 @@ const PurchaseEditPage = () => {
     setRoundOffEdited(true);
 
     const netTotal = parseFloat(form.getValues("purchase_temp_amount") || 0);
-    const finalAmount = netTotal - roundOffVal;
+    const finalAmount = netTotal + roundOffVal;
     form.setValue("purchase_gross", finalAmount.toString());
     form.setValue("purchase_balance", finalAmount.toString());
   };
@@ -549,7 +561,7 @@ const PurchaseEditPage = () => {
       const gstAmount = parseFloat(form.watch("purchase_tax") || 0);
       const netTotal = grandTotal + gstAmount;
       const roundOff = parseFloat(form.watch("purchase_amount_round") || 0);
-      const finalAmount = netTotal - roundOff;
+      const finalAmount = netTotal + roundOff;
 
       const payload = {
         ...restData,
@@ -621,6 +633,7 @@ const PurchaseEditPage = () => {
     handleCustomItemChange,
     handleToggleCustomItem,
     isSubmitting,
+    purchaseList,
     title: "Edit Purchases",
   };
 

@@ -3,10 +3,12 @@ import moment from "moment";
 import { Printer, Search, Plus, Pencil, Loader2 } from "lucide-react";
 import { FaRegFilePdf, FaRegFileExcel } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import ProductEditDialog from "@/module/product/components/ProductEditDialog";
 
 const MobileStocksReport = ({
   form,
@@ -20,7 +22,9 @@ const MobileStocksReport = ({
   setShowNewItemDialog,
   tableRef,
   formatStockValue,
+  productTypes = [],
 }) => {
+  const navigate = useNavigate();
   return (
     <div className="sm:hidden">
       <div
@@ -175,14 +179,27 @@ const MobileStocksReport = ({
                       >
                         <td className="border p-1 text-left">
                           <span className="flex items-center gap-1">
-                            {item.item_name}
-                            <button
-                              type="button"
-                              onClick={() => handleEditItem(item.item_name)}
-                              className="text-gray-400 hover:text-blue-600"
-                            >
-                              <Pencil className="h-3 w-3" />
-                            </button>
+                            {(() => {
+                              const matchedProduct = productTypes?.find(
+                                (p) =>
+                                  (p.product_type || p.item_name || "").toLowerCase() ===
+                                  item.item_name?.toLowerCase()
+                              );
+                              return matchedProduct ? (
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => navigate(`/single-item-stock?productId=${matchedProduct.id}`)}
+                                    className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold"
+                                  >
+                                    {item.item_name}
+                                  </button>
+                                  <ProductEditDialog productId={matchedProduct.id} />
+                                </div>
+                              ) : (
+                                <span>{item.item_name}</span>
+                              );
+                            })()}
                           </span>
                         </td>
                         <td className="border p-1 text-right">

@@ -38,6 +38,7 @@ const DesktopPurchaseForm = ({
   handleCustomItemChange,
   handleToggleCustomItem,
   isSubmitting,
+  purchaseList = [],
   title = "Add Purchases",
 }) => {
   return (
@@ -67,7 +68,7 @@ const DesktopPurchaseForm = ({
             className="space-y-2"
           >
             {/* Purchase Information */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 bg-blue-50 p-3 rounded-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2 bg-blue-50 p-3 rounded-lg items-end">
               <div className="space-y-2">
                 <Label htmlFor="purchase_date">Date</Label>
                 <Input
@@ -87,6 +88,7 @@ const DesktopPurchaseForm = ({
                   className="bg-white"
                   placeholder="Enter Supplier Name"
                   maxLength={50}
+                  disabled={form.watch("purchase_type") === "Opening Stock"}
                 />
               </div>
               <div className="space-y-2">
@@ -101,6 +103,36 @@ const DesktopPurchaseForm = ({
                   maxLength={10}
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="purchase_no">Purchase No</Label>
+                <Input
+                  id="purchase_no"
+                  {...form.register("purchase_no")}
+                  className="bg-white"
+                  placeholder="Purchase Number"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg border">
+              <input
+                type="checkbox"
+                id="is_opening_stock"
+                checked={form.watch("purchase_type") === "Opening Stock"}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    form.setValue("purchase_type", "Opening Stock");
+                    form.setValue("purchase_supplier", "Opening Stock");
+                  } else {
+                    form.setValue("purchase_type", "");
+                    form.setValue("purchase_supplier", "");
+                  }
+                }}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              />
+              <Label htmlFor="is_opening_stock" className="font-semibold cursor-pointer text-gray-700 text-xs">
+                Is Opening Stock Entry (Separate from normal Purchase sequences)
+              </Label>
             </div>
 
             {/* Items Table */}

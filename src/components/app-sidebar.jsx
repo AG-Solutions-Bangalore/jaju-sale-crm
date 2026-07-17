@@ -98,6 +98,11 @@ export function AppSidebar({ ...props }) {
             url: "/single-item-stock",
             icon: Package,
           },
+          {
+            title: "Sales Report",
+            url: "/sales-report",
+            icon: FileText,
+          },
         ],
       },
     ],

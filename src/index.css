@@ -94,5 +94,14 @@
   scrollbar-color: #fafafa #ffffff;
 }
 
+/* PDF Export mode helper to strip container styles for html2pdf */
+.pdf-export-mode {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+
 
 

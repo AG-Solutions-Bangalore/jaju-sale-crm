@@ -57,6 +57,10 @@ export function AppBottombar() {
           title: "Single Item Stock",
           url: "/single-item-stock",
         },
+        {
+          title: "Sales Report",
+          url: "/sales-report",
+        },
       ],
     },
   ];

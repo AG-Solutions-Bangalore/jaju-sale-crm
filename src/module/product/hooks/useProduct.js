@@ -73,6 +73,9 @@ export const useUpdateProduct = (id) => {
           description: res.data.msg || "Product Updated Successfully",
         });
         queryClient.invalidateQueries(["productType"]);
+        queryClient.invalidateQueries(["stocksReport"]);
+        queryClient.invalidateQueries(["stocksReportByItem"]);
+        queryClient.invalidateQueries(["productTypeGroupsNew"]);
       } else {
         toast({
           title: "Error",

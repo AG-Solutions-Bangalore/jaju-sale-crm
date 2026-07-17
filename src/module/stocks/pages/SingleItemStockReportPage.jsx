@@ -1,9 +1,10 @@
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useEffect } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import moment from "moment";
 import Cookies from "js-cookie";
+import { useSearchParams } from "react-router-dom";
 import html2pdf from "html2pdf.js";
 import Page from "@/app/dashboard/page";
 import { useToast } from "@/hooks/use-toast";
@@ -57,6 +58,27 @@ const SingleItemStockReportPage = () => {
 
   const { data: stocksData, isLoading } = useStocksReportByItem(searchParams);
   const { data: productTypes } = useProductTypes();
+  const [searchParamsUrl] = useSearchParams();
+  const queryProductId = searchParamsUrl.get("productId");
+
+  useEffect(() => {
+    if (queryProductId && productTypes && productTypes.length > 0) {
+      const match = productTypes.find((p) => String(p.id) === String(queryProductId));
+      if (match) {
+        const name = match.product_type || match.item_name || "";
+        setSelectedItem(name);
+        const defaultFrom = "2026-04-01";
+        const defaultTo = getTodayDate();
+        setSearchParams({
+          item_name: name,
+          from_date: defaultFrom,
+          to_date: defaultTo,
+        });
+        form.setValue("from_date", defaultFrom);
+        form.setValue("to_date", defaultTo);
+      }
+    }
+  }, [queryProductId, productTypes, form]);
   const { data: productGroups = [] } = useProductGroups();
 
   const createProductMutation = useCreateProductType();
@@ -414,6 +436,13 @@ const SingleItemStockReportPage = () => {
       });
   };
 
+  const product = productTypes?.find(
+    (p) =>
+      (p.product_type || p.item_name || "").toLowerCase() ===
+      selectedItem?.toLowerCase()
+  );
+  const productId = product?.id || null;
+
   const commonProps = {
     form,
     isLoading,
@@ -435,6 +464,7 @@ const SingleItemStockReportPage = () => {
     tableRef,
     formatCellValue,
     formatClosingBalanceText,
+    productId,
   };
 
   return (
