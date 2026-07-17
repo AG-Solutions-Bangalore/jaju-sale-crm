@@ -93,23 +93,23 @@ const DesktopPurchaseForm = ({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="purchase_bill_no">
-                  JFC Bill No <span className="text-xs text-red-400 ">*</span>
+                  JFC Purchase No <span className="text-xs text-red-400 ">*</span>
                 </Label>
                 <Input
                   id="purchase_bill_no"
                   {...form.register("purchase_bill_no")}
                   className="bg-white"
-                  placeholder="Enter Bill Number"
+                  placeholder="Enter JFC Purchase Number"
                   maxLength={10}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="purchase_no">Purchase No</Label>
+                <Label htmlFor="purchase_no">Supplier Bill No</Label>
                 <Input
                   id="purchase_no"
                   {...form.register("purchase_no")}
                   className="bg-white"
-                  placeholder="Purchase Number"
+                  placeholder="Supplier Bill Number"
                 />
               </div>
             </div>

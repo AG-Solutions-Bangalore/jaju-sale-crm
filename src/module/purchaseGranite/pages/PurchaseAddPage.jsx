@@ -349,7 +349,7 @@ const PurchaseAddPage = () => {
                     {formErrors.billNo && (
                       <tr className="bg-white hover:bg-gray-50">
                         <td className="px-2 py-1.5 text-gray-600 border-b border-gray-200 font-medium">
-                          JFC Bill No
+                          JFC Purchase No
                         </td>
                         <td className="px-2 py-1.5 text-red-600 border-b border-gray-200 break-all">
                           {formErrors.billNo}

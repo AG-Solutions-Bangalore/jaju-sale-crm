@@ -97,7 +97,7 @@ const MobilePurchaseView = ({
                   </span>
                 </div>
                 <div className="flex justify-center border p-1 bg-white">
-                  <span className="font-medium">Purchase No:</span>{" "}
+                  <span className="font-medium">Supplier Bill No:</span>{" "}
                   <span className="ml-1">
                     {purchaseData?.purchase?.purchase_no}
                   </span>

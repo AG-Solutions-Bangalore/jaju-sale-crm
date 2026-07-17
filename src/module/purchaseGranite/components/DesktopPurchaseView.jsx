@@ -88,7 +88,7 @@ const DesktopPurchaseView = ({
                 </span>
               </div>
               <div className="flex items-center justify-center py-2 px-3">
-                <span className="font-medium">Purchase No:</span>
+                <span className="font-medium">Supplier Bill No:</span>
                 <span className="ml-1">
                   {purchaseData?.purchase?.purchase_no}
                 </span>

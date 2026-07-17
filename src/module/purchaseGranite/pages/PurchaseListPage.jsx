@@ -99,9 +99,9 @@ const PurchaseListPage = () => {
   const columns = [
     {
       accessorKey: "purchase_bill_no",
-      id: "JFC Bill No",
-      header: "JFC Bill No",
-      cell: ({ row }) => <div>{row.getValue("JFC Bill No")}</div>,
+      id: "JFC Purchase No",
+      header: "JFC Purchase No",
+      cell: ({ row }) => <div>{row.getValue("JFC Purchase No")}</div>,
     },
     {
       accessorKey: "purchase_date",
@@ -306,7 +306,7 @@ const PurchaseListPage = () => {
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Bill No</div>
+                      <div className="text-gray-500">JFC Purchase No</div>
                       <div>{purchase.purchase_bill_no}</div>
                     </div>
                     <div>
