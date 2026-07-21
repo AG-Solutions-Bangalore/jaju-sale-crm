@@ -44,9 +44,11 @@ const StocksReportPage = () => {
   const [editingProductId, setEditingProductId] = useState(null);
 
   const formatStockValue = (value) => {
-    if (value === undefined || value === null || value === "") return "0";
+    if (value === undefined || value === null || value === "") return "-";
     const num = parseFloat(value);
-    return isNaN(num) ? value : parseFloat(num.toFixed(4));
+    if (isNaN(num)) return value;
+    if (num === 0) return "-";
+    return parseFloat(num.toFixed(4));
   };
 
   const form = useForm({

@@ -459,7 +459,7 @@ const EstimateSalesAddPage = () => {
   };
 
   const handleCancel = () => {
-    navigate("/estimate");
+    navigate("/oldestimate");
   };
 
   if (isEstimateLoading || isInitialLoading) {

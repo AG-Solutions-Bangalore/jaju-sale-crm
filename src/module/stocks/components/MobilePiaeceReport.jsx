@@ -165,54 +165,63 @@ const MobilePiaeceReport = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {stocksData?.stocks?.length ? (
-                    stocksData.stocks.map((item, index) => (
-                      <tr
-                        key={index}
-                        className={
-                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        }
-                      >
-                        <td className="border p-1 text-left">
-                          <span className="flex items-center gap-1">
-                            {item.item_name}
-                            <button
-                              type="button"
-                              onClick={() => handleEditItem(item.item_name)}
-                              className="text-gray-400 hover:text-blue-600"
+                    {(() => {
+                      const filteredStocks = (stocksData?.stocks || []).filter((item) => {
+                        const closing = (item.openpurch_pcs || 0) - (item.closesale_pcs || 0) + ((item.purch_pcs || 0) - (item.sale_pcs || 0));
+                        return closing !== 0;
+                      });
+
+                      if (!filteredStocks.length) {
+                        return (
+                          <tr>
+                            <td
+                              colSpan={5}
+                              className="border p-2 text-center text-gray-500"
                             >
-                              <Pencil className="h-3 w-3" />
-                            </button>
-                          </span>
-                        </td>
-                        <td className="border p-1 text-right">
-                          {formatStockValue(item.openpurch_pcs - item.closesale_pcs)}
-                        </td>
-                        <td className="border p-1 text-right">
-                          {formatStockValue(item.purch_pcs)}
-                        </td>
-                        <td className="border p-1 text-right">
-                          {formatStockValue(item.sale_pcs)}
-                        </td>
-                        <td className="border p-1 text-right">
-                          {formatStockValue(
-                            item.openpurch_pcs -
-                              item.closesale_pcs +
-                              (item.purch_pcs - item.sale_pcs)
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="border p-2 text-center text-gray-500"
-                      >
-                        No stock data found
-                      </td>
-                    </tr>
-                  )}
+                              No stock data found
+                            </td>
+                          </tr>
+                        );
+                      }
+
+                      return filteredStocks.map((item, index) => (
+                        <tr
+                          key={index}
+                          className={
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }
+                        >
+                          <td className="border p-1 text-left">
+                            <span className="flex items-center gap-1">
+                              {item.item_name}
+                              <button
+                                type="button"
+                                onClick={() => handleEditItem(item.item_name)}
+                                className="text-gray-400 hover:text-blue-600"
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </button>
+                            </span>
+                          </td>
+                          <td className="border p-1 text-right">
+                            {formatStockValue(item.openpurch_pcs - item.closesale_pcs)}
+                          </td>
+                          <td className="border p-1 text-right">
+                            {formatStockValue(item.purch_pcs)}
+                          </td>
+                          <td className="border p-1 text-right">
+                            {formatStockValue(item.sale_pcs)}
+                          </td>
+                          <td className="border p-1 text-right font-semibold">
+                            {formatStockValue(
+                              item.openpurch_pcs -
+                                item.closesale_pcs +
+                                (item.purch_pcs - item.sale_pcs)
+                            )}
+                          </td>
+                        </tr>
+                      ));
+                    })()}
                 </tbody>
               </table>
             </>

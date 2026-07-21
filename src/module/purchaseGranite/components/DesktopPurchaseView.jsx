@@ -74,7 +74,7 @@ const DesktopPurchaseView = ({
           <div ref={tableRef} className="overflow-x-auto print:p-4">
             <div className="text-center border-l border-t border-r p-4 space-y-1">
               <h3 className="text-2xl font-semibold">
-                JAJU'S FLOORING CONCEPTS
+                JAJU'S PURCHASE
               </h3>
             </div>
 
@@ -88,16 +88,24 @@ const DesktopPurchaseView = ({
                 </span>
               </div>
               <div className="flex items-center justify-center py-2 px-3">
-                <span className="font-medium">Supplier Bill No:</span>
+                <span className="font-medium">JFC Bill Number:</span>
                 <span className="ml-1">
-                  {purchaseData?.purchase?.purchase_no}
+                  {purchaseData?.purchase?.purchase_bill_no}
                 </span>
               </div>
             </div>
 
-            <div className="border-l border-r p-2">
-              <span className="font-semibold">Supplier:</span>{" "}
-              <span>{purchaseData?.purchase?.purchase_supplier}</span>
+            <div className="border-l border-r p-2 flex gap-4">
+              <div>
+                <span className="font-semibold">Supplier:</span>{" "}
+                <span>{purchaseData?.purchase?.purchase_supplier}</span>
+              </div>
+              {purchaseData?.purchase?.purchase_no && (
+                <div className="ml-4">
+                  <span className="font-semibold">Supplier Bill No:</span>{" "}
+                  <span>{purchaseData?.purchase?.purchase_no}</span>
+                </div>
+              )}
             </div>
 
             <Table className="border">
@@ -261,7 +269,7 @@ const DesktopPurchaseView = ({
                 )}
                 <TableRow className="font-bold">
                   <TableCell colSpan={5} className="text-right bg-white border-r border-b">
-                    Amount to be Collected
+                    Final Amount
                   </TableCell>
                   <TableCell className="text-right bg-white border-b pr-4">
                     {Number(amountToBeCollected).toFixed(0)}

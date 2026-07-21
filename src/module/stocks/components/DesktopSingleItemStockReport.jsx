@@ -270,9 +270,6 @@ const DesktopSingleItemStockReport = ({
                         <TableHead colSpan={2} className="text-center text-blue-800 font-bold bg-blue-50/50 py-1.5 border-r border-gray-200">
                           BALANCE
                         </TableHead>
-                        <TableHead rowSpan={2} className="text-center text-gray-800 font-bold align-middle w-24 print:hidden">
-                          ACTION
-                        </TableHead>
                       </TableRow>
                       <TableRow className="bg-gray-100 hover:bg-gray-100 border-b border-gray-200">
                         <TableHead className="text-right pr-6 font-bold border-r border-gray-200 py-1 w-20 text-gray-700">Piece/Box</TableHead>
@@ -323,59 +320,12 @@ const DesktopSingleItemStockReport = ({
                             <TableCell className="text-right pr-6 bg-blue-50/20 text-gray-800 font-bold py-2 border-r border-gray-200">
                               {formatCellValue(t.balance_sqft)}
                             </TableCell>
-                            <TableCell className="text-center py-1 print:hidden">
-                              {t.isOpening ? (
-                                <ProductEditDialog productId={productId} />
-                              ) : t.type === "purchase" ? (
-                                <div className="flex justify-center space-x-0.5">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => navigate(`/purchase/view/${encryptId(t.purchase_id)}`)}
-                                    className="h-6 w-6 text-blue-600 hover:text-blue-800 p-0"
-                                    type="button"
-                                  >
-                                    <Eye className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => navigate(`/purchase/edit/${encryptId(t.purchase_id)}`)}
-                                    className="h-6 w-6 text-gray-600 hover:text-gray-800 p-0"
-                                    type="button"
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              ) : t.type === "sale" ? (
-                                <div className="flex justify-center space-x-0.5">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => navigate(`/sales/view/${encryptId(t.sales_id)}`)}
-                                    className="h-6 w-6 text-blue-600 hover:text-blue-800 p-0"
-                                    type="button"
-                                  >
-                                    <Eye className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => navigate(`/sales/edit/${encryptId(t.sales_id)}`)}
-                                    className="h-6 w-6 text-gray-600 hover:text-gray-800 p-0"
-                                    type="button"
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              ) : null}
-                            </TableCell>
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
                           <td
-                            colSpan={9}
+                            colSpan={8}
                             className="text-center py-12 text-gray-500 font-medium"
                           >
                             No transaction history found for the selected criteria

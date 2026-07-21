@@ -32,16 +32,12 @@ const formSchema = z.object({
   estimate_tempo: z.string(),
   estimate_loading: z.string(),
   estimate_unloading: z.string(),
-  estimate_other_label: z.string().optional(),
   estimate_other: z.string(),
-  estimate_other1_label: z.string().optional(),
   estimate_other1: z.string(),
   estimate_gross: z.string(),
   estimate_advance: z.string(),
   estimate_balance: z.string(),
-  estimate_amount: z.string().optional(),
   estimate_temp_amount: z.string(),
-  estimate_amount_round: z.string().optional(),
 });
 
 const EstimateAddPage = () => {
@@ -52,10 +48,10 @@ const EstimateAddPage = () => {
 
   const [itemEntries, setItemEntries] = useState([
     {
+      estimate_sub_type: "",
       estimate_sub_item: "",
       estimate_sub_qnty: "",
       estimate_sub_qnty_sqr: "",
-      estimate_sub_pcs: "",
       estimate_sub_rate: "",
       estimate_sub_amount: "",
     },
@@ -80,16 +76,12 @@ const EstimateAddPage = () => {
       estimate_tempo: "",
       estimate_loading: "",
       estimate_unloading: "",
-      estimate_other_label: "",
       estimate_other: "",
-      estimate_other1_label: "",
       estimate_other1: "",
       estimate_gross: "",
       estimate_advance: "",
       estimate_balance: "",
-      estimate_amount: "",
       estimate_temp_amount: "",
-      estimate_amount_round: "",
     },
   });
 
@@ -170,10 +162,10 @@ const EstimateAddPage = () => {
     setItemEntries([
       ...itemEntries,
       {
+        estimate_sub_type: "",
         estimate_sub_item: "",
         estimate_sub_qnty: "",
         estimate_sub_qnty_sqr: "",
-        estimate_sub_pcs: "",
         estimate_sub_rate: "",
         estimate_sub_amount: "",
       },
@@ -213,6 +205,7 @@ const EstimateAddPage = () => {
     };
 
     const itemErrors = itemEntries.map((entry) => ({
+      type: !entry.estimate_sub_type ? "required" : "",
       item: !entry.estimate_sub_item ? "required" : "",
       qnty: !entry.estimate_sub_qnty
         ? "required"
@@ -224,11 +217,6 @@ const EstimateAddPage = () => {
         : isNaN(entry.estimate_sub_qnty_sqr)
         ? "Quantity (sqr) must be a number"
         : "",
-      pcs: !entry.estimate_sub_pcs
-        ? "required"
-        : isNaN(entry.estimate_sub_pcs)
-        ? "Pcs must be a number"
-        : "",
       rate: !entry.estimate_sub_rate
         ? "required"
         : isNaN(entry.estimate_sub_rate)
@@ -238,7 +226,7 @@ const EstimateAddPage = () => {
 
     const hasFormErrors = Object.values(formErrors).some((err) => err);
     const hasItemErrors = itemErrors.some(
-      (err) => err.item || err.qnty || err.qntySqr || err.pcs || err.rate
+      (err) => err.type || err.item || err.qnty || err.qntySqr || err.rate
     );
 
     return { formErrors, itemErrors, hasFormErrors, hasItemErrors };
@@ -320,16 +308,16 @@ const EstimateAddPage = () => {
                           #
                         </th>
                         <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
+                          Type
+                        </th>
+                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
                           Item
                         </th>
                         <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
-                          Qty (pcs/box)
+                          Qty
                         </th>
                         <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
                           Qty (sqr)
-                        </th>
-                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
-                          Pcs
                         </th>
                         <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
                           Rate
@@ -339,14 +327,17 @@ const EstimateAddPage = () => {
                     <tbody>
                       {itemErrors.map(
                         (error, i) =>
-                          (error.item ||
+                          (error.type ||
+                            error.item ||
                             error.qnty ||
                             error.qntySqr ||
-                            error.pcs ||
                             error.rate) && (
                             <tr key={i} className="bg-white text-gray-700">
                               <td className="px-1.5 py-1.5 text-center border-b border-gray-200 font-medium">
                                 {i + 1}
+                              </td>
+                              <td className="px-1.5 py-1.5 text-red-600 border-b border-gray-200">
+                                {error.type}
                               </td>
                               <td className="px-1.5 py-1.5 text-red-600 border-b border-gray-200">
                                 {error.item}
@@ -356,9 +347,6 @@ const EstimateAddPage = () => {
                               </td>
                               <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
                                 {error.qntySqr}
-                              </td>
-                              <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
-                                {error.pcs}
                               </td>
                               <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
                                 {error.rate}
@@ -394,7 +382,7 @@ const EstimateAddPage = () => {
 
       createMutation.mutate(payload, {
         onSuccess: () => {
-          navigate("/estimate");
+          navigate("/oldestimate");
         },
       });
     } catch (error) {
@@ -409,7 +397,7 @@ const EstimateAddPage = () => {
   };
 
   const handleCancel = () => {
-    navigate("/estimate");
+    navigate("/oldestimate");
   };
 
   const formProps = {

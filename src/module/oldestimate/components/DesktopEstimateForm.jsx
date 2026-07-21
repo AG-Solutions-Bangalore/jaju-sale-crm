@@ -45,7 +45,7 @@ const DesktopEstimateForm = ({
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <CardTitle>Add Estimate</CardTitle>
+              <CardTitle>Add Old Estimate</CardTitle>
             </div>
             <div className="text-sm font-medium">
               Estimate Ref: <span className="font-bold">{estimateRef}</span>
@@ -144,16 +144,16 @@ const DesktopEstimateForm = ({
                   <thead>
                     <tr className="border-b">
                       <th className="text-left p-2 font-medium text-sm">
+                        Type <span className="text-xs text-red-400 ">*</span>
+                      </th>
+                      <th className="text-left p-2 font-medium text-sm">
                         Item <span className="text-xs text-red-400 ">*</span>
                       </th>
                       <th className="text-left p-2 font-medium text-sm">
-                        Pcs/Box <span className="text-xs text-red-400 ">*</span>
+                        Qnty (pcs) <span className="text-xs text-red-400 ">*</span>
                       </th>
                       <th className="text-left p-2 font-medium text-sm">
-                        Sqft <span className="text-xs text-red-400 ">*</span>
-                      </th>
-                      <th className="text-left p-2 font-medium text-sm">
-                        Pcs <span className="text-xs text-red-400 ">*</span>
+                        Qnty (sqr) <span className="text-xs text-red-400 ">*</span>
                       </th>
                       <th className="text-left p-2 font-medium text-sm">
                         Rate <span className="text-xs text-red-400 ">*</span>
@@ -168,6 +168,28 @@ const DesktopEstimateForm = ({
                     {itemEntries.map((entry, index) => (
                       <tr key={index} className="border-b">
                         <td className="p-2">
+                          <SelectShadcn
+                            value={entry.estimate_sub_type}
+                            onValueChange={(value) =>
+                              handleItemChange(index, "estimate_sub_type", value)
+                            }
+                          >
+                            <SelectTrigger className="w-[8rem] bg-white">
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Item Types</SelectLabel>
+                                {typeOptions.map((type) => (
+                                  <SelectItem key={type.value} value={type.value}>
+                                    {type.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </SelectShadcn>
+                        </td>
+                        <td className="p-2">
                           <Input
                             value={entry.estimate_sub_item}
                             onChange={(e) =>
@@ -179,7 +201,7 @@ const DesktopEstimateForm = ({
                             }
                             className="h-9"
                             placeholder="Item Name"
-                            maxLength={50}
+                            maxLength={20}
                           />
                         </td>
                         <td className="p-2">
@@ -219,23 +241,6 @@ const DesktopEstimateForm = ({
                         <td className="p-2">
                           <Input
                             type="tel"
-                            value={entry.estimate_sub_pcs}
-                            onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "estimate_sub_pcs",
-                                e.target.value
-                              )
-                            }
-                            onKeyDown={handleKeyDown}
-                            className="h-9"
-                            placeholder="0"
-                            maxLength={10}
-                          />
-                        </td>
-                        <td className="p-2">
-                          <Input
-                            type="tel"
                             value={entry.estimate_sub_rate}
                             onChange={(e) =>
                               handleItemChange(
@@ -255,7 +260,7 @@ const DesktopEstimateForm = ({
                             type="tel"
                             value={entry.estimate_sub_amount}
                             disabled
-                            className="h-9 bg-gray-100 font-semibold"
+                            className="h-9 bg-gray-100"
                             placeholder="0"
                             onKeyDown={handleKeyDown}
                           />
@@ -346,54 +351,40 @@ const DesktopEstimateForm = ({
                       maxLength={10}
                     />
                   </div>
-                  {/* Other 1 */}
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="space-x-2 flex items-center justify-between gap-2">
+                    <Label htmlFor="estimate_other">Other Charges 1</Label>
                     <Input
-                      type="text"
-                      placeholder="Other Charges 1"
-                      className="flex-1 h-9 bg-white"
-                      {...form.register("estimate_other_label")}
-                    />
-                    <Input
-                      className="w-[150px] h-9 text-right shrink-0 bg-white"
+                      className="w-50"
                       id="estimate_other"
                       type="tel"
                       {...form.register("estimate_other")}
                       onChange={(e) =>
                         handleChargeChange("estimate_other", e.target.value)
                       }
-                      maxLength={10}
                       onKeyDown={handleKeyDown}
                       placeholder="0"
+                      maxLength={10}
                     />
                   </div>
-
-                  {/* Other 2 */}
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="space-x-2 flex items-center justify-between gap-2">
+                    <Label htmlFor="estimate_other1">Other Charges 2</Label>
                     <Input
-                      type="text"
-                      placeholder="Other Charges 2"
-                      className="flex-1 h-9 bg-white"
-                      {...form.register("estimate_other1_label")}
-                    />
-                    <Input
-                      className="w-[150px] h-9 text-right shrink-0 bg-white"
+                      className="w-50"
                       id="estimate_other1"
                       type="tel"
                       {...form.register("estimate_other1")}
                       onChange={(e) =>
                         handleChargeChange("estimate_other1", e.target.value)
                       }
-                      maxLength={10}
                       onKeyDown={handleKeyDown}
                       placeholder="0"
+                      maxLength={10}
                     />
                   </div>
-
                   <div className="space-x-2 flex items-center justify-between gap-2">
                     <Label htmlFor="estimate_gross">Gross Total</Label>
                     <Input
-                      className="w-50 bg-gray-100 font-semibold"
+                      className="w-50 bg-gray-100"
                       id="estimate_gross"
                       type="tel"
                       {...form.register("estimate_gross")}
@@ -418,22 +409,11 @@ const DesktopEstimateForm = ({
                   <div className="space-x-2 flex items-center justify-between gap-2">
                     <Label htmlFor="estimate_balance">Balance</Label>
                     <Input
-                      className="w-50 bg-gray-100 font-semibold"
+                      className="w-50 bg-gray-100"
                       id="estimate_balance"
                       type="tel"
                       {...form.register("estimate_balance")}
                       disabled
-                      onKeyDown={handleKeyDown}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="space-x-2 flex items-center justify-between gap-2">
-                    <Label htmlFor="estimate_amount_round">Round Off</Label>
-                    <Input
-                      className="w-50"
-                      id="estimate_amount_round"
-                      type="text"
-                      {...form.register("estimate_amount_round")}
                       onKeyDown={handleKeyDown}
                       placeholder="0"
                     />

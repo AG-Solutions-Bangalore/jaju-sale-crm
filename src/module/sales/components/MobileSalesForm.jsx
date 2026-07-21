@@ -457,7 +457,7 @@ const MobileSalesForm = ({
 
             <div>
               <Label className="font-semibold text-blue-900">
-                Amount to be Collected
+                 Final Payable
               </Label>
               <Input
                 type="text"

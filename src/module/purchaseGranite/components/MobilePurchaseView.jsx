@@ -79,7 +79,7 @@ const MobilePurchaseView = ({
             <>
               <div className="text-center border p-2 space-y-1 mb-3 text-xs bg-white">
                 <h3 className="text-sm font-semibold">
-                  JAJU'S FLOORING CONCEPTS
+                  JAJU'S PURCHASE
                 </h3>
                 <p className="text-xs">New 80 ft Sompura, Sriniwaspura Road</p>
                 <p className="text-xs">Bengaluru, Karnataka 560098</p>
@@ -97,16 +97,24 @@ const MobilePurchaseView = ({
                   </span>
                 </div>
                 <div className="flex justify-center border p-1 bg-white">
-                  <span className="font-medium">Supplier Bill No:</span>{" "}
+                  <span className="font-medium">JFC Bill Number:</span>{" "}
                   <span className="ml-1">
-                    {purchaseData?.purchase?.purchase_no}
+                    {purchaseData?.purchase?.purchase_bill_no}
                   </span>
                 </div>
               </div>
 
-              <div className="border p-2 text-xs mb-3 bg-white">
-                <span className="font-semibold">Supplier:</span>{" "}
-                <span>{purchaseData?.purchase?.purchase_supplier}</span>
+              <div className="border p-2 text-xs mb-3 bg-white flex gap-4">
+                <div>
+                  <span className="font-semibold">Supplier:</span>{" "}
+                  <span>{purchaseData?.purchase?.purchase_supplier}</span>
+                </div>
+                {purchaseData?.purchase?.purchase_no && (
+                  <div className="ml-4">
+                    <span className="font-semibold">Supplier Bill No:</span>{" "}
+                    <span>{purchaseData?.purchase?.purchase_no}</span>
+                  </div>
+                )}
               </div>
 
               <table className="w-full border-collapse text-xs mb-3">
@@ -226,7 +234,7 @@ const MobilePurchaseView = ({
                   )}
                   <tr className="font-bold">
                     <td className="border p-1 text-right">
-                      Amount to be Collected
+                      Final Amount
                     </td>
                     <td className="border p-1 text-right">
                       {Number(amountToBeCollected).toFixed(0)}

@@ -228,8 +228,51 @@ const DesktopStocksReport = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stocksData?.stocks?.length ? (
-                      stocksData.stocks.map((item, index) => (
+                    {(() => {
+                      const displayVal = (val, unit) => {
+                        const formatted = formatStockValue(val);
+                        if (formatted === "-") return "-";
+                        return `${formatted} ${unit}`;
+                      };
+
+                      if (isLoading) {
+                        return (
+                          <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                Loading stock data...
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }
+
+                      const filteredStocks = (stocksData?.stocks || []).filter((item) => {
+                        const closingPcs = (item.openpurch_pcs || 0) - (item.closesale_pcs || 0) + ((item.purch_pcs || 0) - (item.sale_pcs || 0));
+                        const closingSqr = (item.openpurch_sqr || 0) - (item.closesale_sqr || 0) + ((item.purch_sqr || 0) - (item.sale_sqr || 0));
+                        return closingPcs !== 0 || closingSqr !== 0;
+                      });
+
+                      if (!filteredStocks.length) {
+                        return (
+                          <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">
+                              <div className="space-y-2">
+                                <div className="text-lg">📋</div>
+                                <div>
+                                  No stock data found for the selected criteria
+                                </div>
+                                <div className="text-sm text-gray-400">
+                                  Try adjusting your date range
+                                </div>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }
+
+                      return filteredStocks.map((item, index) => (
                         <TableRow
                           key={index}
                           className={
@@ -256,75 +299,56 @@ const DesktopStocksReport = ({
                                     <ProductEditDialog productId={matchedProduct.id} />
                                   </div>
                                 ) : (
-                                  <span>{item.item_name}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => navigate(`/single-item-stock?item_name=${encodeURIComponent(item.item_name)}`)}
+                                    className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold"
+                                  >
+                                    {item.item_name}
+                                  </button>
                                 );
                               })()}
                             </span>
                           </TableCell>
                           <TableCell className="text-center border-r">
                             {selectedUnits.box &&
-                              `${formatStockValue(item.openpurch_pcs - item.closesale_pcs)} Pcs`}
+                              displayVal(item.openpurch_pcs - item.closesale_pcs, "Pcs")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
                               " , "}
                             {selectedUnits.sqft &&
-                              `${formatStockValue(item.openpurch_sqr - item.closesale_sqr)} Sqft`}
+                              displayVal(item.openpurch_sqr - item.closesale_sqr, "Sqft")}
                           </TableCell>
                           <TableCell className="text-center border-r">
                             {selectedUnits.box &&
-                              `${formatStockValue(item.purch_pcs)} Pcs`}
+                              displayVal(item.purch_pcs, "Pcs")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
                               " , "}
                             {selectedUnits.sqft &&
-                              `${formatStockValue(item.purch_sqr)} Sqft`}
+                              displayVal(item.purch_sqr, "Sqft")}
                           </TableCell>
                           <TableCell className="text-center border-r">
                             {selectedUnits.box &&
-                              `${formatStockValue(item.sale_pcs)} Pcs`}
+                              displayVal(item.sale_pcs, "Pcs")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
                               " , "}
                             {selectedUnits.sqft &&
-                              `${formatStockValue(item.sale_sqr)} Sqft`}
+                              displayVal(item.sale_sqr, "Sqft")}
                           </TableCell>
                           <TableCell className="text-center">
                             {selectedUnits.box &&
-                              `${formatStockValue(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs))} Pcs`}
+                              displayVal(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs), "Pcs")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
                               " , "}
                             {selectedUnits.sqft &&
-                              `${formatStockValue(item.openpurch_sqr - item.closesale_sqr + (item.purch_sqr - item.sale_sqr))} Sqft`}
+                              displayVal(item.openpurch_sqr - item.closesale_sqr + (item.purch_sqr - item.sale_sqr), "Sqft")}
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center py-12 text-gray-500"
-                        >
-                          {isLoading ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <Loader2 className="h-5 w-5 animate-spin" />
-                              Loading stock data...
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <div className="text-lg">📋</div>
-                              <div>
-                                No stock data found for the selected
-                                criteria
-                              </div>
-                              <div className="text-sm text-gray-400">
-                                Try adjusting your date range
-                              </div>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    )}
+                      ));
+                    })()}
                   </TableBody>
                 </Table>
               </div>

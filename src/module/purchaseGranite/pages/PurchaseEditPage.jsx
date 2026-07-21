@@ -635,6 +635,7 @@ const PurchaseEditPage = () => {
     isSubmitting,
     purchaseList,
     title: "Edit Purchases",
+    isEdit: true,
   };
 
   return (
