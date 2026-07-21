@@ -38,6 +38,7 @@ const MobilePurchaseForm = ({
   isSubmitting,
   purchaseList = [],
   title = "Add Purchases",
+  isEdit = false,
 }) => {
   return (
     <div className="sm:hidden">
@@ -54,7 +55,7 @@ const MobilePurchaseForm = ({
           </button>
         </div>
         <div className="bg-green-50 border border-green-100 rounded-md p-2">
-          <p className="text-xs text-green-800 font-medium">Amount to be Paid</p>
+          <p className="text-xs text-green-800 font-medium">Final Amount</p>
           <p className="text-sm font-bold text-green-900">
             {Number(amountToBePaid).toFixed(0) || 0}
           </p>
@@ -91,46 +92,48 @@ const MobilePurchaseForm = ({
               </div>
               <div>
                 <Label htmlFor="mob_purchase_bill_no">
-                  JFC Bill No <span className="text-xs text-red-400 ">*</span>
+                  JFC Purchase No <span className="text-xs text-red-400 ">*</span>
                 </Label>
                 <Input
                   id="mob_purchase_bill_no"
                   {...form.register("purchase_bill_no")}
                   className="mt-1 bg-white"
-                  placeholder="Enter Bill Number"
+                  placeholder="Enter JFC Purchase Number"
                   maxLength={10}
                 />
               </div>
               <div>
-                <Label htmlFor="mob_purchase_no">Purchase No</Label>
+                <Label htmlFor="mob_purchase_no">Supplier Bill No</Label>
                 <Input
                   id="mob_purchase_no"
                   {...form.register("purchase_no")}
                   className="mt-1 bg-white"
-                  placeholder="Purchase Number"
+                  placeholder="Supplier Bill Number"
                 />
               </div>
 
-              <div className="flex items-center space-x-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="mob_is_opening_stock"
-                  checked={form.watch("purchase_type") === "Opening Stock"}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      form.setValue("purchase_type", "Opening Stock");
-                      form.setValue("purchase_supplier", "Opening Stock");
-                    } else {
-                      form.setValue("purchase_type", "");
-                      form.setValue("purchase_supplier", "");
-                    }
-                  }}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                />
-                <Label htmlFor="mob_is_opening_stock" className="font-semibold cursor-pointer text-gray-700 text-xs">
-                  Is Opening Stock Entry (Separate sequence)
-                </Label>
-              </div>
+              {(!isEdit || form.watch("purchase_type") === "Opening Stock") && (
+                <div className="flex items-center space-x-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="mob_is_opening_stock"
+                    checked={form.watch("purchase_type") === "Opening Stock"}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        form.setValue("purchase_type", "Opening Stock");
+                        form.setValue("purchase_supplier", "Opening Stock");
+                      } else {
+                        form.setValue("purchase_type", "");
+                        form.setValue("purchase_supplier", "");
+                      }
+                    }}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <Label htmlFor="mob_is_opening_stock" className="font-semibold cursor-pointer text-gray-700 text-xs">
+                    Is Opening Stock Entry (Separate sequence)
+                  </Label>
+                </div>
+              )}
             </div>
           </div>
 
@@ -448,7 +451,7 @@ const MobilePurchaseForm = ({
             </div>
 
             <div>
-              <Label className="font-semibold text-blue-900">Amount to be Paid</Label>
+              <Label className="font-semibold text-blue-900">Final Amount</Label>
               <Input
                 type="text"
                 value={Number(amountToBePaid).toFixed(0)}
@@ -457,7 +460,7 @@ const MobilePurchaseForm = ({
               />
             </div>
 
-            <div>
+            {/* <div>
               <Label>Final Amount Paid</Label>
               <Input
                 type="tel"
@@ -467,7 +470,7 @@ const MobilePurchaseForm = ({
                 maxLength={10}
                 placeholder="0"
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Bottom buttons */}

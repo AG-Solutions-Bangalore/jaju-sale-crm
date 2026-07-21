@@ -65,12 +65,18 @@ export function AppSidebar({ ...props }) {
         icon: FileText,
         isActive: false,
       },
-      {
-        title: "PRODUCT",
-        url: "/product",
-        icon: Box,
-        isActive: false,
-      },
+      // {
+      //   title: "OLD ESTIMATE",
+      //   url: "/oldestimate",
+      //   icon: FileText,
+      //   isActive: false,
+      // },
+      // {
+      //   title: "PRODUCT",
+      //   url: "/product",
+      //   icon: Box,
+      //   isActive: false,
+      // },
       {
         title: "PURCHASE",
         url: "/purchase",

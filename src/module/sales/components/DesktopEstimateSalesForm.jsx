@@ -391,7 +391,7 @@ const DesktopEstimateSalesForm = ({
                     placeholder="0"
                   />
                 </div>
-                <div className="flex items-center justify-between gap-2">
+                {/* <div className="flex items-center justify-between gap-2">
                   <Label className="font-semibold text-blue-900">Amount to be Collected</Label>
                   <Input
                     className="w-[150px] bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
@@ -399,7 +399,7 @@ const DesktopEstimateSalesForm = ({
                     value={form.watch("sales_gross") || 0}
                     disabled
                   />
-                </div>
+                </div> */}
                 <div className="flex items-center justify-between gap-2">
                   <Label className="font-medium text-gray-700">Amount Collected</Label>
                   <Input

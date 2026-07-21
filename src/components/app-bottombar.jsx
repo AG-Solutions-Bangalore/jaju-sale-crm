@@ -30,6 +30,11 @@ export function AppBottombar() {
       icon: File,
     },
     {
+      title: "Old Estimate",
+      url: "/oldestimate",
+      icon: File,
+    },
+    {
       title: "Purchase",
       url: "/purchase",
       icon: Settings2,

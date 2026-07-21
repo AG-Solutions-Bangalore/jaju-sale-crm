@@ -25,9 +25,9 @@ const PurchaseTable = ({ purchases = [] }) => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className={ButtonConfig.tableHeader}>
+              <TableRow className={`${ButtonConfig.tableHeader} border-b`}>
                 <TableHead className={`font-semibold ${ButtonConfig.tableLabel}`}>Date</TableHead>
-                <TableHead className={`font-semibold ${ButtonConfig.tableLabel}`}>JFC Bill No</TableHead>
+                <TableHead className={`font-semibold ${ButtonConfig.tableLabel}`}>JFC Purchase No</TableHead>
                 <TableHead className={`font-semibold ${ButtonConfig.tableLabel}`}>Supplier</TableHead>
                 <TableHead className={`text-right font-semibold ${ButtonConfig.tableLabel}`}>Amount</TableHead>
               </TableRow>

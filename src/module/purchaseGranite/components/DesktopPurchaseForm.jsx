@@ -40,6 +40,7 @@ const DesktopPurchaseForm = ({
   isSubmitting,
   purchaseList = [],
   title = "Add Purchases",
+  isEdit = false,
 }) => {
   return (
     <div className="hidden sm:block">
@@ -93,47 +94,49 @@ const DesktopPurchaseForm = ({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="purchase_bill_no">
-                  JFC Bill No <span className="text-xs text-red-400 ">*</span>
+                  JFC Purchase No <span className="text-xs text-red-400 ">*</span>
                 </Label>
                 <Input
                   id="purchase_bill_no"
                   {...form.register("purchase_bill_no")}
                   className="bg-white"
-                  placeholder="Enter Bill Number"
+                  placeholder="Enter JFC Purchase Number"
                   maxLength={10}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="purchase_no">Purchase No</Label>
+                <Label htmlFor="purchase_no">Supplier Bill No</Label>
                 <Input
                   id="purchase_no"
                   {...form.register("purchase_no")}
                   className="bg-white"
-                  placeholder="Purchase Number"
+                  placeholder="Supplier Bill Number"
                 />
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg border">
-              <input
-                type="checkbox"
-                id="is_opening_stock"
-                checked={form.watch("purchase_type") === "Opening Stock"}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    form.setValue("purchase_type", "Opening Stock");
-                    form.setValue("purchase_supplier", "Opening Stock");
-                  } else {
-                    form.setValue("purchase_type", "");
-                    form.setValue("purchase_supplier", "");
-                  }
-                }}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-              />
-              <Label htmlFor="is_opening_stock" className="font-semibold cursor-pointer text-gray-700 text-xs">
-                Is Opening Stock Entry (Separate from normal Purchase sequences)
-              </Label>
-            </div>
+            {(!isEdit || form.watch("purchase_type") === "Opening Stock") && (
+              <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg border">
+                <input
+                  type="checkbox"
+                  id="is_opening_stock"
+                  checked={form.watch("purchase_type") === "Opening Stock"}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      form.setValue("purchase_type", "Opening Stock");
+                      form.setValue("purchase_supplier", "Opening Stock");
+                    } else {
+                      form.setValue("purchase_type", "");
+                      form.setValue("purchase_supplier", "");
+                    }
+                  }}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <Label htmlFor="is_opening_stock" className="font-semibold cursor-pointer text-gray-700 text-xs">
+                  Is Opening Stock Entry (Separate from normal Purchase sequences)
+                </Label>
+              </div>
+            )}
 
             {/* Items Table */}
             <div className="border rounded-lg p-3 bg-white">
@@ -478,10 +481,10 @@ const DesktopPurchaseForm = ({
                     />
                   </div>
 
-                  {/* Amount to be Paid */}
+                  {/* Final Amount */}
                   <div className="flex items-center justify-between gap-2">
                     <Label className="font-semibold text-blue-900">
-                      Amount to be Paid
+                      Final Amount
                     </Label>
                     <Input
                       className="w-[150px] bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
@@ -492,7 +495,7 @@ const DesktopPurchaseForm = ({
                   </div>
 
                   {/* Final Amount Paid */}
-                  <div className="flex items-center justify-between gap-2">
+                  {/* <div className="flex items-center justify-between gap-2">
                     <Label className="font-medium">Final Amount Paid</Label>
                     <Input
                       className="w-[150px] text-right shrink-0 bg-white"
@@ -502,7 +505,7 @@ const DesktopPurchaseForm = ({
                       maxLength={10}
                       placeholder="0"
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

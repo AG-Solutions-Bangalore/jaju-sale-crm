@@ -62,6 +62,7 @@ const SingleItemStockReportPage = () => {
   const queryProductId = searchParamsUrl.get("productId");
 
   useEffect(() => {
+    const queryItemName = searchParamsUrl.get("item_name");
     if (queryProductId && productTypes && productTypes.length > 0) {
       const match = productTypes.find((p) => String(p.id) === String(queryProductId));
       if (match) {
@@ -77,8 +78,19 @@ const SingleItemStockReportPage = () => {
         form.setValue("from_date", defaultFrom);
         form.setValue("to_date", defaultTo);
       }
+    } else if (queryItemName) {
+      setSelectedItem(queryItemName);
+      const defaultFrom = "2026-04-01";
+      const defaultTo = getTodayDate();
+      setSearchParams({
+        item_name: queryItemName,
+        from_date: defaultFrom,
+        to_date: defaultTo,
+      });
+      form.setValue("from_date", defaultFrom);
+      form.setValue("to_date", defaultTo);
     }
-  }, [queryProductId, productTypes, form]);
+  }, [queryProductId, searchParamsUrl, productTypes, form]);
   const { data: productGroups = [] } = useProductGroups();
 
   const createProductMutation = useCreateProductType();

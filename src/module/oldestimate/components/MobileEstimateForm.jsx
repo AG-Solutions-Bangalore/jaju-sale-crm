@@ -40,7 +40,7 @@ const MobileEstimateForm = ({
             className="flex items-center text-blue-800"
           >
             <ArrowLeft className="h-5 w-5 mr-1" />
-            <h1 className="text-base font-bold">Add Estimate</h1>
+            <h1 className="text-base font-bold">Add Old Estimate</h1>
           </button>
           <div className="text-sm font-medium">
             Ref: <span className="font-bold">{estimateRef}</span>
@@ -150,18 +150,42 @@ const MobileEstimateForm = ({
               >
                 <div className="grid grid-cols-12 gap-1 items-center">
                   <div className="col-span-11">
-                    <div className="mb-1">
-                      <Input
-                        value={entry.estimate_sub_item}
-                        onChange={(e) =>
-                          handleItemChange(index, "estimate_sub_item", e.target.value)
-                        }
-                        className="h-8 text-sm bg-white"
-                        placeholder="Item Name"
-                        maxLength={50}
-                      />
+                    <div className="grid grid-cols-2 gap-1 mb-1">
+                      <div className="col-span-1">
+                        <SelectShadcn
+                          value={entry.estimate_sub_type}
+                          onValueChange={(value) =>
+                            handleItemChange(index, "estimate_sub_type", value)
+                          }
+                        >
+                          <SelectTrigger className="w-full bg-white">
+                            <SelectValue placeholder="Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Item Types</SelectLabel>
+                              {typeOptions.map((type) => (
+                                <SelectItem key={type.value} value={type.value}>
+                                  {type.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </SelectShadcn>
+                      </div>
+                      <div className="col-span-1">
+                        <Input
+                          value={entry.estimate_sub_item}
+                          onChange={(e) =>
+                            handleItemChange(index, "estimate_sub_item", e.target.value)
+                          }
+                          className="h-8 text-sm bg-white"
+                          placeholder="Item Name"
+                          maxLength={20}
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-1">
+                    <div className="grid grid-cols-3 gap-1">
                       <div>
                         <Input
                           type="tel"
@@ -170,8 +194,8 @@ const MobileEstimateForm = ({
                             handleItemChange(index, "estimate_sub_qnty", e.target.value)
                           }
                           onKeyDown={handleKeyDown}
-                          className="h-8 text-sm bg-white px-1 text-center"
-                          placeholder="Pcs/Box"
+                          className="h-8 text-sm bg-white"
+                          placeholder="Qnty (pcs)"
                           maxLength={10}
                         />
                       </div>
@@ -187,25 +211,8 @@ const MobileEstimateForm = ({
                             )
                           }
                           onKeyDown={handleKeyDown}
-                          className="h-8 text-sm bg-white px-1 text-center"
-                          placeholder="Sqft"
-                          maxLength={10}
-                        />
-                      </div>
-                      <div>
-                        <Input
-                          type="tel"
-                          value={entry.estimate_sub_pcs}
-                          onChange={(e) =>
-                            handleItemChange(
-                              index,
-                              "estimate_sub_pcs",
-                              e.target.value
-                            )
-                          }
-                          onKeyDown={handleKeyDown}
-                          className="h-8 text-sm bg-white px-1 text-center"
-                          placeholder="Pcs"
+                          className="h-8 text-sm bg-white"
+                          placeholder="Qnty (sqr)"
                           maxLength={10}
                         />
                       </div>
@@ -217,7 +224,7 @@ const MobileEstimateForm = ({
                             handleItemChange(index, "estimate_sub_rate", e.target.value)
                           }
                           onKeyDown={handleKeyDown}
-                          className="h-8 text-sm bg-white px-1 text-center"
+                          className="h-8 text-sm bg-white"
                           placeholder="Rate"
                           maxLength={10}
                         />
@@ -229,7 +236,7 @@ const MobileEstimateForm = ({
                         value={entry.estimate_sub_amount}
                         disabled
                         onKeyDown={handleKeyDown}
-                        className="h-8 text-sm bg-gray-100 font-semibold"
+                        className="h-8 text-sm bg-gray-100"
                         placeholder="Amount"
                       />
                     </div>
@@ -308,14 +315,7 @@ const MobileEstimateForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="mob_estimate_other_label">Other Charges 1 Label</Label>
-                <Input
-                  id="mob_estimate_other_label"
-                  type="text"
-                  placeholder="Other Charges 1"
-                  className="mt-1"
-                  {...form.register("estimate_other_label")}
-                />
+                <Label htmlFor="mob_estimate_other">Other Charges 1</Label>
                 <Input
                   id="mob_estimate_other"
                   type="tel"
@@ -324,20 +324,12 @@ const MobileEstimateForm = ({
                     handleChargeChange("estimate_other", e.target.value)
                   }
                   onKeyDown={handleKeyDown}
-                  className="mt-1 text-right"
+                  className="mt-1"
                   maxLength={10}
-                  placeholder="0"
                 />
               </div>
               <div>
-                <Label htmlFor="mob_estimate_other1_label">Other Charges 2 Label</Label>
-                <Input
-                  id="mob_estimate_other1_label"
-                  type="text"
-                  placeholder="Other Charges 2"
-                  className="mt-1"
-                  {...form.register("estimate_other1_label")}
-                />
+                <Label htmlFor="mob_estimate_other1">Other Charges 2</Label>
                 <Input
                   id="mob_estimate_other1"
                   type="tel"
@@ -346,9 +338,8 @@ const MobileEstimateForm = ({
                     handleChargeChange("estimate_other1", e.target.value)
                   }
                   onKeyDown={handleKeyDown}
-                  className="mt-1 text-right"
+                  className="mt-1"
                   maxLength={10}
-                  placeholder="0"
                 />
               </div>
             </div>
@@ -366,7 +357,7 @@ const MobileEstimateForm = ({
                   {...form.register("estimate_gross")}
                   disabled
                   onKeyDown={handleKeyDown}
-                  className="mt-1 bg-gray-100 font-semibold"
+                  className="mt-1 bg-gray-100"
                 />
               </div>
               <div>
@@ -389,18 +380,7 @@ const MobileEstimateForm = ({
                   {...form.register("estimate_balance")}
                   disabled
                   onKeyDown={handleKeyDown}
-                  className="mt-1 bg-gray-100 font-semibold"
-                />
-              </div>
-              <div>
-                <Label htmlFor="mob_estimate_amount_round">Round Off</Label>
-                <Input
-                  id="mob_estimate_amount_round"
-                  type="text"
-                  {...form.register("estimate_amount_round")}
-                  onKeyDown={handleKeyDown}
-                  className="mt-1"
-                  placeholder="0"
+                  className="mt-1 bg-gray-100"
                 />
               </div>
               <div>
@@ -410,7 +390,7 @@ const MobileEstimateForm = ({
                   type="tel"
                   {...form.register("estimate_temp_amount")}
                   onKeyDown={handleKeyDown}
-                  className="mt-1 font-semibold"
+                  className="mt-1"
                 />
               </div>
             </div>

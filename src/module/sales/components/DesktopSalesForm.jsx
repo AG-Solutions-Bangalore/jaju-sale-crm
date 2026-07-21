@@ -483,7 +483,7 @@ const DesktopSalesForm = ({
                 {/* Amount to be Collected */}
                 <div className="flex items-center justify-between gap-2">
                   <Label className="font-semibold text-blue-900">
-                    Amount to be Collected
+                    Final Payable
                   </Label>
                   <Input
                     className="w-[150px] bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
@@ -494,7 +494,7 @@ const DesktopSalesForm = ({
                 </div>
 
                 {/* Amount Collected */}
-                <div className="flex items-center justify-between gap-2">
+                {/* <div className="flex items-center justify-between gap-2">
                   <Label className="font-medium">Amount Collected</Label>
                   <Input
                     className="w-[150px] text-right shrink-0 bg-white"
@@ -505,7 +505,7 @@ const DesktopSalesForm = ({
                     maxLength={10}
                     placeholder="0"
                   />
-                </div>
+                </div> */}
               </div>
             </div>
 

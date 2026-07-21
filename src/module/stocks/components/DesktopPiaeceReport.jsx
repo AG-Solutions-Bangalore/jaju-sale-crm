@@ -197,8 +197,44 @@ const DesktopPiaeceReport = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stocksData?.stocks?.length ? (
-                      stocksData.stocks.map((item, index) => (
+                    {(() => {
+                      if (isLoading) {
+                        return (
+                          <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                Loading stock data...
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }
+
+                      const filteredStocks = (stocksData?.stocks || []).filter((item) => {
+                        const closing = (item.openpurch_pcs || 0) - (item.closesale_pcs || 0) + ((item.purch_pcs || 0) - (item.sale_pcs || 0));
+                        return closing !== 0;
+                      });
+
+                      if (!filteredStocks.length) {
+                        return (
+                          <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">
+                              <div className="space-y-2">
+                                <div className="text-lg">📋</div>
+                                <div>
+                                  No stock data found for the selected criteria
+                                </div>
+                                <div className="text-sm text-gray-400">
+                                  Try adjusting your date range
+                                </div>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }
+
+                      return filteredStocks.map((item, index) => (
                         <TableRow
                           key={index}
                           className={
@@ -217,18 +253,18 @@ const DesktopPiaeceReport = ({
                               </button>
                             </span>
                           </TableCell>
-                          <TableCell className="text-center border-r">
+                          <TableCell className="text-center border-r font-medium">
                             {formatStockValue(
                               item.openpurch_pcs - item.closesale_pcs
                             )}
                           </TableCell>
-                          <TableCell className="text-center border-r">
+                          <TableCell className="text-center border-r font-medium">
                             {formatStockValue(item.purch_pcs)}
                           </TableCell>
-                          <TableCell className="text-center border-r">
+                          <TableCell className="text-center border-r font-medium">
                             {formatStockValue(item.sale_pcs)}
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center font-bold text-blue-900">
                             {formatStockValue(
                               item.openpurch_pcs -
                                 item.closesale_pcs +
@@ -236,32 +272,8 @@ const DesktopPiaeceReport = ({
                             )}
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center py-12 text-gray-500"
-                        >
-                          {isLoading ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <Loader2 className="h-5 w-5 animate-spin" />
-                              Loading stock data...
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <div className="text-lg">📋</div>
-                              <div>
-                                No stock data found for the selected criteria
-                              </div>
-                              <div className="text-sm text-gray-400">
-                                Try adjusting your date range
-                              </div>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    )}
+                      ));
+                    })()}
                   </TableBody>
                 </Table>
               </div>

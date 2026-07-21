@@ -6,14 +6,17 @@ import Maintenance from "@/components/common/Maintenance";
 import ProtectedRoute from "./ProtectedRoute";
 
 import NotFound from "@/app/errors/NotFound";
+import OldEstimateList from "@/app/oldestimate/EstimateList";
 import EstimateList from "@/app/estimate/EstimateList";
 import StocksReport from "@/app/stocks/StocksReport";
 import SalesList from "@/app/sales/SalesList";
 import PurchaseGraniteList from "@/app/purchaseGranite/PurchaseGraniteList";
 import ProductList from "@/app/product/ProductList";
+import OldEstimateView from "@/app/oldestimate/EstimateView";
 import EstimateView from "@/app/estimate/EstimateView";
 import PurchaseGraniteView from "@/app/purchaseGranite/PurchaseGraniteView";
 import SalesView from "@/app/sales/SalesView";
+import OldEstimateAdd from "@/app/oldestimate/EstimateAdd";
 import EstimateAdd from "@/app/estimate/EstimateAdd";
 import ProductAdd from "@/app/product/ProductAdd";
 import ProductEdit from "@/app/product/ProductEdit";
@@ -37,11 +40,17 @@ function AppRoutes() {
       </Route>
 
       <Route path="/" element={<ProtectedRoute />}>
-        <Route path="/home" element={<Navigate to="/sale-dashboard" replace />} />
+        <Route
+          path="/home"
+          element={<Navigate to="/sale-dashboard" replace />}
+        />
+        <Route path="/oldestimate" element={<OldEstimateList />} />
+        <Route path="/oldestimate/create" element={<OldEstimateAdd />} />
+        <Route path="/oldestimate/view/:id" element={<OldEstimateView />} />
         <Route path="/estimate" element={<EstimateList />} />
-        <Route path="/sale-dashboard" element={<SaleDashboard />} />
         <Route path="/estimate/create" element={<EstimateAdd />} />
         <Route path="/estimate/view/:id" element={<EstimateView />} />
+        <Route path="/sale-dashboard" element={<SaleDashboard />} />
         <Route path="/stocks-piece" element={<PiaeceReport />} />
         <Route path="/product" element={<ProductList />} />
         <Route path="/product/create" element={<ProductAdd />} />

@@ -169,67 +169,82 @@ const MobileStocksReport = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {stocksData?.stocks?.length ? (
-                    stocksData.stocks.map((item, index) => (
-                      <tr
-                        key={index}
-                        className={
-                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        }
-                      >
-                        <td className="border p-1 text-left">
-                          <span className="flex items-center gap-1">
-                            {(() => {
-                              const matchedProduct = productTypes?.find(
-                                (p) =>
-                                  (p.product_type || p.item_name || "").toLowerCase() ===
-                                  item.item_name?.toLowerCase()
-                              );
-                              return matchedProduct ? (
-                                <div className="flex items-center gap-1.5">
+                    {(() => {
+                      const filteredStocks = (stocksData?.stocks || []).filter((item) => {
+                        const closing = (item.openpurch || 0) - (item.closesale || 0) + ((item.purch || 0) - (item.sale || 0));
+                        return closing !== 0;
+                      });
+
+                      if (!filteredStocks.length) {
+                        return (
+                          <tr>
+                            <td
+                              colSpan={5}
+                              className="border p-2 text-center text-gray-500"
+                            >
+                              No stock data found
+                            </td>
+                          </tr>
+                        );
+                      }
+
+                      return filteredStocks.map((item, index) => (
+                        <tr
+                          key={index}
+                          className={
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }
+                        >
+                          <td className="border p-1 text-left">
+                            <span className="flex items-center gap-1">
+                              {(() => {
+                                const matchedProduct = productTypes?.find(
+                                  (p) =>
+                                    (p.product_type || p.item_name || "").toLowerCase() ===
+                                    item.item_name?.toLowerCase()
+                                );
+                                return matchedProduct ? (
+                                  <div className="flex items-center gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/single-item-stock?productId=${matchedProduct.id}`)}
+                                      className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold"
+                                    >
+                                      {item.item_name}
+                                    </button>
+                                    <ProductEditDialog productId={matchedProduct.id} />
+                                  </div>
+                                ) : (
                                   <button
                                     type="button"
-                                    onClick={() => navigate(`/single-item-stock?productId=${matchedProduct.id}`)}
-                                    className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold"
+                                    onClick={() => navigate(`/single-item-stock?item_name=${encodeURIComponent(item.item_name)}`)}
+                                    className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold text-xs"
                                   >
                                     {item.item_name}
                                   </button>
-                                  <ProductEditDialog productId={matchedProduct.id} />
-                                </div>
-                              ) : (
-                                <span>{item.item_name}</span>
-                              );
-                            })()}
-                          </span>
-                        </td>
-                        <td className="border p-1 text-right">
-                          {formatStockValue(item.openpurch - item.closesale)}
-                        </td>
-                        <td className="border p-1 text-right">
-                          {formatStockValue(item.purch)}
-                        </td>
-                        <td className="border p-1 text-right">
-                          {formatStockValue(item.sale)}
-                        </td>
-                        <td className="border p-1 text-right">
-                          {formatStockValue(
-                            item.openpurch -
-                              item.closesale +
-                              (item.purch - item.sale)
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="border p-2 text-center text-gray-500"
-                      >
-                        No stock data found
-                      </td>
-                    </tr>
-                  )}
+                                );
+                              })()}
+                            </span>
+                          </td>
+                          <td className="border p-1 text-right">
+                            {formatStockValue(item.openpurch - item.closesale)}
+                          </td>
+                          <td className="border p-1 text-right">
+                            {formatStockValue(item.purch)}
+                          </td>
+                          <td className="border p-1 text-right">
+                            {formatStockValue(item.sale)}
+                          </td>
+                          <td className="border p-1 text-right font-semibold">
+                            {formatStockValue(
+                              item.openpurch -
+                                item.closesale +
+                                (item.purch - item.sale)
+                            )}
+                          </td>
+                        </tr>
+                      ));
+                    })()}
                 </tbody>
               </table>
             </>

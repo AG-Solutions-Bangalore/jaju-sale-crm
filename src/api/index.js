@@ -81,7 +81,7 @@ export const ROUTES = {
   PURCHASE_TILES_VIEW: (id) => `/purchase-tiles/view/${encryptId(id)}`,
   SALES_EDIT: (id) => `/sales/edit/${encryptId(id)}`,
   SALES_VIEW: (id) => `/sales/view/${encryptId(id)}`,
-  ESTIMATE_VIEW: (id) => `/estimate/view/${encryptId(id)}`,
+  ESTIMATE_VIEW: (id) => `/oldestimate/view/${encryptId(id)}`,
 };
 
 // product 

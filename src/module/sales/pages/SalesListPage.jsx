@@ -59,17 +59,7 @@ const SalesListPage = () => {
   };
 
   const sortedSales = React.useMemo(() => {
-    if (!sales) return [];
-    return [...sales].sort((a, b) => {
-      const numA = parseBillNumber(a.sales_no);
-      const numB = parseBillNumber(b.sales_no);
-      if (numA !== numB) {
-        return numA - numB;
-      }
-      const dateA = new Date(a.sales_date || 0);
-      const dateB = new Date(b.sales_date || 0);
-      return dateA - dateB;
-    });
+    return sales || [];
   }, [sales]);
 
   const filteredSales = React.useMemo(() => {
@@ -79,7 +69,9 @@ const SalesListPage = () => {
         sale.sales_customer
           ?.toLowerCase()
           .includes(searchQuery.toLowerCase()) ||
-        sale.sales_no?.toLowerCase().includes(searchQuery.toLowerCase())
+        String(sale.sales_no || "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
       );
     });
   }, [sortedSales, searchQuery]);
@@ -114,9 +106,9 @@ const SalesListPage = () => {
     },
     {
       accessorKey: "sales_gross",
-      id: "Gross",
-      header: "Gross",
-      cell: ({ row }) => <div>{row.getValue("Gross")}</div>,
+      id: "Final Amount",
+      header: "Final Amount",
+      cell: ({ row }) => <div>{row.getValue("Final Amount")}</div>,
     },
     {
       id: "actions",
