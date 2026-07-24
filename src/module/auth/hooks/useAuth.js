@@ -11,16 +11,19 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: loginApi,
     onSuccess: (res) => {
-      if (!res.data.UserInfo?.token) {
+      const responseData = res.data;
+      const token = responseData?.data?.token || responseData?.token || responseData?.UserInfo?.token;
+      const user = responseData?.data?.user || responseData?.user || responseData?.UserInfo?.user;
+
+      if (!token) {
         toast({
           variant: "destructive",
           title: "Login Failed",
-          description: "No token received.",
+          description: responseData?.message || "No token received.",
         });
         return;
       }
 
-      const { UserInfo } = res.data;
       const isProduction = window.location.protocol === "https:";
       const cookieOptions = {
         expires: 7,
@@ -28,11 +31,16 @@ export const useLogin = () => {
         sameSite: "Strict",
       };
 
-      Cookies.set("token", UserInfo.token, cookieOptions);
-      Cookies.set("id", UserInfo.user.id, cookieOptions);
-      Cookies.set("name", UserInfo.user.name, cookieOptions);
-      Cookies.set("userType", UserInfo.user.user_type_id, cookieOptions);
-      Cookies.set("email", UserInfo.user.email, cookieOptions);
+      Cookies.set("token", token, cookieOptions);
+      if (user?.id) Cookies.set("id", user.id, cookieOptions);
+      if (user?.name) Cookies.set("name", user.name, cookieOptions);
+      if (user?.user_type || user?.user_type_id) Cookies.set("userType", user.user_type || user.user_type_id, cookieOptions);
+      if (user?.email) Cookies.set("email", user.email, cookieOptions);
+
+      toast({
+        title: "Success",
+        description: responseData?.message || "Successfully logged in.",
+      });
 
       navigate("/sale-dashboard");
     },

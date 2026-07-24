@@ -39,7 +39,7 @@ const PurchaseTable = ({ purchases = [] }) => {
                   <TableCell className="py-3 font-semibold text-gray-700">{purchase.purchase_bill_no || "N/A"}</TableCell>
                   <TableCell className="py-3 font-medium text-gray-900">{purchase.purchase_supplier || "N/A"}</TableCell>
                   <TableCell className="py-3 text-right font-semibold text-orange-600">
-                    {formatCurrency(parseFloat(purchase.purchase_amount) || 0)}
+                    {formatCurrency(parseFloat(purchase.purchase_amount_received) || 0)}
                   </TableCell>
                 </TableRow>
               ))}

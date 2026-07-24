@@ -41,6 +41,7 @@ const DesktopSalesForm = ({
   handleToggleCustomItem,
   isSubmitting,
   title = "Add Sales",
+  setSaveAction,
 }) => {
   return (
     <div className="hidden sm:block">
@@ -72,7 +73,7 @@ const DesktopSalesForm = ({
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 bg-blue-50 p-3 rounded-lg">
               <div className="space-y-2">
                 <Label htmlFor="sales_no">
-                  JFC Bill No <span className="text-xs text-red-400 ">*</span>
+                  JFC Bill No. <span className="text-xs text-red-400 ">*</span>
                 </Label>
                 <Input
                   id="sales_no"
@@ -105,7 +106,10 @@ const DesktopSalesForm = ({
                   placeholder="Enter Customer Name"
                   maxLength={50}
                   onChange={(e) => {
-                    form.setValue("sales_customer", e.target.value.toUpperCase());
+                    form.setValue(
+                      "sales_customer",
+                      e.target.value.toUpperCase(),
+                    );
                   }}
                 />
               </div>
@@ -132,7 +136,10 @@ const DesktopSalesForm = ({
                   placeholder="Enter Address"
                   maxLength={200}
                   onChange={(e) => {
-                    form.setValue("sales_address", e.target.value.toUpperCase());
+                    form.setValue(
+                      "sales_address",
+                      e.target.value.toUpperCase(),
+                    );
                   }}
                   rows={2}
                 />
@@ -149,19 +156,20 @@ const DesktopSalesForm = ({
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-2 font-medium text-sm w-[200px] min-w-[160px]">
+                      <th className="text-left p-2 font-medium text-sm w-[180px] min-w-[140px]">
                         Item <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[90px] min-w-[80px]">
+                      <th className="text-right p-2 font-medium text-sm w-[90px] min-w-[80px]">
                         Qnty (pcs/box)
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[90px] min-w-[80px]">
-                        Qnty (sqft) <span className="text-xs text-red-400 ">*</span>
+                      <th className="text-right p-2 font-medium text-sm w-[90px] min-w-[80px]">
+                        Qnty (sqft){" "}
+                        <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[90px] min-w-[80px]">
+                      <th className="text-right p-2 font-medium text-sm w-[90px] min-w-[80px]">
                         Rate <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[110px] min-w-[90px]">
+                      <th className="text-right p-2 font-medium text-sm w-[110px] min-w-[90px]">
                         Amount <span className="text-xs text-red-400 ">*</span>
                       </th>
                       <th className="text-left p-2 font-medium text-sm w-[50px]"></th>
@@ -182,7 +190,7 @@ const DesktopSalesForm = ({
                                   onChange={(e) =>
                                     handleCustomItemChange(
                                       index,
-                                      e.target.value.toUpperCase()
+                                      e.target.value.toUpperCase(),
                                     )
                                   }
                                 />
@@ -202,7 +210,11 @@ const DesktopSalesForm = ({
                                   <MemoizedProductSelect
                                     value={entry.sales_sub_item}
                                     onChange={(value) =>
-                                      handleItemChange(index, "sales_sub_item", value)
+                                      handleItemChange(
+                                        index,
+                                        "sales_sub_item",
+                                        value,
+                                      )
                                     }
                                     options={productOptions}
                                     placeholder="Select item"
@@ -224,9 +236,15 @@ const DesktopSalesForm = ({
                         <td className="p-2">
                           <Input
                             type="tel"
-                            value={entry.sales_sub_qnty || entry.sales_sub_pcs || ""}
+                            value={
+                              entry.sales_sub_qnty || entry.sales_sub_pcs || ""
+                            }
                             onChange={(e) =>
-                              handleItemChange(index, "sales_sub_qnty", e.target.value)
+                              handleItemChange(
+                                index,
+                                "sales_sub_qnty",
+                                e.target.value,
+                              )
                             }
                             maxLength={10}
                             onKeyDown={handleKeyDown}
@@ -242,7 +260,7 @@ const DesktopSalesForm = ({
                               handleItemChange(
                                 index,
                                 "sales_sub_qnty_sqr",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             maxLength={10}
@@ -256,7 +274,11 @@ const DesktopSalesForm = ({
                             type="tel"
                             value={entry.sales_sub_rate || ""}
                             onChange={(e) =>
-                              handleItemChange(index, "sales_sub_rate", e.target.value)
+                              handleItemChange(
+                                index,
+                                "sales_sub_rate",
+                                e.target.value,
+                              )
                             }
                             maxLength={10}
                             onKeyDown={handleKeyDown}
@@ -269,7 +291,7 @@ const DesktopSalesForm = ({
                             type="tel"
                             value={entry.sales_sub_amount || ""}
                             disabled
-                            className="h-9 bg-gray-100 text-right"
+                            className="h-9 bg-gray-100 text-right font-semibold"
                             placeholder="0"
                             onKeyDown={handleKeyDown}
                           />
@@ -308,12 +330,16 @@ const DesktopSalesForm = ({
             {/* Charges and Totals */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div></div>
-              <div className="border ml-20 rounded-lg p-3 bg-white space-y-2">
+              <div className="border rounded-lg p-3 bg-white space-y-2">
                 {/* Tempo Charges */}
-                <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="sales_tempo">Tempo Charges</Label>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
+                    <Label className="font-medium" htmlFor="sales_tempo">
+                      Tempo Charges
+                    </Label>
+                  </div>
                   <Input
-                    className="w-[150px] text-right shrink-0 bg-white"
+                    className="w-[220px] text-right shrink-0 bg-white"
                     id="sales_tempo"
                     type="tel"
                     {...form.register("sales_tempo")}
@@ -327,9 +353,11 @@ const DesktopSalesForm = ({
                 </div>
 
                 {/* Labour Charges */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-1">
-                    <Label className="font-medium shrink-0">Labour Charges</Label>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center justify-between gap-2">
+                    <Label className="font-medium shrink-0 w-28">
+                      Labour Charges
+                    </Label>
                     <SelectShadcn
                       value={loadingType}
                       onValueChange={(val) => {
@@ -342,11 +370,13 @@ const DesktopSalesForm = ({
                         calculateAndSetTotals(itemEntries);
                       }}
                     >
-                      <SelectTrigger className="h-9 w-full min-w-[120px] bg-white">
+                      <SelectTrigger className="h-9 w-[180px] bg-white">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Loading Only">Loading Only</SelectItem>
+                        <SelectItem value="Loading Only">
+                          Loading Only
+                        </SelectItem>
                         <SelectItem value="Loading & Unloading">
                           Loading & Unloading
                         </SelectItem>
@@ -354,7 +384,7 @@ const DesktopSalesForm = ({
                     </SelectShadcn>
                   </div>
                   <Input
-                    className="w-[150px] h-9 text-right shrink-0 bg-white"
+                    className="w-[220px] h-9 text-right shrink-0 bg-white"
                     id={
                       loadingType === "Loading Only"
                         ? "sales_loading"
@@ -365,7 +395,7 @@ const DesktopSalesForm = ({
                       form.watch(
                         loadingType === "Loading Only"
                           ? "sales_loading"
-                          : "sales_unloading"
+                          : "sales_unloading",
                       ) || ""
                     }
                     onChange={(e) => {
@@ -373,7 +403,7 @@ const DesktopSalesForm = ({
                         loadingType === "Loading Only"
                           ? "sales_loading"
                           : "sales_unloading",
-                        e.target.value
+                        e.target.value,
                       );
                     }}
                     maxLength={10}
@@ -383,15 +413,17 @@ const DesktopSalesForm = ({
                 </div>
 
                 {/* Other 1 */}
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0">
+                    <Input
+                      type="text"
+                      placeholder="Other 1"
+                      className="w-full h-9 bg-white"
+                      {...form.register("sales_other_label")}
+                    />
+                  </div>
                   <Input
-                    type="text"
-                    placeholder="Other 1"
-                    className="flex-1 h-9 bg-white"
-                    {...form.register("sales_other_label")}
-                  />
-                  <Input
-                    className="w-[150px] h-9 text-right shrink-0 bg-white"
+                    className="w-[220px] h-9 text-right shrink-0 bg-white"
                     id="sales_other"
                     type="tel"
                     {...form.register("sales_other")}
@@ -405,15 +437,17 @@ const DesktopSalesForm = ({
                 </div>
 
                 {/* Other 2 */}
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0">
+                    <Input
+                      type="text"
+                      placeholder="Other 2"
+                      className="w-full h-9 bg-white"
+                      {...form.register("sales_other1_label")}
+                    />
+                  </div>
                   <Input
-                    type="text"
-                    placeholder="Other 2"
-                    className="flex-1 h-9 bg-white"
-                    {...form.register("sales_other1_label")}
-                  />
-                  <Input
-                    className="w-[150px] h-9 text-right shrink-0 bg-white"
+                    className="w-[220px] h-9 text-right shrink-0 bg-white"
                     id="sales_other1"
                     type="tel"
                     {...form.register("sales_other1")}
@@ -427,10 +461,12 @@ const DesktopSalesForm = ({
                 </div>
 
                 {/* Gross Total */}
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="font-medium">Gross Total</Label>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
+                    <Label className="font-medium">Gross Total</Label>
+                  </div>
                   <Input
-                    className="w-[150px] bg-gray-100 font-medium text-right shrink-0"
+                    className="w-[220px] bg-gray-100 font-medium text-right shrink-0"
                     type="text"
                     value={Number(displayGrandTotal).toFixed(0)}
                     disabled
@@ -438,15 +474,17 @@ const DesktopSalesForm = ({
                 </div>
 
                 {/* Tax Amount */}
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="font-medium">
-                    Tax Amount{" "}
-                    <Label className="font-medium text-xs text-gray-500">
-                      (GST @ 18% = {Number(autoGst18).toFixed(2)})
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
+                    <Label className="font-medium">
+                      Tax{" "}
+                      <span className="font-medium text-xs text-gray-500">
+                        (GST 18% = {Number(autoGst18).toFixed(0)})
+                      </span>
                     </Label>
-                  </Label>
+                  </div>
                   <Input
-                    className="w-[150px] text-right shrink-0 bg-white"
+                    className="w-[220px] text-right shrink-0 bg-white"
                     type="tel"
                     {...form.register("sales_tax")}
                     onChange={handleTaxChange}
@@ -455,10 +493,12 @@ const DesktopSalesForm = ({
                 </div>
 
                 {/* Net Total */}
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="font-medium">Net Total</Label>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
+                    <Label className="font-medium">Net Total</Label>
+                  </div>
                   <Input
-                    className="w-[150px] text-right font-medium shrink-0 bg-gray-100"
+                    className="w-[220px] text-right font-medium shrink-0 bg-gray-100"
                     type="tel"
                     {...form.register("sales_temp_amount")}
                     onKeyDown={handleKeyDown}
@@ -469,10 +509,12 @@ const DesktopSalesForm = ({
                 </div>
 
                 {/* Round Off */}
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="font-medium">Round Off</Label>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
+                    <Label className="font-medium">Round Off</Label>
+                  </div>
                   <Input
-                    className="w-[150px] text-right font-medium bg-white border border-gray-200 shrink-0"
+                    className="w-[220px] text-right font-medium bg-white border border-gray-200 shrink-0"
                     type="text"
                     {...form.register("sales_amount_round")}
                     onChange={handleRoundOffChange}
@@ -481,18 +523,19 @@ const DesktopSalesForm = ({
                 </div>
 
                 {/* Amount to be Collected */}
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="font-semibold text-blue-900">
-                    Final Payable
-                  </Label>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
+                    <Label className="font-semibold text-blue-900">
+                      Final Payable
+                    </Label>
+                  </div>
                   <Input
-                    className="w-[150px] bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
+                    className="w-[220px] bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
                     type="text"
                     value={Number(amountToBeCollected).toFixed(0)}
                     disabled
                   />
                 </div>
-
                 {/* Amount Collected */}
                 {/* <div className="flex items-center justify-between gap-2">
                   <Label className="font-medium">Amount Collected</Label>
@@ -522,15 +565,26 @@ const DesktopSalesForm = ({
               <Button
                 type="button"
                 variant="outline"
+                disabled={isSubmitting}
                 onClick={() => {
-                  const formElement = document.getElementById("sales-form");
-                  if (formElement) {
-                    formElement.requestSubmit();
-                  }
+                  setSaveAction("print");
+                  document.getElementById("sales-form")?.requestSubmit();
                 }}
-                className="border-gray-300 bg-blue-600 hover:bg-blue-700 text-white hover:text-white"
+                className="border-gray-300 bg-green-600 hover:bg-green-700 text-white hover:text-white disabled:bg-gray-400"
               >
-                Save and Close
+                {isSubmitting ? "Saving..." : "Save & Print"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setSaveAction("exit");
+                  document.getElementById("sales-form")?.requestSubmit();
+                }}
+                className="border-gray-300 bg-blue-600 hover:bg-blue-700 text-white hover:text-white disabled:bg-gray-400"
+              >
+                {isSubmitting ? "Saving..." : "Save & Exit"}
               </Button>
             </div>
           </form>

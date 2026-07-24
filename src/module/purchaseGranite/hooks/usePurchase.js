@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchPurchaseList,
+  fetchPurchaseReport,
   fetchCurrentYear,
   fetchProductTypeGroupNew,
   fetchProductTypeGroup,
@@ -8,6 +9,7 @@ import {
   fetchPurchaseById,
   deletePurchaseSubItem,
   updatePurchase,
+  deletePurchase,
 } from "../api/purchase";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,7 +18,29 @@ export const usePurchaseList = () => {
     queryKey: ["purchaseGranite"],
     queryFn: async () => {
       const response = await fetchPurchaseList();
-      return response.data.purchase || [];
+      const rawData = response?.data;
+      if (Array.isArray(rawData?.data?.data)) return rawData.data.data;
+      if (Array.isArray(rawData?.purchase)) return rawData.purchase;
+      if (Array.isArray(rawData?.purchases)) return rawData.purchases;
+      if (Array.isArray(rawData?.data)) return rawData.data;
+      if (Array.isArray(rawData)) return rawData;
+      return [];
+    },
+  });
+};
+
+export const usePurchaseReport = (fromDate, toDate) => {
+  return useQuery({
+    queryKey: ["purchaseReport", fromDate, toDate],
+    queryFn: async () => {
+      const response = await fetchPurchaseReport({ from_date: fromDate, to_date: toDate });
+      const rawData = response?.data;
+      if (Array.isArray(rawData?.data?.data)) return rawData.data.data;
+      if (Array.isArray(rawData?.purchase)) return rawData.purchase;
+      if (Array.isArray(rawData?.purchases)) return rawData.purchases;
+      if (Array.isArray(rawData?.data)) return rawData.data;
+      if (Array.isArray(rawData)) return rawData;
+      return [];
     },
   });
 };
@@ -133,6 +157,30 @@ export const useUpdatePurchase = (id) => {
         title: "Error",
         description:
           error.response?.data?.message || "Failed to update Purchase",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDeletePurchase = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deletePurchase,
+    onSuccess: (data) => {
+      toast({
+        title: "Deleted",
+        description: data?.data?.msg || "Purchase deleted successfully",
+      });
+      queryClient.invalidateQueries(["purchaseGranite"]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to delete Purchase",
         variant: "destructive",
       });
     },

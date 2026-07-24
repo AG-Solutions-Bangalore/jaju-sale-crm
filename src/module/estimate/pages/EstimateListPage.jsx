@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import moment from "moment";
-import { ChevronDown, Eye, Search, SquarePlus } from "lucide-react";
+import {
+  ChevronDown,
+  Edit,
+  Eye,
+  Search,
+  SquarePlus,
+  Trash2,
+} from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
@@ -42,13 +49,34 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import Loader from "@/components/loader/Loader";
 import { ButtonConfig } from "@/config/ButtonConfig";
-import { useEstimateList, useCurrentYear } from "../hooks/useEstimate";
+import {
+  useEstimateList,
+  useCurrentYear,
+  useDeleteEstimate,
+} from "../hooks/useEstimate";
 
 const EstimateListPage = () => {
-  const { data: estimate = [], isLoading, isError, refetch } = useEstimateList();
+  const {
+    data: estimate = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useEstimateList();
   const { data: currentYear } = useCurrentYear();
+  const deleteMutation = useDeleteEstimate();
 
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -67,105 +95,179 @@ const EstimateListPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
-  const yearFilteredEstimates =
-    yearFilter && yearFilter !== "all"
-      ? estimate.filter((est) => est.estimate_year === yearFilter)
-      : estimate;
+  const yearFilteredEstimates = React.useMemo(() => {
+    if (!Array.isArray(estimate)) return [];
+    if (yearFilter && yearFilter !== "all") {
+      return estimate.filter((est) => est.estimate_year === yearFilter);
+    }
+    return estimate;
+  }, [estimate, yearFilter]);
 
-  const filteredEstimates = yearFilteredEstimates.filter((est) => {
-    if (!searchQuery) return true;
-    return (
-      est.estimate_customer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      est.estimate_no?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  const filteredEstimates = React.useMemo(() => {
+    if (!Array.isArray(yearFilteredEstimates)) return [];
+    if (!searchQuery) return yearFilteredEstimates;
+    const q = searchQuery.toLowerCase().trim();
+    return yearFilteredEstimates.filter((est) => {
+      const formattedDate = est.estimate_date
+        ? moment(est.estimate_date).format("DD-MMM-YYYY").toLowerCase()
+        : "";
+      return (
+        est.estimate_customer?.toLowerCase().includes(q) ||
+        est.estimate_no?.toLowerCase().includes(q) ||
+        formattedDate.includes(q) ||
+        est.estimate_date?.toLowerCase().includes(q)
+      );
+    });
+  }, [yearFilteredEstimates, searchQuery]);
 
-  const columns = [
-    {
-      id: "Sl No",
-      accessorKey: "index",
-      header: "Sl No",
-      cell: ({ row }) => <div>{row.index + 1}</div>,
-    },
-    {
-      accessorKey: "estimate_date",
-      id: "Estimate Date",
-      header: "Estimate Date",
-      cell: ({ row }) => {
-        const date = row.getValue("Estimate Date");
-        const estimateId = row.original.id;
-        return (
-          <div
-            onClick={() => navigate(`/estimate/view/${estimateId}`)}
-            className="cursor-pointer text-blue-600 hover:underline"
-          >
-            {moment(date).format("DD-MMM-YYYY")}
-          </div>
-        );
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "Sl No",
+        accessorKey: "index",
+        header: "Sl No",
+        size: 60,
+        cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
       },
-    },
-    {
-      accessorKey: "estimate_no",
-      id: "Estimate No",
-      header: "Estimate No",
-      cell: ({ row }) => {
-        const value = row.getValue("Estimate No");
-        const estimateStatus = row.original.estimate_status;
-        const id = row.original.id;
-        const userType = Cookies.get("userType");
-
-        if (userType === "1") {
+      {
+        accessorKey: "estimate_date",
+        id: "Date",
+        header: "Date",
+        size: 130,
+        cell: ({ row }) => {
+          const date = row.original.estimate_date;
+          return <div>{date ? moment(date).format("DD-MMM-YYYY") : "-"}</div>;
+        },
+      },
+      {
+        accessorKey: "estimate_no",
+        id: "Estimate No.",
+        header: "Estimate No.",
+        size: 120,
+        cell: ({ row }) => {
+          const value =
+            row.original.estimate_no || row.original.estimate_ref || "-";
           return <div>{value}</div>;
-        } else if (userType === "2" && estimateStatus === "Estimate") {
+        },
+      },
+      {
+        accessorKey: "estimate_customer",
+        id: "Customer",
+        header: "Customer",
+        minSize: 150,
+        cell: ({ row }) => <div>{row.getValue("Customer") || "-"}</div>,
+      },
+      {
+        accessorKey: "estimate_amount",
+        id: "Final Amount",
+        header: "Final Amount",
+        size: 130,
+        cell: ({ row }) => {
+          const amount =
+            row.original.estimate_amount ||
+            row.original.estimate_gross ||
+            "0.00";
           return (
-            <div>
-              <span
-                className="text-blue-600 hover:underline cursor-pointer"
-                onClick={() => navigate(`/sales/estimate-create/${id}`)}
-              >
-                {value}
-              </span>
+            <div className="text-right font-semibold text-gray-800">
+              {parseFloat(amount).toFixed(2)}
             </div>
           );
-        } else {
-          return <div>{value}</div>;
-        }
+        },
       },
-    },
-    {
-      accessorKey: "estimate_customer",
-      id: "Customer",
-      header: "Customer",
-      cell: ({ row }) => <div>{row.getValue("Customer")}</div>,
-    },
-    {
-      accessorKey: "estimate_no_of_count",
-      id: "No Of Items",
-      header: "No Of Items",
-      cell: ({ row }) => <div>{row.getValue("No Of Items")}</div>,
-    },
-    {
-      accessorKey: "estimate_gross",
-      id: "Gross",
-      header: "Gross",
-      cell: ({ row }) => <div>{row.getValue("Gross")}</div>,
-    },
-    {
-      accessorKey: "estimate_advance",
-      id: "Advance",
-      header: "Advance",
-      cell: ({ row }) => <div>{row.getValue("Advance")}</div>,
-    },
-    {
-      accessorKey: "estimate_balance",
-      id: "Balance",
-      header: "Balance",
-      cell: ({ row }) => <div>{row.getValue("Balance")}</div>,
-    },
-  ];
+      {
+        id: "actions",
+        header: "Action",
+        size: 100,
+        cell: ({ row }) => {
+          const estimateId = row.original.id;
+          const estimateStatus = row.original.estimate_status || "Estimate";
+          const isSales = estimateStatus.toLowerCase() === "sales";
+          return (
+            <div className="flex items-center justify-end gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        navigate(`/estimate/view/${estimateId}`)
+                      }
+                    >
+                      <Eye className="h-4 w-4 text-green-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View Estimate</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              {!isSales && (
+                <>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            navigate(`/estimate/edit/${estimateId}`)
+                          }
+                        >
+                          <Edit className="h-4 w-4 text-blue-600" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit Estimate</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <AlertDialog>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </AlertDialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Delete Estimate</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Estimate</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this estimate? This
+                          action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-red-600 hover:bg-red-700"
+                          onClick={() => deleteMutation.mutate(estimateId)}
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [navigate, deleteMutation],
+  );
 
   const table = useReactTable({
-    data: yearFilteredEstimates,
+    data: filteredEstimates,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -271,7 +373,7 @@ const EstimateListPage = () => {
             {filteredEstimates
               .slice(
                 currentPage * itemsPerPage,
-                currentPage * itemsPerPage + itemsPerPage
+                currentPage * itemsPerPage + itemsPerPage,
               )
               .map((est, index) => (
                 <Card key={est.id} className="p-2">
@@ -281,6 +383,17 @@ const EstimateListPage = () => {
                       {est.estimate_customer}
                     </div>
                     <div className="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="iconSm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/estimate/edit/${est.id}`);
+                        }}
+                        className="h-6 w-6 text-blue-600 hover:text-blue-800"
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="iconSm"
@@ -298,9 +411,7 @@ const EstimateListPage = () => {
                   <div className="grid grid-cols-3 gap-1 mt-1 text-xs">
                     <div>
                       <div className="text-gray-500">Date</div>
-                      <div>
-                        {moment(est.estimate_date).format("DD-MMM-YY")}
-                      </div>
+                      <div>{moment(est.estimate_date).format("DD-MMM-YY")}</div>
                     </div>
                     <div>
                       <div className="text-gray-500">Estimate No</div>
@@ -330,20 +441,24 @@ const EstimateListPage = () => {
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Items</div>
-                      <div>{est.estimate_no_of_count}</div>
+                      <div className="text-gray-500">Mobile</div>
+                      <div>{est.estimate_mobile || "-"}</div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Gross</div>
-                      <div>{est.estimate_gross}</div>
+                      <div className="text-gray-500">Amount</div>
+                      <div className="font-semibold text-gray-800">
+                        ₹{est.estimate_amount || est.estimate_gross || "0.00"}
+                      </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Advance</div>
-                      <div>{est.estimate_advance}</div>
-                    </div>
-                    <div>
-                      <div className="text-gray-500">Balance</div>
-                      <div>{est.estimate_balance}</div>
+                      <div className="text-gray-500">Status</div>
+                      <div>
+                        <span
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${(est.estimate_status || "Estimate").toLowerCase() === "sales" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}`}
+                        >
+                          {est.estimate_status || "Estimate"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -377,8 +492,8 @@ const EstimateListPage = () => {
                 setCurrentPage((prev) =>
                   Math.min(
                     prev + 1,
-                    Math.ceil(filteredEstimates.length / itemsPerPage) - 1
-                  )
+                    Math.ceil(filteredEstimates.length / itemsPerPage) - 1,
+                  ),
                 )
               }
               disabled={
@@ -403,9 +518,9 @@ const EstimateListPage = () => {
             <div className="relative w-full md:w-72">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
               <Input
-                placeholder="Search Estimate..."
-                value={table.getState().globalFilter || ""}
-                onChange={(event) => table.setGlobalFilter(event.target.value)}
+                placeholder="Search Estimate (Customer, No, Date)..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full"
               />
             </div>
@@ -458,20 +573,21 @@ const EstimateListPage = () => {
           </div>
 
           <div className="rounded-md border">
-            <Table>
+            <Table className="table-fixed">
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
-                        className={` ${ButtonConfig.tableHeader} ${ButtonConfig.tableLabel}`}
+                        style={{ width: header.getSize() }}
+                        className={`${ButtonConfig.tableHeader} ${ButtonConfig.tableLabel} ${header.id === "Final Amount" ? "text-right" : header.id === "actions" ? "text-right" : "text-left"}`}
                       >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                       </TableHead>
                     ))}
@@ -479,17 +595,20 @@ const EstimateListPage = () => {
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
+                {table.getPaginationRowModel().rows?.length ? (
+                  table.getPaginationRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && "selected"}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
+                        <TableCell
+                          key={cell.id}
+                          style={{ width: cell.column.getSize() }}
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       ))}

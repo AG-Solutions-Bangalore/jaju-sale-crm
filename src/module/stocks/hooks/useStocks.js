@@ -15,7 +15,19 @@ export const useStocksReport = (searchParams) => {
     queryFn: async () => {
       if (!searchParams) return { stocks: [] };
       const response = await fetchStockNewReport(searchParams);
-      return response.data;
+      const rawData = response?.data;
+      const stocksList = Array.isArray(rawData)
+        ? rawData
+        : Array.isArray(rawData?.data)
+        ? rawData.data
+        : Array.isArray(rawData?.stocks)
+        ? rawData.stocks
+        : [];
+
+      return {
+        ...(typeof rawData === "object" ? rawData : {}),
+        stocks: stocksList,
+      };
     },
     enabled: !!searchParams,
   });
@@ -27,7 +39,21 @@ export const useStocksReportByItem = (searchParams) => {
     queryFn: async () => {
       if (!searchParams) return null;
       const response = await fetchStockNewReportByItem(searchParams);
-      return response.data;
+      const rawData = response?.data;
+      const stocksList = Array.isArray(rawData)
+        ? rawData
+        : Array.isArray(rawData?.data)
+        ? rawData.data
+        : Array.isArray(rawData?.stocks)
+        ? rawData.stocks
+        : [];
+
+      return {
+        ...(typeof rawData === "object" ? rawData : {}),
+        stocks: stocksList,
+        purchase: rawData?.purchase || rawData?.data?.purchase || [],
+        sale: rawData?.sale || rawData?.data?.sale || [],
+      };
     },
     enabled: !!searchParams,
   });
@@ -38,7 +64,15 @@ export const useProductTypes = () => {
     queryKey: ["productTypes"],
     queryFn: async () => {
       const response = await fetchProductTypeList();
-      return response.data?.productType || [];
+      const list =
+        response?.data?.data ||
+        response?.data?.productType ||
+        response?.data?.product_type ||
+        response?.data?.product_type_group ||
+        response?.data?.product_type_group_new ||
+        response?.data ||
+        [];
+      return Array.isArray(list) ? list : [];
     },
   });
 };

@@ -6,6 +6,7 @@ export const ContextPanel = createContext();
 
 const AppProvider = ({ children }) => {
   const [statusCheck, setStatusCheck] = useState(null);
+  const [panelDetails, setPanelDetails] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,8 +15,16 @@ const AppProvider = ({ children }) => {
         const response = await fetch(`${BASE_URL}/api/web-check-status`);
         const data = await response.json();
 
-        if (data.success === "ok") {
+        const isSuccess =
+          data.success === "ok" ||
+          data.success === "true" ||
+          data.success === true ||
+          data.code === 201 ||
+          data.company_detils?.company_status === "Active";
+
+        if (isSuccess) {
           setStatusCheck("ok");
+          setPanelDetails(data);
         } else {
           navigate("/maintenance");
         }
@@ -33,7 +42,7 @@ const AppProvider = ({ children }) => {
   }, []);
 
   return (
-    <ContextPanel.Provider value={{ statusCheck }}>
+    <ContextPanel.Provider value={{ statusCheck, panelDetails }}>
       {statusCheck === "ok" ? children : null}
     </ContextPanel.Provider>
   );

@@ -1,16 +1,17 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import moment from "moment";
 import { useToast } from "@/hooks/use-toast";
 import Page from "@/app/dashboard/page";
+import Loader from "@/components/loader/Loader";
 import useNumericInput from "@/hooks/useNumericInput";
 import {
   useCurrentYear,
-  useLatestEstimateRef,
-  useCreateEstimate,
+  useEstimateById,
+  useUpdateEstimate,
   useProductTypeGroup,
 } from "../hooks/useEstimate";
 import MobileEstimateForm from "../components/MobileEstimateForm";
@@ -38,7 +39,8 @@ const formSchema = z.object({
   estimate_amount_round: z.string().optional(),
 });
 
-const EstimateAddPage = () => {
+const EstimateEditPage = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const handleKeyDown = useNumericInput();
@@ -46,18 +48,10 @@ const EstimateAddPage = () => {
   const [loadingType, setLoadingType] = useState("Loading Only");
   const [gstEdited, setGstEdited] = useState(false);
   const [autoGst18, setAutoGst18] = useState(0);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const saveActionRef = useRef("exit");
 
-  const [itemEntries, setItemEntries] = useState([
-    {
-      estimate_sub_item: "",
-      estimate_sub_qnty: "",
-      estimate_sub_qnty_sqr: "",
-      estimate_sub_pcs: "",
-      estimate_sub_rate: "",
-      estimate_sub_amount: "",
-    },
-  ]);
+  const [itemEntries, setItemEntries] = useState([]);
   const [customItems, setCustomItems] = useState({});
   const [isCustomItem, setIsCustomItem] = useState({});
 
@@ -79,6 +73,8 @@ const EstimateAddPage = () => {
   // Hooks
   const { data: currentYear } = useCurrentYear();
   const { data: product = [] } = useProductTypeGroup();
+  const { data: estimateData, isLoading: isLoadingEstimate } = useEstimateById(id);
+  const updateMutation = useUpdateEstimate();
 
   const productOptions = useMemo(() => {
     return product.map((item) => {
@@ -86,8 +82,6 @@ const EstimateAddPage = () => {
       return { value: name, label: name };
     });
   }, [product]);
-  const { data: estimateRef = "" } = useLatestEstimateRef();
-  const createMutation = useCreateEstimate();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -114,8 +108,75 @@ const EstimateAddPage = () => {
     },
   });
 
+  // Load existing estimate data
   useEffect(() => {
-    if (currentYear) {
+    if (estimateData && !dataLoaded) {
+      const est = estimateData?.data || estimateData?.estimate || estimateData || {};
+      const subs = est?.subs || estimateData?.estimateSub || [];
+
+      const formatToInteger = (val) => {
+        if (val === undefined || val === null || val === "") return "";
+        const parsed = parseFloat(val);
+        return isNaN(parsed) ? "" : Math.round(parsed).toString();
+      };
+
+      const formatToDecimal = (val) => {
+        if (val === undefined || val === null || val === "") return "";
+        const parsed = parseFloat(val);
+        return isNaN(parsed) ? "" : parsed.toFixed(2);
+      };
+
+      form.setValue("estimate_date", est.estimate_date ? moment(est.estimate_date).format("YYYY-MM-DD") : "");
+      form.setValue("estimate_year", est.estimate_year || currentYear || "");
+      form.setValue("estimate_customer", est.estimate_customer || "");
+      form.setValue("estimate_address", est.estimate_address || "");
+      form.setValue("estimate_mobile", est.estimate_mobile || "");
+      form.setValue("estimate_tax", formatToDecimal(est.estimate_tax));
+      form.setValue("estimate_tempo", formatToInteger(est.estimate_tempo));
+      form.setValue("estimate_loading", formatToInteger(est.estimate_labour_value));
+      form.setValue("estimate_unloading", "");
+      form.setValue("estimate_other_label", est.estimate_other_label || "");
+      form.setValue("estimate_other", formatToInteger(est.estimate_other));
+      form.setValue("estimate_other1_label", est.estimate_other1_label || "");
+      form.setValue("estimate_other1", formatToInteger(est.estimate_other1));
+      form.setValue("estimate_gross", formatToInteger(est.estimate_gross));
+      form.setValue("estimate_advance", formatToInteger(est.estimate_advance));
+      form.setValue("estimate_balance", formatToInteger(est.estimate_balance));
+      form.setValue("estimate_amount", formatToInteger(est.estimate_amount));
+      form.setValue("estimate_temp_amount", formatToDecimal(est.estimate_net_total || est.estimate_temp_amount));
+      form.setValue("estimate_amount_round", formatToDecimal(est.estimate_amount_round));
+
+      if (est.estimate_labour_label) {
+        setLoadingType(est.estimate_labour_label);
+      }
+
+      if (subs.length > 0) {
+        setItemEntries(subs.map((sub) => ({
+          id: sub.id,
+          estimate_sub_item: sub.estimate_sub_item || "",
+          estimate_sub_qnty: sub.estimate_sub_qnty || sub.estimate_sub_pcs || "",
+          estimate_sub_qnty_sqr: sub.estimate_sub_qnty_sqr || "",
+          estimate_sub_pcs: sub.estimate_sub_pcs || "",
+          estimate_sub_rate: formatToInteger(sub.estimate_sub_rate),
+          estimate_sub_amount: formatToInteger(sub.estimate_sub_amount),
+        })));
+      } else {
+        setItemEntries([{
+          estimate_sub_item: "",
+          estimate_sub_qnty: "",
+          estimate_sub_qnty_sqr: "",
+          estimate_sub_pcs: "",
+          estimate_sub_rate: "",
+          estimate_sub_amount: "",
+        }]);
+      }
+
+      setDataLoaded(true);
+    }
+  }, [estimateData, dataLoaded, currentYear, form]);
+
+  useEffect(() => {
+    if (currentYear && !form.getValues("estimate_year")) {
       form.setValue("estimate_year", currentYear);
     }
   }, [currentYear, form]);
@@ -260,11 +321,11 @@ const EstimateAddPage = () => {
         : isNaN(entry.estimate_sub_qnty_sqr)
         ? "Quantity (sqr) must be a number"
         : "",
-      // pcs: !entry.estimate_sub_pcs
-      //   ? "required"
-      //   : isNaN(entry.estimate_sub_pcs)
-      //   ? "Pcs must be a number"
-      //   : "",
+      pcs: !entry.estimate_sub_pcs
+        ? "required"
+        : isNaN(entry.estimate_sub_pcs)
+        ? "Pcs must be a number"
+        : "",
       rate: !entry.estimate_sub_rate
         ? "required"
         : isNaN(entry.estimate_sub_rate)
@@ -291,124 +352,7 @@ const EstimateAddPage = () => {
     if (hasFormErrors || hasItemErrors) {
       toast({
         title: "Validation Errors",
-        description: (
-          <div className="w-full space-y-3 text-xs max-h-[60vh] overflow-y-auto">
-            {hasFormErrors && (
-              <div className="w-full">
-                <div className="font-medium mb-2 text-white">Form Errors</div>
-                <div className="w-full">
-                  <table className="w-full border-collapse border border-red-200 rounded-md">
-                    <thead>
-                      <tr className="bg-red-50 text-red-800">
-                        <th className="px-2 py-1.5 text-left text-xs font-medium border-b border-red-200">
-                          Field
-                        </th>
-                        <th className="px-2 py-1.5 text-left text-xs font-medium border-b border-red-200">
-                          Error
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {formErrors.date && (
-                        <tr className="bg-white text-gray-700">
-                          <td className="px-2 py-1.5 border-b border-gray-200 font-medium">
-                            Date
-                          </td>
-                          <td className="px-2 py-1.5 text-red-600 border-b border-gray-200">
-                            {formErrors.date}
-                          </td>
-                        </tr>
-                      )}
-                      {formErrors.customer && (
-                        <tr className="bg-white text-gray-700">
-                          <td className="px-2 py-1.5 border-b border-gray-200 font-medium">
-                            Customer
-                          </td>
-                          <td className="px-2 py-1.5 text-red-600 border-b border-gray-200">
-                            {formErrors.customer}
-                          </td>
-                        </tr>
-                      )}
-                      {formErrors.itemType && (
-                        <tr className="bg-white text-gray-700">
-                          <td className="px-2 py-1.5 border-b border-gray-200 font-medium">
-                            Item Type
-                          </td>
-                          <td className="px-2 py-1.5 text-red-600 border-b border-gray-200">
-                            {formErrors.itemType}
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {hasItemErrors && (
-              <div className="w-full">
-                <div className="font-medium mb-2 text-white">Item Errors</div>
-                <div className="w-full">
-                  <table className="w-full border-collapse border border-red-200 rounded-md">
-                    <thead>
-                      <tr className="bg-red-50 text-red-800">
-                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200 w-8">
-                          #
-                        </th>
-                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
-                          Item
-                        </th>
-                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
-                          Qty (pcs/box)
-                        </th>
-                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
-                          Qty (sqr)
-                        </th>
-                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
-                          Pcs
-                        </th>
-                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
-                          Rate
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {itemErrors.map(
-                        (error, i) =>
-                          (error.item ||
-                            error.qnty ||
-                            error.qntySqr ||
-                            error.pcs ||
-                            error.rate) && (
-                            <tr key={i} className="bg-white text-gray-700">
-                              <td className="px-1.5 py-1.5 text-center border-b border-gray-200 font-medium">
-                                {i + 1}
-                              </td>
-                              <td className="px-1.5 py-1.5 text-red-600 border-b border-gray-200">
-                                {error.item}
-                              </td>
-                              <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
-                                {error.qnty}
-                              </td>
-                              <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
-                                {error.qntySqr}
-                              </td>
-                              <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
-                                {error.pcs}
-                              </td>
-                              <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
-                                {error.rate}
-                              </td>
-                            </tr>
-                          )
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </div>
-        ),
+        description: "Please fill in all required fields",
         variant: "destructive",
         duration: 10000,
       });
@@ -464,9 +408,8 @@ const EstimateAddPage = () => {
         })),
       };
 
-      createMutation.mutate(payload, {
+      updateMutation.mutate({ id, payload }, {
         onSuccess: (response) => {
-          const id = response?.data?.data || response?.data?.id || response?.data;
           if (saveActionRef.current === "print") {
             navigate(`/estimate/view/${id}`);
           } else {
@@ -477,7 +420,7 @@ const EstimateAddPage = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: error.message || "Failed to create Estimate",
+        description: error.message || "Failed to update Estimate",
         variant: "destructive",
       });
     } finally {
@@ -504,6 +447,8 @@ const EstimateAddPage = () => {
   const displayRoundOff = parseFloat(form.watch("estimate_amount_round")) || 0;
   const amountToBeCollected = displayNetTotal + displayRoundOff;
 
+  const estimateRef = estimateData?.data?.estimate_no || estimateData?.data?.estimate_ref || id;
+
   const formProps = {
     form,
     itemEntries,
@@ -511,7 +456,6 @@ const EstimateAddPage = () => {
     addItemEntry,
     removeItemEntry,
     handleChargeChange,
-    handleRoundOffChange,
     handleCancel,
     handleFormSubmit,
     estimateRef,
@@ -530,6 +474,16 @@ const EstimateAddPage = () => {
     setSaveAction: (action) => { saveActionRef.current = action; },
   };
 
+  if (isLoadingEstimate) {
+    return (
+      <Page>
+        <div className="flex justify-center items-center h-screen">
+          <Loader />
+        </div>
+      </Page>
+    );
+  }
+
   return (
     <Page>
       <MobileEstimateForm {...formProps} />
@@ -538,4 +492,4 @@ const EstimateAddPage = () => {
   );
 };
 
-export default EstimateAddPage;
+export default EstimateEditPage;

@@ -40,6 +40,7 @@ const MobileSalesForm = ({
   handleToggleCustomItem,
   isSubmitting,
   title = "Add Sales",
+  setSaveAction,
 }) => {
   return (
     <div className="sm:hidden">
@@ -72,13 +73,13 @@ const MobileSalesForm = ({
       </div>
 
       <div className="mb-14">
-        <form onSubmit={handleFormSubmit} className="space-y-4">
+        <form id="sales-form-mobile" onSubmit={handleFormSubmit} className="space-y-4">
           {/* Customer Info */}
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <h3 className="font-medium mb-3">Customer Information</h3>
             <div className="space-y-3">
               <div>
-                <Label htmlFor="mob_sales_no">JFC Bill No</Label>
+                <Label htmlFor="mob_sales_no">JFC Bill No.</Label>
                 <Input
                   id="mob_sales_no"
                   {...form.register("sales_no")}
@@ -106,7 +107,10 @@ const MobileSalesForm = ({
                   placeholder="Enter Customer Name"
                   maxLength={50}
                   onChange={(e) => {
-                    form.setValue("sales_customer", e.target.value.toUpperCase());
+                    form.setValue(
+                      "sales_customer",
+                      e.target.value.toUpperCase(),
+                    );
                   }}
                 />
               </div>
@@ -133,7 +137,10 @@ const MobileSalesForm = ({
                   placeholder="Enter Address"
                   maxLength={200}
                   onChange={(e) => {
-                    form.setValue("sales_address", e.target.value.toUpperCase());
+                    form.setValue(
+                      "sales_address",
+                      e.target.value.toUpperCase(),
+                    );
                   }}
                   rows={2}
                 />
@@ -165,7 +172,7 @@ const MobileSalesForm = ({
                               onChange={(e) =>
                                 handleCustomItemChange(
                                   index,
-                                  e.target.value.toUpperCase()
+                                  e.target.value.toUpperCase(),
                                 )
                               }
                             />
@@ -208,9 +215,15 @@ const MobileSalesForm = ({
                       <div>
                         <Input
                           type="tel"
-                          value={entry.sales_sub_qnty || entry.sales_sub_pcs || ""}
+                          value={
+                            entry.sales_sub_qnty || entry.sales_sub_pcs || ""
+                          }
                           onChange={(e) =>
-                            handleItemChange(index, "sales_sub_qnty", e.target.value)
+                            handleItemChange(
+                              index,
+                              "sales_sub_qnty",
+                              e.target.value,
+                            )
                           }
                           maxLength={10}
                           onKeyDown={handleKeyDown}
@@ -223,7 +236,11 @@ const MobileSalesForm = ({
                           type="tel"
                           value={entry.sales_sub_qnty_sqr || ""}
                           onChange={(e) =>
-                            handleItemChange(index, "sales_sub_qnty_sqr", e.target.value)
+                            handleItemChange(
+                              index,
+                              "sales_sub_qnty_sqr",
+                              e.target.value,
+                            )
                           }
                           maxLength={10}
                           onKeyDown={handleKeyDown}
@@ -237,7 +254,11 @@ const MobileSalesForm = ({
                             type="tel"
                             value={entry.sales_sub_rate || ""}
                             onChange={(e) =>
-                              handleItemChange(index, "sales_sub_rate", e.target.value)
+                              handleItemChange(
+                                index,
+                                "sales_sub_rate",
+                                e.target.value,
+                              )
                             }
                             maxLength={10}
                             onKeyDown={handleKeyDown}
@@ -340,7 +361,7 @@ const MobileSalesForm = ({
                       form.watch(
                         loadingType === "Loading Only"
                           ? "sales_loading"
-                          : "sales_unloading"
+                          : "sales_unloading",
                       ) || ""
                     }
                     onChange={(e) =>
@@ -348,7 +369,7 @@ const MobileSalesForm = ({
                         loadingType === "Loading Only"
                           ? "sales_loading"
                           : "sales_unloading",
-                        e.target.value
+                        e.target.value,
                       )
                     }
                     maxLength={10}
@@ -419,7 +440,7 @@ const MobileSalesForm = ({
             </div>
 
             <div>
-              <Label>Tax Amount</Label>
+              <Label>Tax (GST 18% = {Number(autoGst18).toFixed(0)})</Label>
               <Input
                 type="tel"
                 {...form.register("sales_tax")}
@@ -457,7 +478,7 @@ const MobileSalesForm = ({
 
             <div>
               <Label className="font-semibold text-blue-900">
-                 Final Payable
+                Final Payable
               </Label>
               <Input
                 type="text"
@@ -482,7 +503,7 @@ const MobileSalesForm = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-between">
+          <div className="fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-between gap-2">
             <Button
               type="button"
               variant="outline"
@@ -491,13 +512,30 @@ const MobileSalesForm = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-xs h-9 text-white"
-            >
-              {isSubmitting ? "Saving..." : "Save"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setSaveAction("print");
+                  document.getElementById("sales-form-mobile")?.requestSubmit();
+                }}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-xs h-9 text-white"
+              >
+                {isSubmitting ? "Saving..." : "Save & Print"}
+              </Button>
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setSaveAction("exit");
+                  document.getElementById("sales-form-mobile")?.requestSubmit();
+                }}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-xs h-9 text-white"
+              >
+                {isSubmitting ? "Saving..." : "Save & Exit"}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

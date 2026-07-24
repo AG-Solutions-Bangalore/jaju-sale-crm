@@ -18,6 +18,7 @@ import PurchaseGraniteView from "@/app/purchaseGranite/PurchaseGraniteView";
 import SalesView from "@/app/sales/SalesView";
 import OldEstimateAdd from "@/app/oldestimate/EstimateAdd";
 import EstimateAdd from "@/app/estimate/EstimateAdd";
+import EstimateEdit from "@/app/estimate/EstimateEdit";
 import ProductAdd from "@/app/product/ProductAdd";
 import ProductEdit from "@/app/product/ProductEdit";
 import PurchaseGraniteAdd from "@/app/purchaseGranite/PurchaseGraniteAdd";
@@ -29,6 +30,8 @@ import PiaeceReport from "@/app/stocks/PiaeceReport";
 import SaleDashboard from "@/app/home/SaleDashboard";
 import SingleItemStockReport from "@/app/stocks/SingleItemStockReport";
 import SalesReport from "@/app/sales/SalesReport";
+import SalesReportSalesList from "@/app/sales/SalesReportSalesList";
+import SalesReportPurchaseList from "@/app/purchaseGranite/SalesReportPurchaseList";
 
 function AppRoutes() {
   return (
@@ -49,6 +52,7 @@ function AppRoutes() {
         <Route path="/oldestimate/view/:id" element={<OldEstimateView />} />
         <Route path="/estimate" element={<EstimateList />} />
         <Route path="/estimate/create" element={<EstimateAdd />} />
+        <Route path="/estimate/edit/:id" element={<EstimateEdit />} />
         <Route path="/estimate/view/:id" element={<EstimateView />} />
         <Route path="/sale-dashboard" element={<SaleDashboard />} />
         <Route path="/stocks-piece" element={<PiaeceReport />} />
@@ -68,6 +72,8 @@ function AppRoutes() {
         <Route path="/sales/view/:id" element={<SalesView />} />
         <Route path="/sales/edit/:id" element={<SalesEdit />} />
         <Route path="/sales-report" element={<SalesReport />} />
+        <Route path="/reports/sales-list" element={<SalesReportSalesList />} />
+        <Route path="/reports/purchase-list" element={<SalesReportPurchaseList />} />
         <Route path="/stocks" element={<StocksReport />} />
         <Route path="/single-item-stock" element={<SingleItemStockReport />} />
       </Route>

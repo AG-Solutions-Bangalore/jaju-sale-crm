@@ -67,105 +67,120 @@ const EstimateListPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
-  const yearFilteredEstimates =
-    yearFilter && yearFilter !== "all"
-      ? estimate.filter((est) => est.estimate_year === yearFilter)
-      : estimate;
+  const yearFilteredEstimates = React.useMemo(() => {
+    if (!Array.isArray(estimate)) return [];
+    if (yearFilter && yearFilter !== "all") {
+      return estimate.filter((est) => est.estimate_year === yearFilter);
+    }
+    return estimate;
+  }, [estimate, yearFilter]);
 
-  const filteredEstimates = yearFilteredEstimates.filter((est) => {
-    if (!searchQuery) return true;
-    return (
-      est.estimate_customer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      est.estimate_no?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  const filteredEstimates = React.useMemo(() => {
+    if (!Array.isArray(yearFilteredEstimates)) return [];
+    if (!searchQuery) return yearFilteredEstimates;
+    const q = searchQuery.toLowerCase().trim();
+    return yearFilteredEstimates.filter((est) => {
+      const formattedDate = est.estimate_date
+        ? moment(est.estimate_date).format("DD-MMM-YYYY").toLowerCase()
+        : "";
+      return (
+        est.estimate_customer?.toLowerCase().includes(q) ||
+        est.estimate_no?.toLowerCase().includes(q) ||
+        formattedDate.includes(q) ||
+        est.estimate_date?.toLowerCase().includes(q)
+      );
+    });
+  }, [yearFilteredEstimates, searchQuery]);
 
-  const columns = [
-    {
-      id: "Sl No",
-      accessorKey: "index",
-      header: "Sl No",
-      cell: ({ row }) => <div>{row.index + 1}</div>,
-    },
-    {
-      accessorKey: "estimate_date",
-      id: "Estimate Date",
-      header: "Estimate Date",
-      cell: ({ row }) => {
-        const date = row.getValue("Estimate Date");
-        const estimateId = row.original.id;
-        return (
-          <div
-            onClick={() => navigate(`/oldestimate/view/${estimateId}`)}
-            className="cursor-pointer text-blue-600 hover:underline"
-          >
-            {moment(date).format("DD-MMM-YYYY")}
-          </div>
-        );
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "Sl No",
+        accessorKey: "index",
+        header: "Sl No",
+        cell: ({ row }) => <div>{row.index + 1}</div>,
       },
-    },
-    {
-      accessorKey: "estimate_no",
-      id: "Estimate No",
-      header: "Estimate No",
-      cell: ({ row }) => {
-        const value = row.getValue("Estimate No");
-        const estimateStatus = row.original.estimate_status;
-        const id = row.original.id;
-        const userType = Cookies.get("userType");
-
-        if (userType === "1") {
-          return <div>{value}</div>;
-        } else if (userType === "2" && estimateStatus === "Estimate") {
+      {
+        accessorKey: "estimate_date",
+        id: "Estimate Date",
+        header: "Estimate Date",
+        cell: ({ row }) => {
+          const date = row.getValue("Estimate Date");
+          const estimateId = row.original.id;
           return (
-            <div>
-              <span
-                className="text-blue-600 hover:underline cursor-pointer"
-                onClick={() => navigate(`/sales/estimate-create/${id}`)}
-              >
-                {value}
-              </span>
+            <div
+              onClick={() => navigate(`/oldestimate/view/${estimateId}`)}
+              className="cursor-pointer text-blue-600 hover:underline"
+            >
+              {date ? moment(date).format("DD-MMM-YYYY") : "-"}
             </div>
           );
-        } else {
-          return <div>{value}</div>;
-        }
+        },
       },
-    },
-    {
-      accessorKey: "estimate_customer",
-      id: "Customer",
-      header: "Customer",
-      cell: ({ row }) => <div>{row.getValue("Customer")}</div>,
-    },
-    {
-      accessorKey: "estimate_no_of_count",
-      id: "No Of Items",
-      header: "No Of Items",
-      cell: ({ row }) => <div>{row.getValue("No Of Items")}</div>,
-    },
-    {
-      accessorKey: "estimate_gross",
-      id: "Gross",
-      header: "Gross",
-      cell: ({ row }) => <div>{row.getValue("Gross")}</div>,
-    },
-    {
-      accessorKey: "estimate_advance",
-      id: "Advance",
-      header: "Advance",
-      cell: ({ row }) => <div>{row.getValue("Advance")}</div>,
-    },
-    {
-      accessorKey: "estimate_balance",
-      id: "Balance",
-      header: "Balance",
-      cell: ({ row }) => <div>{row.getValue("Balance")}</div>,
-    },
-  ];
+      {
+        accessorKey: "estimate_no",
+        id: "Estimate No",
+        header: "Estimate No",
+        cell: ({ row }) => {
+          const value = row.getValue("Estimate No");
+          const estimateStatus = row.original.estimate_status;
+          const id = row.original.id;
+          const userType = Cookies.get("userType");
+
+          if (userType === "1") {
+            return <div>{value}</div>;
+          } else if (userType === "2" && estimateStatus === "Estimate") {
+            return (
+              <div>
+                <span
+                  className="text-blue-600 hover:underline cursor-pointer"
+                  onClick={() => navigate(`/sales/estimate-create/${id}`)}
+                >
+                  {value}
+                </span>
+              </div>
+            );
+          } else {
+            return <div>{value}</div>;
+          }
+        },
+      },
+      {
+        accessorKey: "estimate_customer",
+        id: "Customer",
+        header: "Customer",
+        cell: ({ row }) => <div>{row.getValue("Customer")}</div>,
+      },
+      {
+        accessorKey: "estimate_no_of_count",
+        id: "No Of Items",
+        header: "No Of Items",
+        cell: ({ row }) => <div>{row.getValue("No Of Items")}</div>,
+      },
+      {
+        accessorKey: "estimate_gross",
+        id: "Gross",
+        header: "Gross",
+        cell: ({ row }) => <div>{row.getValue("Gross")}</div>,
+      },
+      {
+        accessorKey: "estimate_advance",
+        id: "Advance",
+        header: "Advance",
+        cell: ({ row }) => <div>{row.getValue("Advance")}</div>,
+      },
+      {
+        accessorKey: "estimate_balance",
+        id: "Balance",
+        header: "Balance",
+        cell: ({ row }) => <div>{row.getValue("Balance")}</div>,
+      },
+    ],
+    [navigate]
+  );
 
   const table = useReactTable({
-    data: yearFilteredEstimates,
+    data: filteredEstimates,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -403,9 +418,9 @@ const EstimateListPage = () => {
             <div className="relative w-full md:w-72">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
               <Input
-                placeholder="Search Estimate..."
-                value={table.getState().globalFilter || ""}
-                onChange={(event) => table.setGlobalFilter(event.target.value)}
+                placeholder="Search Estimate (Customer, No, Date)..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full"
               />
             </div>
@@ -479,8 +494,8 @@ const EstimateListPage = () => {
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
+                {table.getPaginationRowModel().rows?.length ? (
+                  table.getPaginationRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && "selected"}

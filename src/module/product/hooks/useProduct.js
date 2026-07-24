@@ -12,7 +12,14 @@ export const useProductList = () => {
     queryKey: ["productType"],
     queryFn: async () => {
       const response = await fetchProductList();
-      return response.data.product_type || [];
+      const list =
+        response?.data?.data ||
+        response?.data?.product_type ||
+        response?.data?.product_type_group ||
+        response?.data?.product_type_group_new ||
+        response?.data ||
+        [];
+      return Array.isArray(list) ? list : [];
     },
   });
 };

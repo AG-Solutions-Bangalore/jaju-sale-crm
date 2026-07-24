@@ -38,6 +38,10 @@ const useNumericInput = () => {
       return;
     }
 
+    if (event.key === '-') {
+      return;
+    }
+
     
     if (allowedKeys.includes(event.key)) {
       return;

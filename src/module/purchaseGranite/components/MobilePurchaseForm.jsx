@@ -39,6 +39,8 @@ const MobilePurchaseForm = ({
   purchaseList = [],
   title = "Add Purchases",
   isEdit = false,
+  autoGst18 = 0,
+  setSaveAction,
 }) => {
   return (
     <div className="sm:hidden">
@@ -63,7 +65,7 @@ const MobilePurchaseForm = ({
       </div>
 
       <div className="mb-14">
-        <form onSubmit={handleFormSubmit} className="space-y-4">
+        <form id="purchase-form-mobile" onSubmit={handleFormSubmit} className="space-y-4">
           {/* Purchase Info */}
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <h3 className="font-medium mb-3">Purchase Information</h3>
@@ -92,7 +94,7 @@ const MobilePurchaseForm = ({
               </div>
               <div>
                 <Label htmlFor="mob_purchase_bill_no">
-                  JFC Purchase No <span className="text-xs text-red-400 ">*</span>
+                  JFC Bill No. <span className="text-xs text-red-400 ">*</span>
                 </Label>
                 <Input
                   id="mob_purchase_bill_no"
@@ -103,12 +105,12 @@ const MobilePurchaseForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="mob_purchase_no">Supplier Bill No</Label>
+                <Label htmlFor="mob_purchase_no">Supplier Bill No.</Label>
                 <Input
                   id="mob_purchase_no"
                   {...form.register("purchase_no")}
                   className="mt-1 bg-white"
-                  placeholder="Supplier Bill Number"
+                  placeholder="Supplier Bill No."
                 />
               </div>
 
@@ -129,7 +131,10 @@ const MobilePurchaseForm = ({
                     }}
                     className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                   />
-                  <Label htmlFor="mob_is_opening_stock" className="font-semibold cursor-pointer text-gray-700 text-xs">
+                  <Label
+                    htmlFor="mob_is_opening_stock"
+                    className="font-semibold cursor-pointer text-gray-700 text-xs"
+                  >
                     Is Opening Stock Entry (Separate sequence)
                   </Label>
                 </div>
@@ -161,7 +166,7 @@ const MobilePurchaseForm = ({
                               onChange={(e) =>
                                 handleCustomItemChange(
                                   index,
-                                  e.target.value.toUpperCase()
+                                  e.target.value.toUpperCase(),
                                 )
                               }
                             />
@@ -182,7 +187,11 @@ const MobilePurchaseForm = ({
                             <MemoizedProductSelect
                               value={entry.purchase_sub_item}
                               onChange={(value) =>
-                                handleItemChange(index, "purchase_sub_item", value)
+                                handleItemChange(
+                                  index,
+                                  "purchase_sub_item",
+                                  value,
+                                )
                               }
                               options={productOptions}
                               placeholder="Select item..."
@@ -204,9 +213,17 @@ const MobilePurchaseForm = ({
                       <div>
                         <Input
                           type="tel"
-                          value={entry.purchase_sub_qnty || entry.purchase_sub_pcs || ""}
+                          value={
+                            entry.purchase_sub_qnty ||
+                            entry.purchase_sub_pcs ||
+                            ""
+                          }
                           onChange={(e) =>
-                            handleItemChange(index, "purchase_sub_qnty", e.target.value)
+                            handleItemChange(
+                              index,
+                              "purchase_sub_qnty",
+                              e.target.value,
+                            )
                           }
                           onKeyDown={handleKeyDown}
                           className="h-8 text-sm text-right bg-white"
@@ -222,7 +239,7 @@ const MobilePurchaseForm = ({
                             handleItemChange(
                               index,
                               "purchase_sub_qnty_sqr",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           onKeyDown={handleKeyDown}
@@ -236,7 +253,11 @@ const MobilePurchaseForm = ({
                           type="tel"
                           value={entry.purchase_sub_rate || ""}
                           onChange={(e) =>
-                            handleItemChange(index, "purchase_sub_rate", e.target.value)
+                            handleItemChange(
+                              index,
+                              "purchase_sub_rate",
+                              e.target.value,
+                            )
                           }
                           onKeyDown={handleKeyDown}
                           className="h-8 text-sm text-right bg-white"
@@ -321,7 +342,7 @@ const MobilePurchaseForm = ({
                     form.watch(
                       loadingType === "Loading Only"
                         ? "purchase_loading"
-                        : "purchase_unloading"
+                        : "purchase_unloading",
                     ) || ""
                   }
                   onChange={(e) =>
@@ -329,7 +350,7 @@ const MobilePurchaseForm = ({
                       loadingType === "Loading Only"
                         ? "purchase_loading"
                         : "purchase_unloading",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   maxLength={10}
@@ -414,7 +435,7 @@ const MobilePurchaseForm = ({
             </div>
 
             <div>
-              <Label>Tax Amount</Label>
+              <Label>Tax (GST 18% = {Number(autoGst18).toFixed(0)})</Label>
               <Input
                 type="tel"
                 {...form.register("purchase_tax")}
@@ -451,7 +472,9 @@ const MobilePurchaseForm = ({
             </div>
 
             <div>
-              <Label className="font-semibold text-blue-900">Final Amount</Label>
+              <Label className="font-semibold text-blue-900">
+                Final Amount
+              </Label>
               <Input
                 type="text"
                 value={Number(amountToBePaid).toFixed(0)}
@@ -474,7 +497,7 @@ const MobilePurchaseForm = ({
           </div>
 
           {/* Bottom buttons */}
-          <div className="fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-between">
+          <div className="fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-between gap-2">
             <Button
               type="button"
               variant="outline"
@@ -483,13 +506,30 @@ const MobilePurchaseForm = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-xs h-9 text-white"
-            >
-              {isSubmitting ? "Saving..." : "Save"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setSaveAction("print");
+                  document.getElementById("purchase-form-mobile")?.requestSubmit();
+                }}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-xs h-9 text-white"
+              >
+                {isSubmitting ? "Saving..." : "Save & Print"}
+              </Button>
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setSaveAction("exit");
+                  document.getElementById("purchase-form-mobile")?.requestSubmit();
+                }}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-xs h-9 text-white"
+              >
+                {isSubmitting ? "Saving..." : "Save & Exit"}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

@@ -92,34 +92,42 @@ const PurchaseViewPage = () => {
     );
   }
 
-  const subTotal = calculateSubTotal(purchaseData?.purchaseSub);
-  const tax = parseFloat(purchaseData?.purchase?.purchase_tax || 0);
-  const tempo = parseFloat(purchaseData?.purchase?.purchase_tempo || 0);
-  const loading = parseFloat(purchaseData?.purchase?.purchase_loading || 0);
-  const unloading = parseFloat(purchaseData?.purchase?.purchase_unloading || 0);
-  const other = parseFloat(purchaseData?.purchase?.purchase_other || 0);
-  const other1 = parseFloat(purchaseData?.purchase?.purchase_other1 || 0);
-  const gross = parseFloat(purchaseData?.purchase?.purchase_gross || 0);
+  const purchase = purchaseData?.data || purchaseData?.purchase || purchaseData || {};
+  const purchaseSub = purchase?.subs || purchaseData?.purchaseSub || purchase?.purchaseSub || [];
+  const normalizedPurchaseData = { purchase, purchaseSub };
 
-  const unroundedTotal = subTotal + tax + tempo + loading + unloading + other + other1;
-  const grandTotal = subTotal + tempo + loading + unloading + other + other1;
+  const subTotal = calculateSubTotal(purchaseSub);
+  const tax = parseFloat(purchase.purchase_tax || 0);
+  const tempo = parseFloat(purchase.purchase_tempo || 0);
+  const labourLabel = purchase.purchase_labour_label || "Labour Charges";
+  const labourValue = parseFloat(purchase.purchase_labour_value || purchase.purchase_loading || purchase.purchase_unloading || 0);
+  const loading = labourValue;
+  const unloading = 0;
+  const other = parseFloat(purchase.purchase_other || 0);
+  const other1 = parseFloat(purchase.purchase_other1 || 0);
+  const gross = parseFloat(purchase.purchase_gross || purchase.purchase_amount_received || 0);
+
+  const unroundedTotal = subTotal + tax + tempo + labourValue + other + other1;
+  const grandTotal = subTotal + tempo + labourValue + other + other1;
   const autoGst = grandTotal * 0.18;
 
   const roundOff = getActualRoundOff(
-    purchaseData?.purchase?.purchase_temp_amount || unroundedTotal,
+    purchase.purchase_temp_amount || purchase.purchase_net_total || unroundedTotal,
     gross,
-    purchaseData?.purchase?.purchase_amount_round
+    purchase.purchase_amount_round
   );
 
   const displayNetTotal = grandTotal + tax;
   const amountToBeCollected = displayNetTotal + roundOff;
 
   const commonProps = {
-    purchaseData,
+    purchaseData: normalizedPurchaseData,
     calculateSubTotal,
     subTotal,
     tax,
     tempo,
+    labourLabel,
+    labourValue,
     loading,
     unloading,
     other,

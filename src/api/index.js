@@ -8,17 +8,17 @@ const token = Cookies.get("token");
 
 
 // Estimate
-export const ESTIMATE_LIST = `${BASE_URL}/api/web-fetch-estimate-list`;
-export const PURCHASE_LIST = `${BASE_URL}/api/web-fetch-estimate-list`;
-export const PURCHASE_EDIT_LIST = `${BASE_URL}/api/purchases`;
-export const PURCHASE_CREATE = `${BASE_URL}/api/purchases`;
+export const ESTIMATE_LIST = `${BASE_URL}/api/estimate`;
+export const PURCHASE_LIST = `${BASE_URL}/api/purchase`;
+export const PURCHASE_EDIT_LIST = `${BASE_URL}/api/purchase`;
+export const PURCHASE_CREATE = `${BASE_URL}/api/purchase`;
 //Product
-export const PRODUCT_LIST = `${BASE_URL}/api/web-fetch-product-type-list`;
+export const PRODUCT_LIST = `${BASE_URL}/api/web-fetch-product-type-group-new`;
 
 //DASHBOARD
 export const DASHBOARD_LIST = `${BASE_URL}/api/dashboard`;
 //purchase granite
-export const PURCHASE_GRANITE_LIST = `${BASE_URL}/api/web-fetch-purchase-lists`;
+export const PURCHASE_GRANITE_LIST = `${BASE_URL}/api/purchase`;
 
 
 
@@ -28,11 +28,11 @@ export const PURCHASE_GRANITE_LIST = `${BASE_URL}/api/web-fetch-purchase-lists`;
 
 
 //purchase tiles
-export const PURCHASE_TILES_LIST = `${BASE_URL}/api/web-fetch-purchase-list/Tiles`;
+export const PURCHASE_TILES_LIST = `${BASE_URL}/api/purchase`;
 
 
 //sales
-export const SALES_LIST = `${BASE_URL}/api/web-fetch-sales-list`;
+export const SALES_LIST = `${BASE_URL}/api/sales`;
 export const SALES_EDIT_LIST = `${BASE_URL}/api/sales`;
 export const SALES_CREATE = `${BASE_URL}/api/sales`;
 

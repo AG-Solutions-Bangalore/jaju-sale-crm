@@ -73,9 +73,7 @@ const DesktopPurchaseView = ({
         <CardContent>
           <div ref={tableRef} className="overflow-x-auto print:p-4">
             <div className="text-center border-l border-t border-r p-4 space-y-1">
-              <h3 className="text-2xl font-semibold">
-                JAJU'S PURCHASE
-              </h3>
+              <h3 className="text-2xl font-semibold">JAJU'S PURCHASE</h3>
             </div>
 
             <div className="grid grid-cols-2 border m-0">
@@ -83,19 +81,19 @@ const DesktopPurchaseView = ({
                 <span className="font-medium">Date:</span>
                 <span className="ml-1">
                   {moment(purchaseData?.purchase?.purchase_date).format(
-                    "DD-MMM-YYYY"
+                    "DD-MMM-YYYY",
                   )}
                 </span>
               </div>
               <div className="flex items-center justify-center py-2 px-3">
-                <span className="font-medium">JFC Bill Number:</span>
+                <span className="font-medium">JFC Bill No.:</span>
                 <span className="ml-1">
                   {purchaseData?.purchase?.purchase_bill_no}
                 </span>
               </div>
             </div>
 
-            <div className="border-l border-r p-2 flex gap-4">
+            <div className="border-l border-r p-2 pl-12 flex gap-4">
               <div>
                 <span className="font-semibold">Supplier:</span>{" "}
                 <span>{purchaseData?.purchase?.purchase_supplier}</span>
@@ -149,10 +147,10 @@ const DesktopPurchaseView = ({
                         0}
                     </TableCell>
                     <TableCell className="text-center border-r">
-                      {item.purchase_sub_rate}
+                      {Number(item.purchase_sub_rate).toFixed(0)}
                     </TableCell>
                     <TableCell className="text-center">
-                      {item.purchase_sub_amount}
+                      {Number(item.purchase_sub_amount).toFixed(0)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -177,32 +175,18 @@ const DesktopPurchaseView = ({
                     {Number(tempo).toFixed(0)}
                   </TableCell>
                 </TableRow>
-                {Number(loading) > 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-right bg-white font-medium border-r border-b"
-                    >
-                      Loading Only
-                    </TableCell>
-                    <TableCell className="text-right bg-white border-b pr-4">
-                      {Number(loading).toFixed(0)}
-                    </TableCell>
-                  </TableRow>
-                )}
-                {Number(unloading) > 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-right bg-white font-medium border-r border-b"
-                    >
-                      Loading & Unloading
-                    </TableCell>
-                    <TableCell className="text-right bg-white border-b pr-4">
-                      {Number(unloading).toFixed(0)}
-                    </TableCell>
-                  </TableRow>
-                )}
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="text-right bg-white font-medium border-r border-b"
+                  >
+                    {purchaseData?.purchase?.purchase_labour_label ||
+                      "Labour Charges"}
+                  </TableCell>
+                  <TableCell className="text-right bg-white border-b pr-4">
+                    {Number(loading).toFixed(0)}
+                  </TableCell>
+                </TableRow>
                 {purchaseData?.purchase?.purchase_other_label && (
                   <TableRow>
                     <TableCell
@@ -245,30 +229,32 @@ const DesktopPurchaseView = ({
                     colSpan={5}
                     className="text-right bg-white font-medium border-r border-b"
                   >
-                    Tax (GST {purchaseData?.purchase?.purchase_gst_percentage || 18}% ={" "}
-                    {Number(autoGst).toFixed(2)})
+                    Tax (GST{" "}
+                    {purchaseData?.purchase?.purchase_gst_percentage || 18}% ={" "}
+                    {Number(autoGst).toFixed(0)})
                   </TableCell>
                   <TableCell className="text-right bg-white border-b pr-4">
-                    {Number(tax).toFixed(2)}
+                    {Number(tax).toFixed(0)}
                   </TableCell>
                 </TableRow>
-                {Math.abs(Math.round(roundOff)) > 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-right bg-white font-medium border-r border-b"
-                    >
-                      Round Off
-                    </TableCell>
-                    <TableCell className="text-right bg-white border-b pr-4">
-                      {Math.round(roundOff) > 0
-                        ? `+${Math.round(roundOff)}`
-                        : Math.round(roundOff)}
-                    </TableCell>
-                  </TableRow>
-                )}
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="text-right bg-white font-medium border-r border-b"
+                  >
+                    Round Off
+                  </TableCell>
+                  <TableCell className="text-right bg-white border-b pr-4">
+                    {Math.round(roundOff) > 0
+                      ? `+${Math.round(roundOff)}`
+                      : Math.round(roundOff)}
+                  </TableCell>
+                </TableRow>
                 <TableRow className="font-bold">
-                  <TableCell colSpan={5} className="text-right bg-white border-r border-b">
+                  <TableCell
+                    colSpan={5}
+                    className="text-right bg-white border-r border-b"
+                  >
                     Final Amount
                   </TableCell>
                   <TableCell className="text-right bg-white border-b pr-4">

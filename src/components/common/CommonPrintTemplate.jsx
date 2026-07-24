@@ -16,8 +16,10 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
   const isSales = type === "sales";
   const title = "ESTIMATE";
 
-  const rawData = isSales ? data?.sales : data?.estimate;
-  const rawSub = isSales ? data?.salesSub : data?.estimateSub;
+  const rawData = isSales
+    ? (data?.data || data?.sales || data)
+    : (data?.data || data?.estimate || data);
+  const rawSub = rawData?.subs || (isSales ? data?.salesSub : data?.estimateSub) || rawData?.salesSub || rawData?.estimateSub || [];
 
   const date = rawData?.sales_date || rawData?.estimate_date;
   const no = rawData?.sales_no || rawData?.estimate_no;
@@ -44,17 +46,25 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
   const tempo = parseFloat(
     rawData?.sales_tempo || rawData?.estimate_tempo || 0,
   );
-  const loading = parseFloat(
-    rawData?.sales_loading || rawData?.estimate_loading || 0,
-  );
-  const unloading = parseFloat(
-    rawData?.sales_unloading || rawData?.estimate_unloading || 0,
+  const labourLabel =
+    rawData?.sales_labour_label ||
+    rawData?.purchase_labour_label ||
+    "Labour Charges";
+  const labourValue = parseFloat(
+    rawData?.sales_labour_value ||
+    rawData?.estimate_labour_value ||
+    rawData?.purchase_labour_value ||
+    rawData?.sales_loading ||
+    rawData?.estimate_loading ||
+    rawData?.sales_unloading ||
+    rawData?.estimate_unloading ||
+    0
   );
   const other =
     parseFloat(rawData?.sales_other || rawData?.estimate_other || 0) +
     parseFloat(rawData?.sales_other1 || rawData?.estimate_other1 || 0);
 
-  const grossTotal = subTotal + tempo + loading + unloading + other;
+  const grossTotal = subTotal + tempo + labourValue + other;
   const tax = parseFloat(rawData?.sales_tax || rawData?.estimate_tax || 0);
   const netTotal = grossTotal + tax;
   const roundOff = parseFloat(
@@ -166,10 +176,10 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
                 {item.sqft || "-"}
               </TableCell>
               <TableCell className="text-right border-r pr-4 py-4">
-                {parseFloat(item.rate || 0).toFixed(2)}
+                {parseFloat(item.rate || 0).toFixed(0)}
               </TableCell>
               <TableCell className="text-right pr-4 py-4 font-semibold">
-                {parseFloat(item.amount || 0).toFixed(2)}
+                {parseFloat(item.amount || 0).toFixed(0)}
               </TableCell>
             </TableRow>
           ))}
@@ -183,7 +193,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
               Sub Total
             </TableCell>
             <TableCell className="text-right pr-4 font-bold py-3">
-              {subTotal.toFixed(2)}
+              {subTotal.toFixed(0)}
             </TableCell>
           </TableRow>
           <TableRow className="hover:bg-transparent">
@@ -194,7 +204,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
               Tempo Charges
             </TableCell>
             <TableCell className="text-right pr-4 py-3">
-              {tempo.toFixed(2)}
+              {tempo.toFixed(0)}
             </TableCell>
           </TableRow>
           <TableRow className="hover:bg-transparent">
@@ -202,10 +212,10 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
               colSpan={5}
               className="text-right border-r font-medium py-3"
             >
-              Loading & Unloading Charges
+              {labourLabel}
             </TableCell>
             <TableCell className="text-right pr-4 py-3">
-              {(loading + unloading).toFixed(2)}
+              {labourValue.toFixed(0)}
             </TableCell>
           </TableRow>
           {other > 0 && (
@@ -219,7 +229,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
                   "Other Charges"}
               </TableCell>
               <TableCell className="text-right pr-4 py-3">
-                {other.toFixed(2)}
+                {other.toFixed(0)}
               </TableCell>
             </TableRow>
           )}
@@ -231,7 +241,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
               Gross Total
             </TableCell>
             <TableCell className="text-right pr-4 font-extrabold py-3 text-blue-900">
-              {grossTotal.toFixed(2)}
+              {grossTotal.toFixed(0)}
             </TableCell>
           </TableRow>
           <TableRow className="hover:bg-transparent">
@@ -239,10 +249,10 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
               colSpan={5}
               className="text-right border-r font-medium py-3"
             >
-              GST (18%)
+              Tax (GST 18% = {tax.toFixed(0)})
             </TableCell>
             <TableCell className="text-right pr-4 py-3">
-              {tax.toFixed(2)}
+              {tax.toFixed(0)}
             </TableCell>
           </TableRow>
           <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
@@ -253,7 +263,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
               Net Total
             </TableCell>
             <TableCell className="text-right pr-4 font-extrabold py-3 text-indigo-900">
-              {netTotal.toFixed(2)}
+              {netTotal.toFixed(0)}
             </TableCell>
           </TableRow>
           <TableRow className="hover:bg-transparent">
@@ -264,7 +274,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
               Round Off
             </TableCell>
             <TableCell className="text-right pr-4 py-3">
-              {roundOff >= 0 ? `+${roundOff.toFixed(2)}` : roundOff.toFixed(2)}
+              {roundOff >= 0 ? `+${roundOff.toFixed(0)}` : roundOff.toFixed(0)}
             </TableCell>
           </TableRow>
           {/* <TableRow className="hover:bg-transparent">
@@ -272,7 +282,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
               Amount Collected
             </TableCell>
             <TableCell className="text-right pr-4 py-3 text-green-700 font-semibold">
-              {amountCollected.toFixed(2)}
+              {amountCollected.toFixed(0)}
             </TableCell>
           </TableRow> */}
           <TableRow className="bg-gray-100/50 text-black font-bold hover:bg-gray-100/50 border-t border-b border-gray-300">
@@ -283,7 +293,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type }, ref) => {
               Final Payable
             </TableCell>
             <TableCell className="text-right pr-4 text-black font-extrabold py-4 text-sm">
-              {finalPayable.toFixed(2)}
+              {finalPayable.toFixed(0)}
             </TableCell>
           </TableRow>
         </TableFooter>

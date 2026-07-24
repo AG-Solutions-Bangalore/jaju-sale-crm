@@ -374,10 +374,30 @@ const EstimateAddPage = () => {
   const onSubmit = async (data) => {
     try {
       const payload = {
-        ...data,
-        estimate_year: currentYear,
-        estimate_no_of_count: itemEntries.length,
-        estimate_sub_data: itemEntries,
+        estimate_date: data.estimate_date || moment().format("YYYY-MM-DD"),
+        estimate_customer: data.estimate_customer || "",
+        estimate_address: data.estimate_address || "",
+        estimate_mobile: data.estimate_mobile || "",
+        estimate_tax: data.estimate_tax || "0",
+        estimate_tempo: data.estimate_tempo || "0",
+        estimate_labour_label: data.estimate_labour_label || "Labour Charges",
+        estimate_labour_value: (parseFloat(data.estimate_loading || 0) || parseFloat(data.estimate_unloading || 0) || parseFloat(data.estimate_labour_value || 0)).toString(),
+        estimate_other_label: data.estimate_other_label || "Other Charges",
+        estimate_other: data.estimate_other || "0",
+        estimate_other1_label: data.estimate_other1_label || "Other Charges 1",
+        estimate_other1: data.estimate_other1 || "0",
+        estimate_gross: data.estimate_gross || "0",
+        estimate_net_total: data.estimate_gross || data.estimate_net_total || "0",
+        estimate_amount_round: data.estimate_amount_round || "0",
+        estimate_amount: data.estimate_balance || data.estimate_amount || "0",
+        subs: itemEntries.map((item) => ({
+          ...(item.id ? { id: item.id } : {}),
+          estimate_sub_item: item.estimate_sub_item || "",
+          estimate_sub_qnty_sqr: item.estimate_sub_qnty_sqr || "0",
+          estimate_sub_pcs: item.estimate_sub_pcs || item.estimate_sub_qnty || "0",
+          estimate_sub_rate: item.estimate_sub_rate || "0",
+          estimate_sub_amount: item.estimate_sub_amount || "0",
+        })),
       };
 
       createMutation.mutate(payload, {

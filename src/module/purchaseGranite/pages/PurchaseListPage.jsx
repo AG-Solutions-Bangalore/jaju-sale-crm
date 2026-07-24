@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
-import { ChevronDown, Edit, Eye, Search, SquarePlus } from "lucide-react";
+import {
+  ChevronDown,
+  Edit,
+  Eye,
+  Search,
+  SquarePlus,
+  Trash2,
+} from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
@@ -35,13 +42,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import { useToast } from "@/hooks/use-toast";
 import { ButtonConfig } from "@/config/ButtonConfig";
-import { usePurchaseList } from "../hooks/usePurchase";
+import { usePurchaseList, useDeletePurchase } from "../hooks/usePurchase";
 
 const PurchaseListPage = () => {
   const navigate = useNavigate();
+  const deleteMutation = useDeletePurchase();
   const {
     data: purchaseGranite,
     isLoading,
@@ -84,89 +103,196 @@ const PurchaseListPage = () => {
     });
   }, [sortedPurchases, searchQuery]);
 
-  const columns = [
-    {
-      accessorKey: "purchase_bill_no",
-      id: "JFC Purchase No",
-      header: "JFC Purchase No",
-      cell: ({ row }) => <div>{row.getValue("JFC Purchase No")}</div>,
-    },
-    {
-      accessorKey: "purchase_date",
-      id: "Date",
-      header: "Date",
-      cell: ({ row }) => {
-        const date = row.getValue("Date");
-        return moment(date).format("DD-MMM-YYYY");
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "Sl No",
+        accessorKey: "index",
+        header: "Sl/No",
+        cell: ({ row }) => <div>{row.index + 1}</div>,
       },
-    },
-    {
-      accessorKey: "purchase_supplier",
-      id: "Supplier",
-      header: "Supplier",
-      cell: ({ row }) => <div>{row.getValue("Supplier")}</div>,
-    },
-    {
-      accessorKey: "purchase_no_of_count",
-      id: "Items",
-      header: "Items",
-      cell: ({ row }) => <div>{row.getValue("Items")}</div>,
-    },
-    {
-      accessorKey: "purchase_amount",
-      id: "Final Amount",
-      header: "Final Amount",
-      cell: ({ row }) => <div>{row.getValue("Final Amount")}</div>,
-    },
+      {
+        accessorKey: "purchase_date",
+        id: "Date",
+        header: "Date",
+        cell: ({ row }) => {
+          const date = row.getValue("Date");
+          return <div>{date ? moment(date).format("DD-MMM-YYYY") : "-"}</div>;
+        },
+      },
+      {
+        accessorKey: "purchase_bill_no",
+        id: "JFC Bill No.",
+        header: "JFC Bill No.",
+        cell: ({ row }) => {
+          const val =
+            row.original.purchase_bill_no || row.original.purchase_ref || "-";
+          return <div>{val}</div>;
+        },
+      },
+      {
+        accessorKey: "purchase_supplier",
+        id: "Supplier",
+        header: "Supplier",
+        cell: ({ row }) => <div>{row.getValue("Supplier") || "-"}</div>,
+      },
+      {
+        accessorKey: "purchase_no",
+        id: "Supplier Bill No.",
+        header: "Supplier Bill No.",
+        cell: ({ row }) => {
+          const val = row.original.purchase_no || "-";
+          return <div>{val}</div>;
+        },
+      },
+      // {
+      //   id: "Items Count",
+      //   header: "Items Count",
+      //   cell: ({ row }) => {
+      //     const subs = row.original.subs || row.original.purchaseSub || [];
+      //     return <div>{subs.length || 0}</div>;
+      //   },
+      // },
+      {
+        accessorKey: "purchase_amount_received",
+        id: "Final Amount",
+        header: () => <div className="text-right">Final Amount</div>,
+        cell: ({ row }) => {
+          const rec = row.original;
+          const gross = parseFloat(rec?.purchase_gross);
+          if (!isNaN(gross) && gross > 0)
+            return (
+              <div className="text-right font-semibold text-gray-800">
+                {rec.purchase_gross}
+              </div>
+            );
 
-    {
-      id: "actions",
-      header: "Action",
-      cell: ({ row }) => {
-        const purchaseGranitetId = row.original.id;
-        return (
-          <div className="flex flex-row">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      navigate(`/purchase/edit/${purchaseGranitetId}`)
-                    }
-                  >
-                    <Edit />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit Purchase</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      navigate(`/purchase/view/${purchaseGranitetId}`)
-                    }
-                  >
-                    <Eye />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>View Purchase</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        );
+          const net = parseFloat(rec?.purchase_net_total);
+          if (!isNaN(net) && net > 0)
+            return (
+              <div className="text-right font-semibold text-gray-800">
+                {rec.purchase_net_total}
+              </div>
+            );
+
+          const payable = parseFloat(rec?.purchase_amount_payable);
+          if (!isNaN(payable) && payable > 0)
+            return (
+              <div className="text-right font-semibold text-gray-800">
+                {rec.purchase_amount_payable}
+              </div>
+            );
+
+          const amt = parseFloat(rec?.purchase_amount);
+          if (!isNaN(amt) && amt > 0)
+            return (
+              <div className="text-right font-semibold text-gray-800">
+                {rec.purchase_amount}
+              </div>
+            );
+
+          const recvd = parseFloat(rec?.purchase_amount_received);
+          if (!isNaN(recvd) && recvd > 0)
+            return (
+              <div className="text-right font-semibold text-gray-800">
+                {rec.purchase_amount_received}
+              </div>
+            );
+
+          const fallback =
+            rec?.purchase_gross ||
+            rec?.purchase_net_total ||
+            rec?.purchase_amount ||
+            rec?.purchase_amount_payable ||
+            rec?.purchase_amount_received ||
+            "0.00";
+          return (
+            <div className="text-right font-semibold text-gray-800">
+              {fallback}
+            </div>
+          );
+        },
       },
-    },
-  ];
+      {
+        id: "actions",
+        header: "Action",
+        cell: ({ row }) => {
+          const purchaseId = row.original.id;
+          return (
+            <div className="flex flex-row space-x-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate(`/purchase/edit/${purchaseId}`)}
+                    >
+                      <Edit className="h-4 w-4 text-blue-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit Purchase</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate(`/purchase/view/${purchaseId}`)}
+                    >
+                      <Eye className="h-4 w-4 text-green-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View Purchase</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <AlertDialog>
+                {/* <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete Purchase</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider> */}
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Purchase</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this purchase record? This
+                      action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-red-600 hover:bg-red-700"
+                      onClick={() => deleteMutation.mutate(purchaseId)}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          );
+        },
+      },
+    ],
+    [navigate, deleteMutation],
+  );
 
   const table = useReactTable({
     data: sortedPurchases || [],
@@ -294,7 +420,7 @@ const PurchaseListPage = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-1 mt-1 text-xs">
+                  <div className="grid grid-cols-3 gap-1 mt-1 text-xs">
                     <div>
                       <div className="text-gray-500">Date</div>
                       <div>
@@ -302,16 +428,49 @@ const PurchaseListPage = () => {
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">JFC Purchase No</div>
-                      <div>{purchase.purchase_bill_no}</div>
+                      <div className="text-gray-500">Purchase No</div>
+                      <div>
+                        {purchase.purchase_no || purchase.purchase_ref || "-"}
+                      </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Amount</div>
-                      <div>{purchase.purchase_amount}</div>
+                      <div className="text-gray-500">Bill No</div>
+                      <div>{purchase.purchase_bill_no || "-"}</div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Items</div>
-                      <div>{purchase.purchase_no_of_count}</div>
+                      <div className="text-gray-500">Final Amount</div>
+                      <div className="font-semibold text-gray-800">
+                        ₹
+                        {(() => {
+                          const gross = parseFloat(purchase?.purchase_gross);
+                          if (!isNaN(gross) && gross > 0)
+                            return purchase.purchase_gross;
+                          const net = parseFloat(purchase?.purchase_net_total);
+                          if (!isNaN(net) && net > 0)
+                            return purchase.purchase_net_total;
+                          const payable = parseFloat(
+                            purchase?.purchase_amount_payable,
+                          );
+                          if (!isNaN(payable) && payable > 0)
+                            return purchase.purchase_amount_payable;
+                          const amt = parseFloat(purchase?.purchase_amount);
+                          if (!isNaN(amt) && amt > 0)
+                            return purchase.purchase_amount;
+                          const recvd = parseFloat(
+                            purchase?.purchase_amount_received,
+                          );
+                          if (!isNaN(recvd) && recvd > 0)
+                            return purchase.purchase_amount_received;
+                          return (
+                            purchase?.purchase_gross ||
+                            purchase?.purchase_net_total ||
+                            purchase?.purchase_amount ||
+                            purchase?.purchase_amount_payable ||
+                            purchase?.purchase_amount_received ||
+                            "0.00"
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -436,8 +595,8 @@ const PurchaseListPage = () => {
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
+                {table.getPaginationRowModel().rows?.length ? (
+                  table.getPaginationRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && "selected"}

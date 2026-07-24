@@ -68,6 +68,7 @@ const PurchaseEditPage = () => {
   const [autoGst18, setAutoGst18] = useState(0);
   const [roundOffEdited, setRoundOffEdited] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const saveActionRef = useRef("exit");
 
   const { data: currentYear } = useCurrentYear();
   const { data: purchaseByid, isLoading: isPurchaseLoading } = usePurchaseById(id);
@@ -92,7 +93,7 @@ const PurchaseEditPage = () => {
       purchase_other1: "",
       purchase_other_label: "",
       purchase_other1_label: "",
-      purchase_amount_round: "0",
+      purchase_amount_round: "",
       purchase_tempo: "",
       purchase_loading: "",
       purchase_unloading: "",
@@ -145,7 +146,8 @@ const PurchaseEditPage = () => {
   // Load existing data
   useEffect(() => {
     if (purchaseByid) {
-      const { purchase: pId, purchaseSub: pSub } = purchaseByid;
+      const pId = purchaseByid.data || purchaseByid.purchase || purchaseByid;
+      const pSub = pId.subs || purchaseByid.purchaseSub || pId.purchaseSub || [];
 
       const formatToInteger = (val) => {
         if (val === undefined || val === null || val === "") return "";
@@ -153,11 +155,21 @@ const PurchaseEditPage = () => {
         return isNaN(parsed) ? "" : Math.round(parsed).toString();
       };
 
+      const formatToDecimal = (val) => {
+        if (val === undefined || val === null || val === "") return "";
+        const parsed = parseFloat(val);
+        return isNaN(parsed) ? "" : parsed.toFixed(2);
+      };
+
       const savedGross = parseFloat(pId.purchase_gross || pId.purchase_amount || 0);
       const savedTempAmount = parseFloat(
-        pId.purchase_temp_amount || pId.purchase_gross || pId.purchase_amount || 0
+        pId.purchase_temp_amount || pId.purchase_net_total || pId.purchase_gross || pId.purchase_amount || 0
       );
       const savedRoundOff = getActualRoundOff(savedTempAmount, savedGross, pId.purchase_amount_round);
+
+      const isUnloading = pId.purchase_labour_label === "Loading & Unloading" || (pId.purchase_unloading && parseFloat(pId.purchase_unloading) > 0);
+      const loadingVal = isUnloading ? "" : formatToInteger(pId.purchase_labour_value || pId.purchase_loading);
+      const unloadingVal = isUnloading ? formatToInteger(pId.purchase_labour_value || pId.purchase_unloading) : "";
 
       const formValues = {
         purchase_date: moment(pId.purchase_date).format("YYYY-MM-DD"),
@@ -172,21 +184,21 @@ const PurchaseEditPage = () => {
         purchase_other1: formatToInteger(pId.purchase_other1),
         purchase_other_label: pId.purchase_other_label || "",
         purchase_other1_label: pId.purchase_other1_label || "",
-        purchase_amount_round: savedRoundOff === 0 ? "0" : savedRoundOff.toString(),
+        purchase_amount_round: savedRoundOff === 0 ? "" : formatToDecimal(savedRoundOff),
         purchase_tempo: formatToInteger(pId.purchase_tempo),
-        purchase_loading: formatToInteger(pId.purchase_loading),
-        purchase_unloading: formatToInteger(pId.purchase_unloading),
-        purchase_tax: formatToInteger(pId.purchase_tax),
+        purchase_loading: loadingVal,
+        purchase_unloading: unloadingVal,
+        purchase_tax: formatToDecimal(pId.purchase_tax),
         purchase_gross: formatToInteger(pId.purchase_gross),
         purchase_advance: formatToInteger(pId.purchase_advance) || "0",
         purchase_balance: formatToInteger(pId.purchase_balance),
         purchase_amount_received: formatToInteger(pId.purchase_amount_received),
-        purchase_temp_amount: formatToInteger(savedTempAmount),
+        purchase_temp_amount: formatToDecimal(savedTempAmount),
         purchase_estimate_ref: pId.purchase_estimate_ref || "",
         purchase_no_of_count: pId.purchase_no_of_count?.toString() || "1",
       };
 
-      if (pId.purchase_unloading && parseFloat(pId.purchase_unloading) > 0) {
+      if (isUnloading) {
         setLoadingType("Loading & Unloading");
       } else {
         setLoadingType("Loading Only");
@@ -218,7 +230,8 @@ const PurchaseEditPage = () => {
 
   useEffect(() => {
     if (purchaseByid && product && product.length > 0) {
-      const { purchaseSub: pSub } = purchaseByid;
+      const pId = purchaseByid.data || purchaseByid.purchase || purchaseByid;
+      const pSub = pId.subs || purchaseByid.purchaseSub || pId.purchaseSub || [];
       if (pSub && pSub.length > 0) {
         const newIsCustomItem = {};
         const newCustomItems = {};
@@ -319,14 +332,25 @@ const PurchaseEditPage = () => {
 
   const handleRoundOffChange = (e) => {
     const value = e.target.value;
-    const roundOffVal = parseFloat(value) || 0;
-    form.setValue("purchase_amount_round", roundOffVal.toString());
-    setRoundOffEdited(true);
+    if (value === "" || value === "-" || value === "-." || value === ".") {
+      form.setValue("purchase_amount_round", value);
+      setRoundOffEdited(true);
+      const netTotal = parseFloat(form.getValues("purchase_temp_amount") || 0);
+      form.setValue("purchase_gross", netTotal.toString());
+      form.setValue("purchase_balance", netTotal.toString());
+      return;
+    }
 
-    const netTotal = parseFloat(form.getValues("purchase_temp_amount") || 0);
-    const finalAmount = netTotal + roundOffVal;
-    form.setValue("purchase_gross", finalAmount.toString());
-    form.setValue("purchase_balance", finalAmount.toString());
+    if (/^-?\d*\.?\d*$/.test(value)) {
+      const roundOffVal = parseFloat(value) || 0;
+      form.setValue("purchase_amount_round", value);
+      setRoundOffEdited(true);
+
+      const netTotal = parseFloat(form.getValues("purchase_temp_amount") || 0);
+      const finalAmount = netTotal + roundOffVal;
+      form.setValue("purchase_gross", finalAmount.toString());
+      form.setValue("purchase_balance", finalAmount.toString());
+    }
   };
 
   const addItemEntry = () => {
@@ -415,6 +439,7 @@ const PurchaseEditPage = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     const formData = form.getValues();
@@ -564,26 +589,42 @@ const PurchaseEditPage = () => {
       const finalAmount = netTotal + roundOff;
 
       const payload = {
-        ...restData,
+        purchase_date: restData.purchase_date || moment().format("YYYY-MM-DD"),
+        purchase_supplier: restData.purchase_supplier || "",
+        purchase_bill_no: restData.purchase_bill_no || "",
+        purchase_tax: (parseFloat(form.watch("purchase_tax")) || 0).toString(),
         purchase_tempo: tempo.toString(),
-        purchase_loading: loading.toString(),
-        purchase_unloading: unloading.toString(),
+        purchase_labour_label: loadingType || restData.purchase_labour_label || "Labour Charges",
+        purchase_labour_value: (loading + unloading).toString(),
+        purchase_other_label: restData.purchase_other_label || "Other Charges",
         purchase_other: other.toString(),
+        purchase_other1_label: restData.purchase_other1_label || "Other Charges 1",
         purchase_other1: other1.toString(),
-        purchase_tax: gstAmount.toString(),
-        purchase_temp_amount: netTotal.toString(),
         purchase_gross: finalAmount.toString(),
-        purchase_balance: finalAmount.toString(),
+        purchase_net_total: netTotal.toString(),
         purchase_amount_round: roundOff.toString(),
-        purchase_advance: "0",
-        purchase_amount_received: restData.purchase_amount_received || "0",
-        purchase_amount: restData.purchase_amount_received || "0",
-        purchase_no_of_count: formattedItemEntries.length,
-        purchase_sub_data: formattedItemEntries,
+        purchase_amount_received: restData.purchase_amount_received || finalAmount.toString(),
+        subs: formattedItemEntries.map((item) => {
+          const subObj = {
+            purchase_sub_item: item.purchase_sub_item || "",
+            purchase_sub_qnty_sqr: (item.purchase_sub_qnty_sqr || "0").toString(),
+            purchase_sub_pcs: (item.purchase_sub_pcs || item.purchase_sub_qnty || "0").toString(),
+            purchase_sub_rate: (item.purchase_sub_rate || "0").toString(),
+            purchase_sub_amount: (item.purchase_sub_amount || "0").toString(),
+          };
+          if (item.id) {
+            subObj.id = Number(item.id);
+          }
+          return subObj;
+        }),
       };
 
-      await updateMutation.mutateAsync(payload);
-      navigate("/purchase");
+      const response = await updateMutation.mutateAsync(payload);
+      if (saveActionRef.current === "print") {
+        navigate(`/purchase/view/${id}`);
+      } else {
+        navigate("/purchase");
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -636,6 +677,7 @@ const PurchaseEditPage = () => {
     purchaseList,
     title: "Edit Purchases",
     isEdit: true,
+    setSaveAction: (action) => { saveActionRef.current = action; },
   };
 
   return (

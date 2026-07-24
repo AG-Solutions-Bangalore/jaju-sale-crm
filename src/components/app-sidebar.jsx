@@ -109,6 +109,16 @@ export function AppSidebar({ ...props }) {
             url: "/sales-report",
             icon: FileText,
           },
+          {
+            title: "Sale List",
+            url: "/reports/sales-list",
+            icon: FileText,
+          },
+          {
+            title: "Purchase List",
+            url: "/reports/purchase-list",
+            icon: FileText,
+          },
         ],
       },
     ],

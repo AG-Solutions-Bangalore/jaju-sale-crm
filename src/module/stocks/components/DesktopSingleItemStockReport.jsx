@@ -1,13 +1,25 @@
 import React from "react";
 import moment from "moment";
-import { Printer, Search, Plus, Pencil, Loader2, CalendarDays, Eye } from "lucide-react";
+import {
+  Printer,
+  Search,
+  Plus,
+  Pencil,
+  Loader2,
+  CalendarDays,
+  Eye,
+} from "lucide-react";
 import { FaRegFilePdf, FaRegFileExcel } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
 import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { MemoizedSelect } from "@/components/common/MemoizedSelect";
 import {
@@ -45,192 +57,219 @@ const DesktopSingleItemStockReport = ({
   formatCellValue,
   formatClosingBalanceText,
   productId,
+  isPopup = false,
 }) => {
   const navigate = useNavigate();
   return (
     <div className="hidden sm:block space-y-4">
       {/* Title and Top Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Single Item Stock</h1>
-          <p className="text-xs text-gray-500">View detailed stock transaction history by item</p>
-        </div>
-        <div className="flex items-center gap-2 self-stretch sm:self-auto">
-          <Button
-            onClick={() => setShowNewItemDialog(true)}
-            className="flex-1 sm:flex-none h-9 bg-green-600 hover:bg-green-700 text-white text-xs flex items-center gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            New Item
-          </Button>
-          {selectedItem && (
-            <Button
-              onClick={handleEditItem}
-              variant="outline"
-              className="flex-1 sm:flex-none h-9 text-xs flex items-center gap-1.5 border-gray-300"
+      {!isPopup && (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Single Item Stock
+            </h1>
+            <p className="text-xs text-gray-500">
+              View detailed stock transaction history by item
+            </p>
+          </div>
+          <div className="flex items-center gap-2 self-stretch sm:self-auto">
+            {/* <Button
+              onClick={() => setShowNewItemDialog(true)}
+              className="flex-1 sm:flex-none h-9 bg-green-600 hover:bg-green-700 text-white text-xs flex items-center gap-1.5"
             >
-              <Pencil className="h-3.5 w-3.5" />
-              Rename Item
-            </Button>
-          )}
+              <Plus className="h-4 w-4" />
+              New Item
+            </Button> */}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Filter Card */}
-      <Card className="shadow-xs border-gray-200">
-        <CardContent className="p-4">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-              {/* Select Item */}
-              <div className="space-y-1.5 md:col-span-1">
-                <Label htmlFor="itemSelect" className="text-xs font-semibold text-gray-700">
-                  Select Item
-                </Label>
-                <MemoizedSelect
-                  value={selectedItem}
-                  onChange={setSelectedItem}
-                  options={itemOptions}
-                  placeholder="Search / Select Item"
-                />
-              </div>
+      {!isPopup && (
+        <Card className="shadow-xs border-gray-200">
+          <CardContent className="p-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                {/* Select Item */}
+                <div className="space-y-1.5 md:col-span-1">
+                  <Label
+                    htmlFor="itemSelect"
+                    className="text-xs font-semibold text-gray-700"
+                  >
+                    Select Item
+                  </Label>
+                  <MemoizedSelect
+                    value={selectedItem}
+                    onChange={setSelectedItem}
+                    options={itemOptions}
+                    placeholder="Search / Select Item"
+                  />
+                </div>
 
-              {/* From Date Picker */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-gray-700">From Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-between text-left font-normal h-9 text-xs border-gray-300",
-                        !form.watch("from_date") && "text-muted-foreground"
-                      )}
-                    >
-                      {form.watch("from_date") ? (
-                        moment(form.watch("from_date")).format("DD MMMM YYYY")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarDays className="h-4 w-4 opacity-75 text-gray-500" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={form.watch("from_date") ? new Date(form.watch("from_date")) : undefined}
-                      onSelect={(date) =>
-                        form.setValue("from_date", date ? moment(date).format("YYYY-MM-DD") : "")
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+                {/* From Date Picker */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-gray-700">
+                    From Date
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-between text-left font-normal h-9 text-xs border-gray-300",
+                          !form.watch("from_date") && "text-muted-foreground",
+                        )}
+                      >
+                        {form.watch("from_date") ? (
+                          moment(form.watch("from_date")).format("DD MMMM YYYY")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarDays className="h-4 w-4 opacity-75 text-gray-500" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          form.watch("from_date")
+                            ? new Date(form.watch("from_date"))
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          form.setValue(
+                            "from_date",
+                            date ? moment(date).format("YYYY-MM-DD") : "",
+                          )
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-              {/* To Date Picker */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-gray-700">To Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-between text-left font-normal h-9 text-xs border-gray-300",
-                        !form.watch("to_date") && "text-muted-foreground"
-                      )}
-                    >
-                      {form.watch("to_date") ? (
-                        moment(form.watch("to_date")).format("DD MMMM YYYY")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarDays className="h-4 w-4 opacity-75 text-gray-500" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={form.watch("to_date") ? new Date(form.watch("to_date")) : undefined}
-                      onSelect={(date) =>
-                        form.setValue("to_date", date ? moment(date).format("YYYY-MM-DD") : "")
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+                {/* To Date Picker */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-gray-700">
+                    To Date
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-between text-left font-normal h-9 text-xs border-gray-300",
+                          !form.watch("to_date") && "text-muted-foreground",
+                        )}
+                      >
+                        {form.watch("to_date") ? (
+                          moment(form.watch("to_date")).format("DD MMMM YYYY")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarDays className="h-4 w-4 opacity-75 text-gray-500" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          form.watch("to_date")
+                            ? new Date(form.watch("to_date"))
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          form.setValue(
+                            "to_date",
+                            date ? moment(date).format("YYYY-MM-DD") : "",
+                          )
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-              {/* Generate Button */}
-              <div>
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`w-full h-9 text-xs font-semibold ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="h-3.5 w-3.5 mr-1.5" />
-                      Generate Report
-                    </>
-                  )}
-                </Button>
+                {/* Generate Button */}
+                <div>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className={`w-full h-9 text-xs font-semibold ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-3.5 w-3.5 mr-1.5" />
+                        Generate Report
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Results Container */}
       {searchParams && (
         <Card className="shadow-xs border-gray-200">
-          <CardHeader className="p-4 border-b flex flex-row items-center justify-between gap-4 flex-wrap">
-            <div>
-              <CardTitle className="text-lg font-bold text-gray-800">
-                {selectedItem}
-              </CardTitle>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Report from {moment(searchParams.from_date).format("DD MMMM YYYY")} to{" "}
-                {moment(searchParams.to_date).format("DD MMMM YYYY")}
-              </p>
-            </div>
+          {!isPopup && (
+            <CardHeader className="p-4 border-b flex flex-row items-center justify-between gap-4 flex-wrap">
+              <div>
+                <CardTitle className="text-lg font-bold text-gray-800">
+                  {selectedItem}
+                </CardTitle>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Report from{" "}
+                  {moment(searchParams.from_date).format("DD MMMM YYYY")} to{" "}
+                  {moment(searchParams.to_date).format("DD MMMM YYYY")}
+                </p>
+              </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-2 self-stretch sm:self-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadCsv}
-                className="h-8 text-xs flex-1 sm:flex-none border-gray-300"
-              >
-                <FaRegFileExcel className="mr-1.5 h-3.5 w-3.5 text-green-600" />
-                CSV
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadPDF}
-                className="h-8 text-xs flex-1 sm:flex-none border-gray-300"
-              >
-                <FaRegFilePdf className="mr-1.5 h-3.5 w-3.5 text-red-600" />
-                PDF
-              </Button>
-              <ReactToPrint
-                trigger={() => (
-                  <Button variant="outline" size="sm" className="h-8 text-xs flex-1 sm:flex-none border-gray-300">
-                    <Printer className="mr-1.5 h-3.5 w-3.5 text-gray-600" />
-                    Print
-                  </Button>
-                )}
-                content={() => tableRef.current}
-                documentTitle={`Single-Item-Stock-${selectedItem}`}
-              />
-            </div>
-          </CardHeader>
+              {/* Action Buttons */}
+              <div className="flex gap-2 self-stretch sm:self-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadCsv}
+                  className="h-8 text-xs flex-1 sm:flex-none border-gray-300"
+                >
+                  <FaRegFileExcel className="mr-1.5 h-3.5 w-3.5 text-green-600" />
+                  CSV
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadPDF}
+                  className="h-8 text-xs flex-1 sm:flex-none border-gray-300"
+                >
+                  <FaRegFilePdf className="mr-1.5 h-3.5 w-3.5 text-red-600" />
+                  PDF
+                </Button>
+                <ReactToPrint
+                  trigger={() => (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs flex-1 sm:flex-none border-gray-300"
+                    >
+                      <Printer className="mr-1.5 h-3.5 w-3.5 text-gray-600" />
+                      Print
+                    </Button>
+                  )}
+                  content={() => tableRef.current}
+                  documentTitle={`Single-Item-Stock-${selectedItem}`}
+                />
+              </div>
+            </CardHeader>
+          )}
 
           <CardContent className="p-4 space-y-4">
             {isLoading ? (
@@ -239,45 +278,95 @@ const DesktopSingleItemStockReport = ({
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-bold text-gray-800">Transaction History</h2>
+                <div className="flex justify-between items-center flex-wrap gap-4">
+                  <h2 className="text-lg font-bold text-gray-800">
+                    Transaction History
+                  </h2>
+                  {isPopup && (
+                    <div className="flex items-center gap-4 text-xs font-semibold">
+                      <div className="flex items-center gap-1">
+                        <span className="text-gray-500">From Date:</span>
+                        <span className="text-gray-800 bg-gray-100 px-2 py-1 rounded">
+                          {moment(searchParams?.from_date || form.watch("from_date")).format("MM/DD/YYYY")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-gray-500">To Date:</span>
+                        <span className="text-gray-800 bg-gray-100 px-2 py-1 rounded">
+                          {moment(searchParams?.to_date || form.watch("to_date")).format("MM/DD/YYYY")}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Transaction History Table */}
-                <div ref={tableRef} className="overflow-x-auto border rounded-lg border-gray-200">
+                <div
+                  ref={tableRef}
+                  className="overflow-x-auto border rounded-lg border-gray-200"
+                >
                   <div className="hidden print:block text-center p-4">
                     <h2 className="text-xl font-bold">{selectedItem}</h2>
                     <p className="text-xs text-gray-500 mt-1">
-                      Stock Transaction History (From {moment(searchParams.from_date).format("DD MMMM YYYY")} to {moment(searchParams.to_date).format("DD MMMM YYYY")})
+                      Stock Transaction History (From{" "}
+                      {moment(searchParams.from_date).format("DD MMMM YYYY")} to{" "}
+                      {moment(searchParams.to_date).format("DD MMMM YYYY")})
                     </p>
                   </div>
 
                   <Table className="border-collapse w-full text-[11px]">
                     <TableHeader className="bg-gray-100 text-gray-900 sticky top-0">
                       <TableRow className="bg-gray-100 hover:bg-gray-100 border-b border-gray-200">
-                        <TableHead rowSpan={2} className="text-center text-gray-800 font-bold border-r border-gray-200 align-middle w-32">
+                        {/* <TableHead
+                          rowSpan={2}
+                          className="text-center text-gray-800 font-bold border-r border-gray-200 align-middle w-32"
+                        >
                           DATE
-                        </TableHead>
-                        <TableHead rowSpan={2} className="text-left text-gray-800 font-bold border-r border-gray-200 align-middle pl-3 min-w-40">
+                        </TableHead> */}
+                        <TableHead
+                          rowSpan={2}
+                          className="text-left text-gray-800 font-bold border-r border-gray-200 align-middle pl-3 min-w-40"
+                        >
                           REFERENCE
                         </TableHead>
-                        <TableHead colSpan={2} className="text-center text-green-800 font-bold border-r border-gray-200 bg-green-50/50 py-1.5">
+                        <TableHead
+                          colSpan={2}
+                          className="text-center text-green-800 font-bold border-r border-gray-200 bg-green-50/50 py-1.5"
+                        >
                           INWARD
                         </TableHead>
-                        <TableHead colSpan={2} className="text-center text-red-800 font-bold border-r border-gray-200 bg-red-50/50 py-1.5">
+                        <TableHead
+                          colSpan={2}
+                          className="text-center text-red-800 font-bold border-r border-gray-200 bg-red-50/50 py-1.5"
+                        >
                           OUTWARD
                         </TableHead>
-                        <TableHead colSpan={2} className="text-center text-blue-800 font-bold bg-blue-50/50 py-1.5 border-r border-gray-200">
+                        <TableHead
+                          colSpan={2}
+                          className="text-center text-blue-800 font-bold bg-blue-50/50 py-1.5 border-r border-gray-200"
+                        >
                           BALANCE
                         </TableHead>
                       </TableRow>
                       <TableRow className="bg-gray-100 hover:bg-gray-100 border-b border-gray-200">
-                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 py-1 w-20 text-gray-700">Piece/Box</TableHead>
-                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 py-1 w-20 text-gray-700">SQFT</TableHead>
-                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 py-1 w-20 text-gray-700">Piece/Box</TableHead>
-                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 py-1 w-20 text-gray-700">SQFT</TableHead>
-                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 bg-blue-50/20 py-1 w-20 text-gray-700">Piece/Box</TableHead>
-                        <TableHead className="text-right pr-6 bg-blue-50/20 py-1 w-20 text-gray-700">SQFT</TableHead>
+                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 py-1 w-20 text-gray-700">
+                          Piece/Box
+                        </TableHead>
+                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 py-1 w-20 text-gray-700">
+                          SQFT
+                        </TableHead>
+                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 py-1 w-20 text-gray-700">
+                          Piece/Box
+                        </TableHead>
+                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 py-1 w-20 text-gray-700">
+                          SQFT
+                        </TableHead>
+                        <TableHead className="text-right pr-6 font-bold border-r border-gray-200 bg-blue-50/20 py-1 w-20 text-gray-700">
+                          Piece/Box
+                        </TableHead>
+                        <TableHead className="text-right pr-6 bg-blue-50/20 py-1 w-20 text-gray-700">
+                          SQFT
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -287,12 +376,14 @@ const DesktopSingleItemStockReport = ({
                             key={index}
                             className={cn(
                               "border-b border-gray-200 hover:bg-gray-50/50",
-                              index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+                              index % 2 === 0 ? "bg-white" : "bg-gray-50/30",
                             )}
                           >
-                            <TableCell className="text-center border-r border-gray-200 font-medium py-2">
-                              {t.date ? moment(t.date).format("DD MMMM YYYY") : ""}
-                            </TableCell>
+                            {/* <TableCell className="text-center border-r border-gray-200 font-medium py-2">
+                              {t.date
+                                ? moment(t.date).format("DD MMMM YYYY")
+                                : ""}
+                            </TableCell> */}
                             <TableCell className="text-left pl-3 border-r border-gray-200 font-medium text-gray-800 py-2">
                               {t.reference}
                             </TableCell>
@@ -328,7 +419,8 @@ const DesktopSingleItemStockReport = ({
                             colSpan={8}
                             className="text-center py-12 text-gray-500 font-medium"
                           >
-                            No transaction history found for the selected criteria
+                            No transaction history found for the selected
+                            criteria
                           </td>
                         </TableRow>
                       )}
@@ -336,11 +428,17 @@ const DesktopSingleItemStockReport = ({
                       {/* Final Closing Balance Row */}
                       {normalizedTxs.length > 0 && (
                         <TableRow className="bg-slate-900 text-white hover:bg-slate-900 font-bold text-xs">
-                          <TableCell className="text-center py-2.5">
-                            {lastTxDate ? moment(lastTxDate).format("DD MMMM YYYY") : ""}
-                          </TableCell>
+                          {/* <TableCell className="text-center py-2.5">
+                            {lastTxDate
+                              ? moment(lastTxDate).format("DD MMMM YYYY")
+                              : ""}
+                          </TableCell> */}
                           <TableCell className="text-left pl-3 py-2.5">
-                            Closing: {formatClosingBalanceText(closingPieces, closingSqft)}
+                            Closing:{" "}
+                            {formatClosingBalanceText(
+                              closingPieces,
+                              closingSqft,
+                            )}
                           </TableCell>
                           <TableCell colSpan={4} className="py-2.5"></TableCell>
                           <TableCell className="text-right pr-6 border-r border-slate-800 py-2.5">
