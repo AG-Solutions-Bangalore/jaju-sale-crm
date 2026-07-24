@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
-import { ChevronDown, Edit, Eye, Search, SquarePlus } from "lucide-react";
+import {
+  ChevronDown,
+  Edit,
+  Eye,
+  Search,
+  SquarePlus,
+  Trash2,
+} from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
@@ -35,12 +42,24 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ButtonConfig } from "@/config/ButtonConfig";
-import { useSalesList } from "../hooks/useSales";
+import { useSalesList, useDeleteSales } from "../hooks/useSales";
 
 const SalesListPage = () => {
   const navigate = useNavigate();
   const { data: sales, isLoading, isError, refetch } = useSalesList();
+  const deleteMutation = useDeleteSales();
 
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -76,84 +95,205 @@ const SalesListPage = () => {
     });
   }, [sortedSales, searchQuery]);
 
-  const columns = [
-    {
-      accessorKey: "sales_no",
-      id: "Bill No",
-      header: "JFC Bill No",
-      cell: ({ row }) => <div>{row.getValue("Bill No")}</div>,
-    },
-    {
-      accessorKey: "sales_date",
-      id: "Date",
-      header: "Date",
-      cell: ({ row }) => {
-        const date = row.getValue("Date");
-        return moment(date).format("DD-MMM-YYYY");
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "Sl No",
+        accessorKey: "index",
+        header: "Sl/No",
+        cell: ({ row }) => <div>{row.index + 1}</div>,
       },
-    },
-    {
-      accessorKey: "sales_customer",
-      id: "Customer",
-      header: "Customer",
-      cell: ({ row }) => <div>{row.getValue("Customer")}</div>,
-    },
-    {
-      accessorKey: "sales_no_of_count",
-      id: "Items",
-      header: "Items",
-      cell: ({ row }) => <div>{row.getValue("Items")}</div>,
-    },
-    {
-      accessorKey: "sales_gross",
-      id: "Final Amount",
-      header: "Final Amount",
-      cell: ({ row }) => <div>{row.getValue("Final Amount")}</div>,
-    },
-    {
-      id: "actions",
-      header: "Action",
-      cell: ({ row }) => {
-        const salesId = row.original.id;
-        return (
-          <div className="flex flex-row">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate(`/sales/edit/${salesId}`)}
-                  >
-                    <Edit />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit Sales</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate(`/sales/view/${salesId}`)}
-                  >
-                    <Eye />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>View Sales</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        );
+      {
+        accessorKey: "sales_date",
+        id: "Date",
+        header: "Date",
+        cell: ({ row }) => {
+          const date = row.getValue("Date");
+          const salesId = row.original.id;
+          return (
+            <div className="font-medium">
+              {date ? moment(date).format("DD-MMM-YYYY") : "-"}
+            </div>
+          );
+        },
       },
-    },
-  ];
+      {
+        accessorKey: "sales_no",
+        id: "JFC Bill No.",
+        header: "JFC Bill No.",
+        cell: ({ row }) => {
+          const val =
+            row.getValue("JFC Bill No.") || row.original.sales_ref || "-";
+          return <div>{val}</div>;
+        },
+      },
+      // {
+      //   accessorKey: "sales_estimate_ref",
+      //   id: "Estimate Ref",
+      //   header: "Estimate Ref",
+      //   cell: ({ row }) => <div>{row.original.sales_estimate_ref || "-"}</div>,
+      // },
+      {
+        accessorKey: "sales_customer",
+        id: "Customer",
+        header: "Customer",
+        cell: ({ row }) => <div>{row.getValue("Customer") || "-"}</div>,
+      },
+      // {
+      //   id: "Items Count",
+      //   header: "Items Count",
+      //   cell: ({ row }) => {
+      //     const subs = row.original.subs || row.original.salesSub || [];
+      //     return <div>{subs.length || 0}</div>;
+      //   },
+      // },
+      {
+        id: "Final Amount",
+        header: () => <div className="text-right">Final Amount</div>,
+        cell: ({ row }) => {
+          const subs = row.original.subs || row.original.salesSub || [];
+          const total = subs.reduce(
+            (sum, item) => sum + (parseFloat(item.sales_sub_amount) || 0),
+            0,
+          );
+          return (
+            <div className="text-right font-semibold text-gray-800">
+              {total.toFixed(2)}
+            </div>
+          );
+        },
+      },
+      // {
+      //   accessorKey: "sales_amount_payable",
+      //   id: "Final Payable",
+      //   header: () => <div className="text-right">Final Payable</div>,
+      //   cell: ({ row }) => {
+      //     const rec = row.original;
+      //     const payable = parseFloat(rec?.sales_amount_payable);
+      //     if (!isNaN(payable) && payable > 0)
+      //       return (
+      //         <div className="text-right font-semibold text-orange-600">
+      //           {rec.sales_amount_payable}
+      //         </div>
+      //       );
+
+      //     const gross = parseFloat(rec?.sales_gross);
+      //     if (!isNaN(gross) && gross > 0)
+      //       return (
+      //         <div className="text-right font-semibold text-orange-600">
+      //           {rec.sales_gross}
+      //         </div>
+      //       );
+
+      //     const net = parseFloat(rec?.sales_net_total);
+      //     if (!isNaN(net) && net > 0)
+      //       return (
+      //         <div className="text-right font-semibold text-orange-600">
+      //           {rec.sales_net_total}
+      //         </div>
+      //       );
+
+      //     const temp = parseFloat(rec?.sales_temp_amount);
+      //     if (!isNaN(temp) && temp > 0)
+      //       return (
+      //         <div className="text-right font-semibold text-orange-600">
+      //           {rec.sales_temp_amount}
+      //         </div>
+      //       );
+
+      //     const fallback =
+      //       rec?.sales_amount_payable ||
+      //       rec?.sales_gross ||
+      //       rec?.sales_net_total ||
+      //       rec?.sales_temp_amount ||
+      //       "0.00";
+      //     return (
+      //       <div className="text-right font-semibold text-orange-600">
+      //         {fallback}
+      //       </div>
+      //     );
+      //   },
+      // },
+      {
+        id: "actions",
+        header: "Action",
+        cell: ({ row }) => {
+          const salesId = row.original.id;
+          return (
+            <div className="flex flex-row space-x-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate(`/sales/edit/${salesId}`)}
+                    >
+                      <Edit className="h-4 w-4 text-blue-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit Sales</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate(`/sales/view/${salesId}`)}
+                    >
+                      <Eye className="h-4 w-4 text-green-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View Sales</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <AlertDialog>
+                {/* <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete Sales</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider> */}
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Sales</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this sales record? This
+                      action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-red-600 hover:bg-red-700"
+                      onClick={() => deleteMutation.mutate(salesId)}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          );
+        },
+      },
+    ],
+    [navigate, deleteMutation],
+  );
 
   const table = useReactTable({
     data: sortedSales || [],
@@ -246,7 +386,7 @@ const SalesListPage = () => {
             {filteredSales
               .slice(
                 currentPage * itemsPerPage,
-                currentPage * itemsPerPage + itemsPerPage
+                currentPage * itemsPerPage + itemsPerPage,
               )
               .map((sale, index) => (
                 <Card key={sale.id} className="p-2">
@@ -281,16 +421,54 @@ const SalesListPage = () => {
                       <div>{moment(sale.sales_date).format("DD-MMM-YY")}</div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Estimate No</div>
-                      <div>{sale.sales_no}</div>
+                      <div className="text-gray-500">Bill No</div>
+                      <div>{sale.sales_no || sale.sales_ref || "-"}</div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Items</div>
-                      <div>{sale.sales_no_of_count}</div>
+                      <div className="text-gray-500">Items Count</div>
+                      <div>
+                        {(sale.subs || sale.salesSub || []).length || 0}
+                      </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Gross</div>
-                      <div>{sale.sales_gross}</div>
+                      <div className="text-gray-500">Total Amount</div>
+                      <div className="font-semibold text-gray-800">
+                        {(sale.subs || sale.salesSub || [])
+                          .reduce(
+                            (sum, item) =>
+                              sum + (parseFloat(item.sales_sub_amount) || 0),
+                            0,
+                          )
+                          .toFixed(2)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500">Final Payable</div>
+                      <div className="font-semibold text-orange-600">
+                        {(() => {
+                          const payable = parseFloat(
+                            sale?.sales_amount_payable,
+                          );
+                          if (!isNaN(payable) && payable > 0)
+                            return sale.sales_amount_payable;
+                          const gross = parseFloat(sale?.sales_gross);
+                          if (!isNaN(gross) && gross > 0)
+                            return sale.sales_gross;
+                          const net = parseFloat(sale?.sales_net_total);
+                          if (!isNaN(net) && net > 0)
+                            return sale.sales_net_total;
+                          const temp = parseFloat(sale?.sales_temp_amount);
+                          if (!isNaN(temp) && temp > 0)
+                            return sale.sales_temp_amount;
+                          return (
+                            sale?.sales_amount_payable ||
+                            sale?.sales_gross ||
+                            sale?.sales_net_total ||
+                            sale?.sales_temp_amount ||
+                            "0.00"
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -324,8 +502,8 @@ const SalesListPage = () => {
                 setCurrentPage((prev) =>
                   Math.min(
                     prev + 1,
-                    Math.ceil(filteredSales.length / itemsPerPage) - 1
-                  )
+                    Math.ceil(filteredSales.length / itemsPerPage) - 1,
+                  ),
                 )
               }
               disabled={
@@ -406,7 +584,7 @@ const SalesListPage = () => {
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
-                              header.getContext()
+                              header.getContext(),
                             )}
                       </TableHead>
                     ))}
@@ -414,8 +592,8 @@ const SalesListPage = () => {
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
+                {table.getPaginationRowModel().rows?.length ? (
+                  table.getPaginationRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && "selected"}
@@ -424,7 +602,7 @@ const SalesListPage = () => {
                         <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </TableCell>
                       ))}

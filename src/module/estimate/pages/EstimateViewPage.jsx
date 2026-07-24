@@ -89,8 +89,12 @@ const EstimateViewPage = () => {
     );
   }
 
+  const estimate = estimateData?.data || estimateData?.estimate || estimateData || {};
+  const estimateSub = estimate?.subs || estimateData?.estimateSub || estimate?.estimateSub || [];
+  const normalizedEstimateData = { estimate, estimateSub };
+
   const commonProps = {
-    estimateData,
+    estimateData: normalizedEstimateData,
     calculateTotal,
     isLoading,
     handleDownloadPDF,

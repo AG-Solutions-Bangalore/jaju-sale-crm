@@ -183,16 +183,16 @@ const DesktopPiaeceReport = ({
                         Items Name
                       </TableHead>
                       <TableHead className="text-center text-black font-bold border-r">
-                        Open Balance
+                        Opening Balance
                       </TableHead>
                       <TableHead className="text-center text-black font-bold border-r">
-                        Purchase
+                        Purchases
                       </TableHead>
                       <TableHead className="text-center text-black font-bold border-r">
-                        Sale
+                        Sales
                       </TableHead>
                       <TableHead className="text-center text-black font-bold">
-                        Close Balance
+                        Closing Balance
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -211,9 +211,14 @@ const DesktopPiaeceReport = ({
                         );
                       }
 
-                      const filteredStocks = (stocksData?.stocks || []).filter((item) => {
-                        const closing = (item.openpurch_pcs || 0) - (item.closesale_pcs || 0) + ((item.purch_pcs || 0) - (item.sale_pcs || 0));
-                        return closing !== 0;
+                      const rawList = stocksData?.stocks || stocksData?.data || (Array.isArray(stocksData) ? stocksData : []);
+                      const filteredStocks = rawList.filter((item) => {
+                        const openPcs = parseFloat(item.openpurch_pcs || 0);
+                        const closePcs = parseFloat(item.closesale_pcs || 0);
+                        const purchPcs = parseFloat(item.purch_pcs || 0);
+                        const salePcs = parseFloat(item.sale_pcs || 0);
+                        const closing = openPcs - closePcs + (purchPcs - salePcs);
+                        return purchPcs !== 0 || salePcs !== 0 || openPcs !== 0 || closePcs !== 0 || closing !== 0;
                       });
 
                       if (!filteredStocks.length) {

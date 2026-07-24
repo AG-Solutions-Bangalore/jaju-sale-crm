@@ -54,6 +54,7 @@ const PurchaseAddPage = () => {
   const [gstEdited, setGstEdited] = useState(false);
   const [autoGst18, setAutoGst18] = useState(0);
   const [roundOffEdited, setRoundOffEdited] = useState(false);
+  const saveActionRef = useRef("exit");
 
   const { data: currentYear, isLoading: isYearLoading } = useCurrentYear();
   const { data: productTypeGroup = [] } = useProductTypeGroup();
@@ -76,7 +77,7 @@ const PurchaseAddPage = () => {
       purchase_other1: "",
       purchase_other_label: "",
       purchase_other1_label: "",
-      purchase_amount_round: "0",
+      purchase_amount_round: "",
       purchase_tempo: "",
       purchase_loading: "",
       purchase_unloading: "",
@@ -214,14 +215,25 @@ const PurchaseAddPage = () => {
 
   const handleRoundOffChange = (e) => {
     const value = e.target.value;
-    const roundOffVal = parseFloat(value) || 0;
-    form.setValue("purchase_amount_round", roundOffVal.toString());
-    setRoundOffEdited(true);
+    if (value === "" || value === "-" || value === "-." || value === ".") {
+      form.setValue("purchase_amount_round", value);
+      setRoundOffEdited(true);
+      const netTotal = parseFloat(form.getValues("purchase_temp_amount") || 0);
+      form.setValue("purchase_gross", netTotal.toString());
+      form.setValue("purchase_balance", netTotal.toString());
+      return;
+    }
 
-    const netTotal = parseFloat(form.getValues("purchase_temp_amount") || 0);
-    const finalAmount = netTotal + roundOffVal;
-    form.setValue("purchase_gross", finalAmount.toString());
-    form.setValue("purchase_balance", finalAmount.toString());
+    if (/^-?\d*\.?\d*$/.test(value)) {
+      const roundOffVal = parseFloat(value) || 0;
+      form.setValue("purchase_amount_round", value);
+      setRoundOffEdited(true);
+
+      const netTotal = parseFloat(form.getValues("purchase_temp_amount") || 0);
+      const finalAmount = netTotal + roundOffVal;
+      form.setValue("purchase_gross", finalAmount.toString());
+      form.setValue("purchase_balance", finalAmount.toString());
+    }
   };
 
   const addItemEntry = () => {
@@ -300,6 +312,7 @@ const PurchaseAddPage = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     const formData = form.getValues();
@@ -445,27 +458,37 @@ const PurchaseAddPage = () => {
       const finalAmount = netTotal + roundOff;
 
       const payload = {
-        ...restData,
+        purchase_date: restData.purchase_date || moment().format("YYYY-MM-DD"),
+        purchase_supplier: restData.purchase_supplier || "",
+        purchase_bill_no: restData.purchase_bill_no || "",
+        purchase_tax: (parseFloat(form.watch("purchase_tax")) || 0).toString(),
         purchase_tempo: tempo.toString(),
-        purchase_loading: loading.toString(),
-        purchase_unloading: unloading.toString(),
+        purchase_labour_label: loadingType || restData.purchase_labour_label || "Labour Charges",
+        purchase_labour_value: (loading + unloading).toString(),
+        purchase_other_label: restData.purchase_other_label || "Other Charges",
         purchase_other: other.toString(),
+        purchase_other1_label: restData.purchase_other1_label || "Other Charges 1",
         purchase_other1: other1.toString(),
-        purchase_tax: gstAmount.toString(),
-        purchase_temp_amount: netTotal.toString(),
         purchase_gross: finalAmount.toString(),
-        purchase_balance: finalAmount.toString(),
+        purchase_net_total: netTotal.toString(),
         purchase_amount_round: roundOff.toString(),
-        purchase_advance: "0",
-        purchase_amount_received: restData.purchase_amount_received || "0",
-        purchase_amount: restData.purchase_amount_received || "0",
-        purchase_year: currentYear || "",
-        purchase_no_of_count: formattedItemEntries.length,
-        purchase_sub_data: formattedItemEntries,
+        purchase_amount_received: restData.purchase_amount_received || finalAmount.toString(),
+        subs: formattedItemEntries.map((item) => ({
+          purchase_sub_item: item.purchase_sub_item || "",
+          purchase_sub_qnty_sqr: (item.purchase_sub_qnty_sqr || "0").toString(),
+          purchase_sub_pcs: (item.purchase_sub_pcs || item.purchase_sub_qnty || "0").toString(),
+          purchase_sub_rate: (item.purchase_sub_rate || "0").toString(),
+          purchase_sub_amount: (item.purchase_sub_amount || "0").toString(),
+        })),
       };
 
-      await createMutation.mutateAsync(payload);
-      navigate("/purchase");
+      const response = await createMutation.mutateAsync(payload);
+      if (saveActionRef.current === "print") {
+        const id = response?.data?.data || response?.data?.id || response?.data;
+        navigate(`/purchase/view/${id}`);
+      } else {
+        navigate("/purchase");
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -517,6 +540,7 @@ const PurchaseAddPage = () => {
     isSubmitting,
     purchaseList,
     title: "Add Purchases",
+    setSaveAction: (action) => { saveActionRef.current = action; },
   };
 
   return (

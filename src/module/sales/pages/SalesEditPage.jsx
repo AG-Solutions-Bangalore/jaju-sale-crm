@@ -63,6 +63,7 @@ const SalesEditPage = () => {
   const [autoGst18, setAutoGst18] = useState(0);
   const [roundOffEdited, setRoundOffEdited] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const saveActionRef = useRef("exit");
 
   const { data: currentYear } = useCurrentYear();
   const { data: salesId, isLoading: isSalesLoading } = useSalesById(id);
@@ -137,8 +138,9 @@ const SalesEditPage = () => {
 
   // Load existing data
   useEffect(() => {
-    if (salesId?.sales && salesId?.salesSub) {
-      const { sales, salesSub } = salesId;
+    if (salesId) {
+      const sales = salesId.data || salesId.sales || salesId;
+      const salesSub = sales.subs || salesId.salesSub || sales.salesSub || [];
 
       const formatToInteger = (val) => {
         if (val === undefined || val === null || val === "") return "";
@@ -146,11 +148,23 @@ const SalesEditPage = () => {
         return isNaN(parsed) ? "" : Math.round(parsed).toString();
       };
 
+      const formatToDecimal = (val) => {
+        if (val === undefined || val === null || val === "") return "";
+        const parsed = parseFloat(val);
+        return isNaN(parsed) ? "" : parsed.toFixed(2);
+      };
+
       const savedGross = parseFloat(sales.sales_gross || 0);
-      const savedTempAmount = parseFloat(sales.sales_temp_amount || sales.sales_gross || 0);
+      const savedTempAmount = parseFloat(
+        sales.sales_temp_amount || sales.sales_net_total || sales.sales_gross || 0
+      );
       const savedRoundOff = getActualRoundOff(savedTempAmount, savedGross, sales.sales_amount_round);
 
-      if (sales.sales_unloading && parseFloat(sales.sales_unloading) > 0) {
+      const isUnloading = sales.sales_labour_label === "Loading & Unloading" || (sales.sales_unloading && parseFloat(sales.sales_unloading) > 0);
+      const loadingVal = isUnloading ? "" : formatToInteger(sales.sales_labour_value || sales.sales_loading);
+      const unloadingVal = isUnloading ? formatToInteger(sales.sales_labour_value || sales.sales_unloading) : "";
+
+      if (isUnloading) {
         setLoadingType("Loading & Unloading");
       } else {
         setLoadingType("Loading Only");
@@ -169,15 +183,15 @@ const SalesEditPage = () => {
         sales_other_label: sales.sales_other_label || "",
         sales_other1_label: sales.sales_other1_label || "",
         sales_tempo: formatToInteger(sales.sales_tempo),
-        sales_tax: formatToInteger(sales.sales_tax),
+        sales_tax: formatToDecimal(sales.sales_tax),
         sales_gross: formatToInteger(sales.sales_gross),
-        sales_loading: formatToInteger(sales.sales_loading),
-        sales_unloading: formatToInteger(sales.sales_unloading),
+        sales_loading: loadingVal,
+        sales_unloading: unloadingVal,
         sales_advance: formatToInteger(sales.sales_advance),
         sales_balance: formatToInteger(sales.sales_balance),
         sales_no_of_count: sales.sales_no_of_count?.toString() || "1",
-        sales_temp_amount: formatToInteger(savedTempAmount),
-        sales_amount_round: savedRoundOff === 0 ? "" : savedRoundOff.toString(),
+        sales_temp_amount: formatToDecimal(savedTempAmount),
+        sales_amount_round: savedRoundOff === 0 ? "" : formatToDecimal(savedRoundOff),
         sales_amount_received: formatToInteger(sales.sales_amount_received),
       });
 
@@ -427,6 +441,7 @@ const SalesEditPage = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     const formData = form.getValues();
@@ -536,7 +551,6 @@ const SalesEditPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      const { sales_amount_round, ...restData } = data;
       const formattedItemEntries = itemEntries.map((entry, index) => ({
         id: entry.id || "",
         sales_sub_pcs: entry.sales_sub_qnty || "0",
@@ -550,41 +564,56 @@ const SalesEditPage = () => {
       }));
 
       const itemsTotal = itemEntries.reduce(
-        (sum, entry) => sum + parseFloat(entry.sales_sub_amount || 0),
+        (sum, entry) => sum + (parseFloat(entry.sales_sub_amount) || 0),
         0
       );
-      const tempo = parseFloat(form.watch("sales_tempo") || 0);
-      const loading = parseFloat(form.watch("sales_loading") || 0);
-      const unloading = parseFloat(form.watch("sales_unloading") || 0);
-      const other = parseFloat(form.watch("sales_other") || 0);
-      const other1 = parseFloat(form.watch("sales_other1") || 0);
+      const tempo = parseFloat(data.sales_tempo) || 0;
+      const loading = parseFloat(data.sales_loading) || 0;
+      const unloading = parseFloat(data.sales_unloading) || 0;
+      const other = parseFloat(data.sales_other) || 0;
+      const other1 = parseFloat(data.sales_other1) || 0;
 
       const grandTotal = itemsTotal + tempo + loading + unloading + other + other1;
-      const gstAmount = parseFloat(form.watch("sales_tax") || 0);
+      const gstAmount = parseFloat(data.sales_tax) || 0;
       const netTotal = grandTotal + gstAmount;
-      const roundOff = parseFloat(form.watch("sales_amount_round") || 0);
+      const roundOff = parseFloat(data.sales_amount_round) || 0;
       const finalAmount = netTotal + roundOff;
 
       const payload = {
-        ...restData,
-        sales_tempo: tempo.toString(),
-        sales_loading: loading.toString(),
-        sales_unloading: unloading.toString(),
-        sales_other: other.toString(),
-        sales_other1: other1.toString(),
+        sales_date: data.sales_date || moment().format("YYYY-MM-DD"),
+        sales_estimate_ref: data.sales_estimate_ref || "",
+        sales_customer: data.sales_customer || "",
+        sales_address: data.sales_address || "",
+        sales_mobile: data.sales_mobile || "",
         sales_tax: gstAmount.toString(),
-        sales_temp_amount: netTotal.toString(),
-        sales_gross: finalAmount.toString(), // Bill Amount (Final Total)
-        sales_balance: (finalAmount - parseFloat(restData.sales_amount_received || 0)).toString(), // Pending Amount
+        sales_tempo: tempo.toString(),
+        sales_labour_label: loadingType || data.sales_labour_label || "Labour Charges",
+        sales_labour_value: (loading + unloading).toString(),
+        sales_other_label: data.sales_other_label || "Other Charges",
+        sales_other: other.toString(),
+        sales_other1_label: data.sales_other1_label || "Other Charges 1",
+        sales_other1: other1.toString(),
+        sales_gross: finalAmount.toString(),
+        sales_net_total: netTotal.toString(),
         sales_amount_round: roundOff.toString(),
-        sales_advance: (restData.sales_amount_received || "0").toString(), // Amount Collected
-        sales_amount_received: (restData.sales_amount_received || "0").toString(), // Amount Collected
-        sales_no_of_count: formattedItemEntries.length,
-        sales_sub_data: formattedItemEntries,
+        sales_amount_payable: finalAmount.toString(),
+        sales_amount_received: (data.sales_amount_received || "0.00").toString(),
+        subs: formattedItemEntries.map((item) => ({
+          ...(item.id ? { id: Number(item.id) } : {}),
+          sales_sub_item: item.sales_sub_item || "",
+          sales_sub_qnty_sqr: item.sales_sub_qnty_sqr || "0",
+          sales_sub_pcs: item.sales_sub_pcs || item.sales_sub_qnty || "0",
+          sales_sub_rate: item.sales_sub_rate || "0",
+          sales_sub_amount: item.sales_sub_amount || "0",
+        })),
       };
 
-      await updateMutation.mutateAsync(payload);
-      navigate("/sales");
+      const response = await updateMutation.mutateAsync(payload);
+      if (saveActionRef.current === "print") {
+        navigate(`/sales/view/${id}`);
+      } else {
+        navigate("/sales");
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -636,6 +665,7 @@ const SalesEditPage = () => {
     handleToggleCustomItem,
     isSubmitting,
     title: "Edit Sales",
+    setSaveAction: (action) => { saveActionRef.current = action; },
   };
 
   return (

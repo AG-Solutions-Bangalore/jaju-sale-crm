@@ -1,15 +1,23 @@
 import axiosInstance from "@/api/axios";
 
-export const fetchStockNewReport = (payload) => {
-  return axiosInstance.post("/api/web-fetch-stock-new-report", payload);
+export const fetchStockNewReport = (payload = {}) => {
+  const formData = new FormData();
+  formData.append("from_date", payload.from_date || "");
+  formData.append("to_date", payload.to_date || "");
+  formData.append("item_name", payload.item_name || "");
+  return axiosInstance.post("/api/salesStock", formData);
 };
 
-export const fetchStockNewReportByItem = (payload) => {
-  return axiosInstance.post("/api/web-fetch-stock-new-report-by-item", payload);
+export const fetchStockNewReportByItem = (payload = {}) => {
+  const formData = new FormData();
+  formData.append("from_date", payload.from_date || "");
+  formData.append("to_date", payload.to_date || "");
+  formData.append("item_name", payload.item_name || "");
+  return axiosInstance.post("/api/salesStock", formData);
 };
 
 export const fetchProductTypeList = () => {
-  return axiosInstance.get("/api/web-fetch-product-type-list");
+  return axiosInstance.get("/api/web-fetch-product-type-group-new");
 };
 
 export const fetchProductTypeGroupNew = () => {

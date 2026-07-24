@@ -78,9 +78,7 @@ const MobilePurchaseView = ({
           ) : (
             <>
               <div className="text-center border p-2 space-y-1 mb-3 text-xs bg-white">
-                <h3 className="text-sm font-semibold">
-                  JAJU'S PURCHASE
-                </h3>
+                <h3 className="text-sm font-semibold">JAJU'S PURCHASE</h3>
                 <p className="text-xs">New 80 ft Sompura, Sriniwaspura Road</p>
                 <p className="text-xs">Bengaluru, Karnataka 560098</p>
                 <p className="text-xs">Phone: 097420 42097</p>
@@ -92,12 +90,12 @@ const MobilePurchaseView = ({
                   <span className="font-medium">Date:</span>{" "}
                   <span className="ml-1">
                     {moment(purchaseData?.purchase?.purchase_date).format(
-                      "DD-MMM-YYYY"
+                      "DD-MMM-YYYY",
                     )}
                   </span>
                 </div>
                 <div className="flex justify-center border p-1 bg-white">
-                  <span className="font-medium">JFC Bill Number:</span>{" "}
+                  <span className="font-medium">JFC Bill No.:</span>{" "}
                   <span className="ml-1">
                     {purchaseData?.purchase?.purchase_bill_no}
                   </span>
@@ -147,10 +145,10 @@ const MobilePurchaseView = ({
                           0}
                       </td>
                       <td className="border p-1 text-right">
-                        {item.purchase_sub_rate}
+                        {Number(item.purchase_sub_rate).toFixed(0)}
                       </td>
                       <td className="border p-1 text-right">
-                        {item.purchase_sub_amount}
+                        {Number(item.purchase_sub_amount).toFixed(0)}
                       </td>
                     </tr>
                   ))}
@@ -181,26 +179,15 @@ const MobilePurchaseView = ({
                       {Number(tempo).toFixed(0)}
                     </td>
                   </tr>
-                  {Number(loading) > 0 && (
-                    <tr>
-                      <td className="border p-1 text-right font-medium">
-                        Loading Only
-                      </td>
-                      <td className="border p-1 text-right">
-                        {Number(loading).toFixed(0)}
-                      </td>
-                    </tr>
-                  )}
-                  {Number(unloading) > 0 && (
-                    <tr>
-                      <td className="border p-1 text-right font-medium">
-                        Loading & Unloading
-                      </td>
-                      <td className="border p-1 text-right">
-                        {Number(unloading).toFixed(0)}
-                      </td>
-                    </tr>
-                  )}
+                  <tr>
+                    <td className="border p-1 text-right font-medium">
+                      {purchaseData?.purchase?.purchase_labour_label ||
+                        "Labour Charges"}
+                    </td>
+                    <td className="border p-1 text-right">
+                      {Number(loading).toFixed(0)}
+                    </td>
+                  </tr>
                   <tr>
                     <td className="border p-1 text-right font-medium">
                       Other Charges
@@ -220,22 +207,18 @@ const MobilePurchaseView = ({
                       </td>
                     </tr>
                   )}
-                  {Math.abs(Math.round(roundOff)) > 0 && (
-                    <tr>
-                      <td className="border p-1 text-right font-medium">
-                        Round Off
-                      </td>
-                      <td className="border p-1 text-right">
-                        {Math.round(roundOff) > 0
-                          ? `+${Math.round(roundOff)}`
-                          : Math.round(roundOff)}
-                      </td>
-                    </tr>
-                  )}
-                  <tr className="font-bold">
-                    <td className="border p-1 text-right">
-                      Final Amount
+                  <tr>
+                    <td className="border p-1 text-right font-medium">
+                      Round Off
                     </td>
+                    <td className="border p-1 text-right">
+                      {Math.round(roundOff) > 0
+                        ? `+${Math.round(roundOff)}`
+                        : Math.round(roundOff)}
+                    </td>
+                  </tr>
+                  <tr className="font-bold">
+                    <td className="border p-1 text-right">Final Amount</td>
                     <td className="border p-1 text-right">
                       {Number(amountToBeCollected).toFixed(0)}
                     </td>

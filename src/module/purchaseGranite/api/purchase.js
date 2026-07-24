@@ -1,7 +1,14 @@
 import axiosInstance from "@/api/axios";
 
 export const fetchPurchaseList = () => {
-  return axiosInstance.get("/api/web-fetch-purchase-lists");
+  return axiosInstance.get("/api/purchase");
+};
+
+export const fetchPurchaseReport = (data) => {
+  const formData = new FormData();
+  formData.append("from_date", data.from_date || "");
+  formData.append("to_date", data.to_date || "");
+  return axiosInstance.post("/api/purchaseReport", formData);
 };
 
 export const fetchCurrentYear = () => {
@@ -13,21 +20,25 @@ export const fetchProductTypeGroupNew = () => {
 };
 
 export const fetchProductTypeGroup = () => {
-  return axiosInstance.get("/api/web-fetch-product-type-group");
+  return axiosInstance.get("/api/web-fetch-product-type-group-new");
 };
 
 export const createPurchase = (payload) => {
-  return axiosInstance.post("/api/web-create-purchase", payload);
+  return axiosInstance.post("/api/purchase", payload);
 };
 
 export const fetchPurchaseById = (id) => {
-  return axiosInstance.get(`/api/web-fetch-purchase-by-id/${id}`);
+  return axiosInstance.get(`/api/purchase/${id}`);
 };
 
 export const deletePurchaseSubItem = (subId) => {
-  return axiosInstance.delete(`/api/web-delete-purchase-sub/${subId}`);
+  return axiosInstance.delete(`/api/delete-purchase-sub/${subId}`);
 };
 
 export const updatePurchase = (id, payload) => {
-  return axiosInstance.put(`/api/web-update-purchase/${id}`, payload);
+  return axiosInstance.put(`/api/purchase/${id}`, payload);
+};
+
+export const deletePurchase = (id) => {
+  return axiosInstance.delete(`/api/purchase/${id}`);
 };

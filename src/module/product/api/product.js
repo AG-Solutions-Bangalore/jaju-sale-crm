@@ -1,7 +1,7 @@
 import axiosInstance from "@/api/axios";
 
 export const fetchProductList = () => {
-  return axiosInstance.get("/api/web-fetch-product-type-list");
+  return axiosInstance.get("/api/web-fetch-product-type-group-new");
 };
 
 export const createProduct = (data) => {

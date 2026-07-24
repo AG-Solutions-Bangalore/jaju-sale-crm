@@ -99,34 +99,42 @@ const SalesViewPage = () => {
     );
   }
 
-  const subTotal = calculateSubTotal(salesData?.salesSub);
-  const tax = parseFloat(salesData?.sales?.sales_tax || 0);
-  const tempo = parseFloat(salesData?.sales?.sales_tempo || 0);
-  const loading = parseFloat(salesData?.sales?.sales_loading || 0);
-  const unloading = parseFloat(salesData?.sales?.sales_unloading || 0);
-  const other = parseFloat(salesData?.sales?.sales_other || 0);
-  const other1 = parseFloat(salesData?.sales?.sales_other1 || 0);
-  const gross = parseFloat(salesData?.sales?.sales_gross || 0);
+  const sales = salesData?.data || salesData?.sales || salesData || {};
+  const salesSub = sales?.subs || salesData?.salesSub || sales?.salesSub || [];
+  const normalizedSalesData = { sales, salesSub };
 
-  const unroundedTotal = subTotal + tax + tempo + loading + unloading + other + other1;
-  const grandTotal = subTotal + tempo + loading + unloading + other + other1;
+  const subTotal = calculateSubTotal(salesSub);
+  const tax = parseFloat(sales.sales_tax || 0);
+  const tempo = parseFloat(sales.sales_tempo || 0);
+  const labourLabel = sales.sales_labour_label || "Labour Charges";
+  const labourValue = parseFloat(sales.sales_labour_value || sales.sales_loading || sales.sales_unloading || 0);
+  const loading = labourValue;
+  const unloading = 0;
+  const other = parseFloat(sales.sales_other || 0);
+  const other1 = parseFloat(sales.sales_other1 || 0);
+  const gross = parseFloat(sales.sales_gross || sales.sales_amount_payable || 0);
+
+  const unroundedTotal = subTotal + tax + tempo + labourValue + other + other1;
+  const grandTotal = subTotal + tempo + labourValue + other + other1;
   const autoGst = grandTotal * 0.18;
 
   const roundOff = getActualRoundOff(
-    salesData?.sales?.sales_temp_amount || unroundedTotal,
+    sales.sales_temp_amount || sales.sales_net_total || unroundedTotal,
     gross,
-    salesData?.sales?.sales_amount_round
+    sales.sales_amount_round
   );
 
   const displayNetTotal = grandTotal + tax;
   const amountToBeCollected = displayNetTotal + roundOff;
 
   const commonProps = {
-    salesData,
+    salesData: normalizedSalesData,
     calculateSubTotal,
     subTotal,
     tax,
     tempo,
+    labourLabel,
+    labourValue,
     loading,
     unloading,
     other,

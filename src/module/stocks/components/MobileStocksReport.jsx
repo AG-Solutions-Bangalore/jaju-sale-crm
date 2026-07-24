@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import ProductEditDialog from "@/module/product/components/ProductEditDialog";
+import SingleItemStockReportDialog from "./SingleItemStockReportDialog";
 
 const MobileStocksReport = ({
   form,
@@ -170,9 +171,14 @@ const MobileStocksReport = ({
                 </thead>
                 <tbody>
                     {(() => {
-                      const filteredStocks = (stocksData?.stocks || []).filter((item) => {
-                        const closing = (item.openpurch || 0) - (item.closesale || 0) + ((item.purch || 0) - (item.sale || 0));
-                        return closing !== 0;
+                      const rawList = stocksData?.stocks || stocksData?.data || (Array.isArray(stocksData) ? stocksData : []);
+                      const filteredStocks = rawList.filter((item) => {
+                        const openPcs = parseFloat(item.openpurch_pcs || item.openpurch || 0);
+                        const closePcs = parseFloat(item.closesale_pcs || item.closesale || 0);
+                        const purchPcs = parseFloat(item.purch_pcs || item.purch || 0);
+                        const salePcs = parseFloat(item.sale_pcs || item.sale || 0);
+                        const closing = openPcs - closePcs + (purchPcs - salePcs);
+                        return purchPcs !== 0 || salePcs !== 0 || openPcs !== 0 || closePcs !== 0 || closing !== 0;
                       });
 
                       if (!filteredStocks.length) {
@@ -196,35 +202,38 @@ const MobileStocksReport = ({
                           }
                         >
                           <td className="border p-1 text-left">
-                            <span className="flex items-center gap-1">
+                            <div className="flex items-center justify-between w-full gap-2">
                               {(() => {
                                 const matchedProduct = productTypes?.find(
                                   (p) =>
                                     (p.product_type || p.item_name || "").toLowerCase() ===
                                     item.item_name?.toLowerCase()
                                 );
-                                return matchedProduct ? (
-                                  <div className="flex items-center gap-1.5">
-                                    <button
-                                      type="button"
-                                      onClick={() => navigate(`/single-item-stock?productId=${matchedProduct.id}`)}
-                                      className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold"
-                                    >
-                                      {item.item_name}
-                                    </button>
-                                    <ProductEditDialog productId={matchedProduct.id} />
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => navigate(`/single-item-stock?item_name=${encodeURIComponent(item.item_name)}`)}
-                                    className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold text-xs"
-                                  >
-                                    {item.item_name}
-                                  </button>
+
+                                const itemNameBtn = (
+                                  <SingleItemStockReportDialog
+                                    itemName={item.item_name}
+                                    trigger={
+                                      <button
+                                        type="button"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold text-xs truncate"
+                                      >
+                                        {item.item_name}
+                                      </button>
+                                    }
+                                  />
+                                );
+
+                                return (
+                                  <>
+                                    {itemNameBtn}
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <SingleItemStockReportDialog itemName={item.item_name} />
+                                    </div>
+                                  </>
                                 );
                               })()}
-                            </span>
+                            </div>
                           </td>
                           <td className="border p-1 text-right">
                             {formatStockValue(item.openpurch - item.closesale)}

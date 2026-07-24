@@ -53,13 +53,13 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     const formData = new FormData();
+    formData.append("username", username);
     formData.append("email", email);
-    formData.append("name", username);
 
     try {
       console.log("Submitting forgot password request...");
 
-      const res = await axios.post(`${BASE_URL}/api/web-send-password?username=${username}&email=${email}`, formData);
+      const res = await axios.post(`${BASE_URL}/api/web-send-password`, formData);
 
       if (res.status === 200) {
         const response = res.data;

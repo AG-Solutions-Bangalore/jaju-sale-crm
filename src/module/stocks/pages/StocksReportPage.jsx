@@ -156,7 +156,8 @@ const StocksReportPage = () => {
 
   const handleDownloadCsv = () => {
     try {
-      if (!stocksData || !stocksData.stocks || stocksData.stocks.length === 0) {
+      const stockList = stocksData?.stocks || stocksData?.data || (Array.isArray(stocksData) ? stocksData : []);
+      if (!stockList || stockList.length === 0) {
         toast({
           title: "No Data",
           description: "There is no stock data to download",
@@ -167,28 +168,28 @@ const StocksReportPage = () => {
 
       const headers = [
         "Item Name",
-        "Open Balance",
-        "Purchase",
-        "Sale",
-        "Close Balance",
+        "Opening Balance",
+        "Purchases",
+        "Sales",
+        "Closing Balance",
       ];
 
-      const rows = stocksData.stocks.map((item) => {
+      const rows = stockList.map((item) => {
         let openBal = "";
         let purchaseVal = "";
         let saleVal = "";
         let closeBal = "";
 
         if (selectedUnits.box && selectedUnits.sqft) {
-          openBal = `"${formatStockValue(item.openpurch_pcs - item.closesale_pcs)} Pcs , ${formatStockValue(item.openpurch_sqr - item.closesale_sqr)} Sqft"`;
-          purchaseVal = `"${formatStockValue(item.purch_pcs)} Pcs , ${formatStockValue(item.purch_sqr)} Sqft"`;
-          saleVal = `"${formatStockValue(item.sale_pcs)} Pcs , ${formatStockValue(item.sale_sqr)} Sqft"`;
-          closeBal = `"${formatStockValue(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs))} Pcs , ${formatStockValue(item.openpurch_sqr - item.closesale_sqr + (item.purch_sqr - item.sale_sqr))} Sqft"`;
+          openBal = `"${formatStockValue(item.openpurch_pcs - item.closesale_pcs)} Pcs/Box , ${formatStockValue(item.openpurch_sqr - item.closesale_sqr)} Sqft"`;
+          purchaseVal = `"${formatStockValue(item.purch_pcs)} Pcs/Box , ${formatStockValue(item.purch_sqr)} Sqft"`;
+          saleVal = `"${formatStockValue(item.sale_pcs)} Pcs/Box , ${formatStockValue(item.sale_sqr)} Sqft"`;
+          closeBal = `"${formatStockValue(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs))} Pcs/Box , ${formatStockValue(item.openpurch_sqr - item.closesale_sqr + (item.purch_sqr - item.sale_sqr))} Sqft"`;
         } else if (selectedUnits.box) {
-          openBal = `"${formatStockValue(item.openpurch_pcs - item.closesale_pcs)} Pcs"`;
-          purchaseVal = `"${formatStockValue(item.purch_pcs)} Pcs"`;
-          saleVal = `"${formatStockValue(item.sale_pcs)} Pcs"`;
-          closeBal = `"${formatStockValue(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs))} Pcs"`;
+          openBal = `"${formatStockValue(item.openpurch_pcs - item.closesale_pcs)} Pcs/Box"`;
+          purchaseVal = `"${formatStockValue(item.purch_pcs)} Pcs/Box"`;
+          saleVal = `"${formatStockValue(item.sale_pcs)} Pcs/Box"`;
+          closeBal = `"${formatStockValue(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs))} Pcs/Box"`;
         } else if (selectedUnits.sqft) {
           openBal = `"${formatStockValue(item.openpurch_sqr - item.closesale_sqr)} Sqft"`;
           purchaseVal = `"${formatStockValue(item.purch_sqr)} Sqft"`;

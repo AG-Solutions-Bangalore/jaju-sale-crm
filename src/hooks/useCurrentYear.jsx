@@ -8,7 +8,7 @@ export const useCurrentYear = () => {
     if (!token) throw new Error("No authentication token found");
 
     const response = await fetch(
-      `${BASE_URL}/api/panel-fetch-year`,
+      `${BASE_URL}/api/web-fetch-year`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -166,9 +166,14 @@ const MobilePiaeceReport = ({
                 </thead>
                 <tbody>
                     {(() => {
-                      const filteredStocks = (stocksData?.stocks || []).filter((item) => {
-                        const closing = (item.openpurch_pcs || 0) - (item.closesale_pcs || 0) + ((item.purch_pcs || 0) - (item.sale_pcs || 0));
-                        return closing !== 0;
+                      const rawList = stocksData?.stocks || stocksData?.data || (Array.isArray(stocksData) ? stocksData : []);
+                      const filteredStocks = rawList.filter((item) => {
+                        const openPcs = parseFloat(item.openpurch_pcs || 0);
+                        const closePcs = parseFloat(item.closesale_pcs || 0);
+                        const purchPcs = parseFloat(item.purch_pcs || 0);
+                        const salePcs = parseFloat(item.sale_pcs || 0);
+                        const closing = openPcs - closePcs + (purchPcs - salePcs);
+                        return purchPcs !== 0 || salePcs !== 0 || openPcs !== 0 || closePcs !== 0 || closing !== 0;
                       });
 
                       if (!filteredStocks.length) {

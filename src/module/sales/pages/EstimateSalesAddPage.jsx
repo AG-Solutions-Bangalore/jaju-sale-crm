@@ -11,7 +11,6 @@ import useNumericInput from "@/hooks/useNumericInput";
 import {
   useCurrentYear,
   useProductTypeGroup,
-  useProductTypesByGroup,
   useEstimateById,
   useCreateSales,
 } from "../hooks/useSales";
@@ -53,7 +52,7 @@ const EstimateSalesAddPage = () => {
 
   const { data: currentYear } = useCurrentYear();
   const { data: salesEstimateId, isLoading: isEstimateLoading } = useEstimateById(id);
-  const { data: productTypeGroup = [] } = useProductTypeGroup();
+  const { data: productTypeGroup = [], isLoading: isLoadingItems, refetch: refetchProducts } = useProductTypeGroup();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -63,6 +62,7 @@ const EstimateSalesAddPage = () => {
       sales_customer: "",
       sales_address: "",
       sales_mobile: "",
+      sales_no: "",
       sales_item_type: "",
       sales_tax: "",
       sales_tempo: "",
@@ -77,10 +77,6 @@ const EstimateSalesAddPage = () => {
       sales_amount_received: "",
     },
   });
-
-  const selectedItemType = form.watch("sales_item_type");
-  const { data: product = [], refetch: refetchProducts, isLoading: isLoadingItems } =
-    useProductTypesByGroup(selectedItemType);
 
   const createSalesMutation = useCreateSales();
 
@@ -98,11 +94,11 @@ const EstimateSalesAddPage = () => {
   ]);
 
   const productOptions = useMemo(() => {
-    return product.map((item) => ({
+    return productTypeGroup.map((item) => ({
       value: item.product_type,
       label: item.product_type,
     }));
-  }, [product]);
+  }, [productTypeGroup]);
 
   // Load existing estimate data
   useEffect(() => {
@@ -309,6 +305,7 @@ const EstimateSalesAddPage = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     const formData = form.getValues();
@@ -424,25 +421,32 @@ const EstimateSalesAddPage = () => {
   const onSubmit = async (data) => {
     try {
       const payload = {
-        ...data,
-        sales_gross: form.getValues("sales_gross")?.toString() || "0",
-        sales_balance: form.getValues("sales_balance")?.toString() || "0",
-        sales_advance: form.getValues("sales_advance")?.toString() || "0",
-        sales_amount_round: form.getValues("sales_amount_round")?.toString() || "0",
-        sales_amount_received: form.getValues("sales_amount_received")?.toString() || "0",
-        sales_temp_amount: form.getValues("sales_temp_amount")?.toString() || "0",
-        sales_year: currentYear || "",
-        sales_no_of_count: itemEntries.length,
-        sales_sub_data: itemEntries.map((e) => ({
-          ...e,
-          sales_sub_pcs: e.estimate_sub_qnty || "0",
-          sales_sub_item: e.estimate_sub_item || "",
-          sales_sub_qnty: e.estimate_sub_qnty || "0",
-          sales_sub_qnty_sqr: e.estimate_sub_qnty_sqr || "0",
-          sales_sub_rate: e.estimate_sub_rate || "0",
-          sales_sub_amount: e.estimate_sub_amount || "0",
+        sales_date: data.sales_date || moment().format("YYYY-MM-DD"),
+        sales_estimate_ref: salesEstimateId?.estimate?.estimate_ref || id || data.sales_estimate_ref || "",
+        sales_customer: data.sales_customer || data.estimate_customer || "",
+        sales_address: data.sales_address || data.estimate_address || "",
+        sales_mobile: data.sales_mobile || data.estimate_mobile || "",
+        sales_tax: data.sales_tax?.toString() || "0",
+        sales_tempo: data.sales_tempo?.toString() || "0",
+        sales_labour_label: data.sales_labour_label || "Labour Charges",
+        sales_labour_value: (parseFloat(data.sales_loading || 0) + parseFloat(data.sales_unloading || 0)).toString(),
+        sales_other_label: data.sales_other_label || "Other Charges",
+        sales_other: data.sales_other?.toString() || "0",
+        sales_other1_label: data.sales_other1_label || "Other Charges 1",
+        sales_other1: data.sales_other1?.toString() || "0",
+        sales_gross: data.sales_gross?.toString() || "0",
+        sales_net_total: data.sales_temp_amount?.toString() || "0",
+        sales_amount_round: data.sales_amount_round?.toString() || "0",
+        sales_amount_payable: data.sales_gross?.toString() || "0",
+        sales_amount_received: data.sales_amount_received?.toString() || "0",
+        subs: itemEntries.map((e) => ({
+          ...(e.id ? { id: e.id } : {}),
+          sales_sub_item: e.estimate_sub_item || e.sales_sub_item || "",
+          sales_sub_qnty_sqr: e.estimate_sub_qnty_sqr || e.sales_sub_qnty_sqr || "0",
+          sales_sub_pcs: e.estimate_sub_qnty || e.estimate_sub_pcs || e.sales_sub_pcs || "0",
+          sales_sub_rate: e.estimate_sub_rate || e.sales_sub_rate || "0",
+          sales_sub_amount: e.estimate_sub_amount || e.sales_sub_amount || "0",
         })),
-        sales_estimate_ref: id,
       };
 
       await createSalesMutation.mutateAsync(payload);

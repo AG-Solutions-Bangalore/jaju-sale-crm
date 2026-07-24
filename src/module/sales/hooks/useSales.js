@@ -5,12 +5,13 @@ import {
   fetchProductTypeGroupNew,
   fetchProductTypeGroup,
   fetchEstimateById,
-  fetchProductTypesByGroup,
   createSales,
   createSalesDirect,
   fetchSalesById,
   deleteSalesSubItem,
   updateSalesDirect,
+  fetchSalesReport,
+  deleteSales,
 } from "../api/sales";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,7 +20,12 @@ export const useSalesList = () => {
     queryKey: ["sales"],
     queryFn: async () => {
       const response = await fetchSalesList();
-      return response.data.sales || [];
+      const rawData = response?.data;
+      if (Array.isArray(rawData?.data?.data)) return rawData.data.data;
+      if (Array.isArray(rawData?.sales)) return rawData.sales;
+      if (Array.isArray(rawData?.data)) return rawData.data;
+      if (Array.isArray(rawData)) return rawData;
+      return [];
     },
   });
 };
@@ -71,16 +77,7 @@ export const useEstimateById = (id) => {
   });
 };
 
-export const useProductTypesByGroup = (group) => {
-  return useQuery({
-    queryKey: ["productTypes", group],
-    queryFn: async () => {
-      const response = await fetchProductTypesByGroup(group);
-      return response.data.product_type || [];
-    },
-    enabled: !!group,
-  });
-};
+
 
 export const useCreateSales = () => {
   const { toast } = useToast();
@@ -182,6 +179,41 @@ export const useUpdateSalesDirect = (id) => {
         title: "Error",
         description:
           error.response?.data?.message || "Failed to update Sales",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useSalesReport = (fromDate, toDate) => {
+  return useQuery({
+    queryKey: ["salesReport", fromDate, toDate],
+    queryFn: async () => {
+      const response = await fetchSalesReport({ from_date: fromDate, to_date: toDate });
+      return response.data;
+    },
+    enabled: !!fromDate && !!toDate,
+  });
+};
+
+export const useDeleteSales = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteSales,
+    onSuccess: (data) => {
+      toast({
+        title: "Deleted",
+        description: data?.data?.msg || "Sales deleted successfully",
+      });
+      queryClient.invalidateQueries(["sales"]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to delete Sales",
         variant: "destructive",
       });
     },

@@ -41,6 +41,7 @@ const DesktopPurchaseForm = ({
   purchaseList = [],
   title = "Add Purchases",
   isEdit = false,
+  setSaveAction,
 }) => {
   return (
     <div className="hidden sm:block">
@@ -94,7 +95,7 @@ const DesktopPurchaseForm = ({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="purchase_bill_no">
-                  JFC Purchase No <span className="text-xs text-red-400 ">*</span>
+                  JFC Bill No. <span className="text-xs text-red-400 ">*</span>
                 </Label>
                 <Input
                   id="purchase_bill_no"
@@ -105,12 +106,12 @@ const DesktopPurchaseForm = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="purchase_no">Supplier Bill No</Label>
+                <Label htmlFor="purchase_no">Supplier Bill No.</Label>
                 <Input
                   id="purchase_no"
                   {...form.register("purchase_no")}
                   className="bg-white"
-                  placeholder="Supplier Bill Number"
+                  placeholder="Supplier Bill No."
                 />
               </div>
             </div>
@@ -132,8 +133,12 @@ const DesktopPurchaseForm = ({
                   }}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
-                <Label htmlFor="is_opening_stock" className="font-semibold cursor-pointer text-gray-700 text-xs">
-                  Is Opening Stock Entry (Separate from normal Purchase sequences)
+                <Label
+                  htmlFor="is_opening_stock"
+                  className="font-semibold cursor-pointer text-gray-700 text-xs"
+                >
+                  Is Opening Stock Entry (Separate from normal Purchase
+                  sequences)
                 </Label>
               </div>
             )}
@@ -148,19 +153,20 @@ const DesktopPurchaseForm = ({
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-2 font-medium text-sm w-[200px] min-w-[160px]">
+                      <th className="text-left p-2 font-medium text-sm w-[180px] min-w-[140px]">
                         Item <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[90px] min-w-[80px]">
+                      <th className="text-right p-2 font-medium text-sm w-[90px] min-w-[80px]">
                         Qnty (pcs/box)
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[90px] min-w-[80px]">
-                        Qnty (sqft) <span className="text-xs text-red-400 ">*</span>
+                      <th className="text-right p-2 font-medium text-sm w-[90px] min-w-[80px]">
+                        Qnty (sqft){" "}
+                        <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[90px] min-w-[80px]">
+                      <th className="text-right p-2 font-medium text-sm w-[90px] min-w-[80px]">
                         Rate <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[110px] min-w-[90px]">
+                      <th className="text-right p-2 font-medium text-sm w-[110px] min-w-[90px]">
                         Amount
                       </th>
                       <th className="text-left p-2 font-medium text-sm w-[50px]"></th>
@@ -181,7 +187,7 @@ const DesktopPurchaseForm = ({
                                   onChange={(e) =>
                                     handleCustomItemChange(
                                       index,
-                                      e.target.value.toUpperCase()
+                                      e.target.value.toUpperCase(),
                                     )
                                   }
                                 />
@@ -201,7 +207,11 @@ const DesktopPurchaseForm = ({
                                   <MemoizedProductSelect
                                     value={entry.purchase_sub_item}
                                     onChange={(value) =>
-                                      handleItemChange(index, "purchase_sub_item", value)
+                                      handleItemChange(
+                                        index,
+                                        "purchase_sub_item",
+                                        value,
+                                      )
                                     }
                                     options={productOptions}
                                     placeholder="Select item"
@@ -223,9 +233,17 @@ const DesktopPurchaseForm = ({
                         <td className="p-2">
                           <Input
                             type="tel"
-                            value={entry.purchase_sub_qnty || entry.purchase_sub_pcs || ""}
+                            value={
+                              entry.purchase_sub_qnty ||
+                              entry.purchase_sub_pcs ||
+                              ""
+                            }
                             onChange={(e) =>
-                              handleItemChange(index, "purchase_sub_qnty", e.target.value)
+                              handleItemChange(
+                                index,
+                                "purchase_sub_qnty",
+                                e.target.value,
+                              )
                             }
                             onKeyDown={handleKeyDown}
                             className="h-9 text-right bg-white"
@@ -241,7 +259,7 @@ const DesktopPurchaseForm = ({
                               handleItemChange(
                                 index,
                                 "purchase_sub_qnty_sqr",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             onKeyDown={handleKeyDown}
@@ -255,7 +273,11 @@ const DesktopPurchaseForm = ({
                             type="tel"
                             value={entry.purchase_sub_rate || ""}
                             onChange={(e) =>
-                              handleItemChange(index, "purchase_sub_rate", e.target.value)
+                              handleItemChange(
+                                index,
+                                "purchase_sub_rate",
+                                e.target.value,
+                              )
                             }
                             onKeyDown={handleKeyDown}
                             className="h-9 text-right bg-white"
@@ -268,7 +290,7 @@ const DesktopPurchaseForm = ({
                             type="tel"
                             value={entry.purchase_sub_amount || ""}
                             disabled
-                            className="h-9 bg-gray-100 text-right"
+                            className="h-9 bg-gray-100 text-right font-semibold"
                             placeholder="0"
                             onKeyDown={handleKeyDown}
                           />
@@ -305,197 +327,218 @@ const DesktopPurchaseForm = ({
             </div>
 
             {/* Charges and Totals */}
-            <div className="border rounded-lg p-3 bg-white">
-              <div className="grid grid-cols-1 space-x-24 md:grid-cols-2 gap-4">
-                <div></div>
-                <div className="space-y-2">
-                  {/* Tempo Charges */}
-                  <div className="flex items-center justify-between gap-2">
-                    <Label htmlFor="purchase_tempo">Tempo Charges</Label>
-                    <Input
-                      className="w-[150px] text-right shrink-0 bg-white"
-                      id="purchase_tempo"
-                      type="tel"
-                      {...form.register("purchase_tempo")}
-                      onChange={(e) =>
-                        handleChargeChange("purchase_tempo", e.target.value)
-                      }
-                      maxLength={10}
-                      onKeyDown={handleKeyDown}
-                      placeholder="0"
-                    />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div></div>
+              <div className="border rounded-lg p-3 bg-white space-y-2">
+                {/* Tempo Charges */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
+                    <Label className="font-medium" htmlFor="purchase_tempo">
+                      Tempo Charges
+                    </Label>
                   </div>
+                  <Input
+                    className="w-[220px] text-right shrink-0 bg-white"
+                    id="purchase_tempo"
+                    type="tel"
+                    {...form.register("purchase_tempo")}
+                    onChange={(e) =>
+                      handleChargeChange("purchase_tempo", e.target.value)
+                    }
+                    maxLength={10}
+                    onKeyDown={handleKeyDown}
+                    placeholder="0"
+                  />
+                </div>
 
-                  {/* Labour Charges */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-1">
-                      <Label className="font-medium shrink-0">Labour Charges</Label>
-                      <SelectShadcn
-                        value={loadingType}
-                        onValueChange={(val) => {
-                          setLoadingType(val);
-                          if (val === "Loading Only") {
-                            form.setValue("purchase_unloading", "");
-                          } else {
-                            form.setValue("purchase_loading", "");
-                          }
-                          calculateAndSetTotals(itemEntries);
-                        }}
-                      >
-                        <SelectTrigger className="h-9 w-full min-w-[120px] bg-white">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Loading Only">Loading Only</SelectItem>
-                          <SelectItem value="Loading & Unloading">
-                            Loading & Unloading
-                          </SelectItem>
-                        </SelectContent>
-                      </SelectShadcn>
-                    </div>
-                    <Input
-                      className="w-[150px] h-9 text-right shrink-0 bg-white"
-                      id={
+                {/* Labour Charges */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center justify-between gap-2">
+                    <Label className="font-medium shrink-0 w-28">
+                      Labour Charges
+                    </Label>
+                    <SelectShadcn
+                      value={loadingType}
+                      onValueChange={(val) => {
+                        setLoadingType(val);
+                        if (val === "Loading Only") {
+                          form.setValue("purchase_unloading", "");
+                        } else {
+                          form.setValue("purchase_loading", "");
+                        }
+                        calculateAndSetTotals(itemEntries);
+                      }}
+                    >
+                      <SelectTrigger className="h-9 w-[180px] bg-white">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Loading Only">
+                          Loading Only
+                        </SelectItem>
+                        <SelectItem value="Loading & Unloading">
+                          Loading & Unloading
+                        </SelectItem>
+                      </SelectContent>
+                    </SelectShadcn>
+                  </div>
+                  <Input
+                    className="w-[220px] h-9 text-right shrink-0 bg-white"
+                    id={
+                      loadingType === "Loading Only"
+                        ? "purchase_loading"
+                        : "purchase_unloading"
+                    }
+                    type="tel"
+                    value={
+                      form.watch(
                         loadingType === "Loading Only"
                           ? "purchase_loading"
-                          : "purchase_unloading"
-                      }
-                      type="tel"
-                      value={
-                        form.watch(
-                          loadingType === "Loading Only"
-                            ? "purchase_loading"
-                            : "purchase_unloading"
-                        ) || ""
-                      }
-                      onChange={(e) => {
-                        handleChargeChange(
-                          loadingType === "Loading Only"
-                            ? "purchase_loading"
-                            : "purchase_unloading",
-                          e.target.value
-                        );
-                      }}
-                      maxLength={10}
-                      onKeyDown={handleKeyDown}
-                      placeholder="0"
-                    />
-                  </div>
+                          : "purchase_unloading",
+                      ) || ""
+                    }
+                    onChange={(e) => {
+                      handleChargeChange(
+                        loadingType === "Loading Only"
+                          ? "purchase_loading"
+                          : "purchase_unloading",
+                        e.target.value,
+                      );
+                    }}
+                    maxLength={10}
+                    onKeyDown={handleKeyDown}
+                    placeholder="0"
+                  />
+                </div>
 
-                  {/* Other Charges 1 */}
-                  <div className="flex items-center justify-between gap-2">
+                {/* Other Charges 1 */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0">
                     <Input
                       type="text"
                       placeholder="Other Label 1"
-                      className="flex-1 h-9 bg-white"
+                      className="w-full h-9 bg-white"
                       {...form.register("purchase_other_label")}
                     />
-                    <Input
-                      className="w-[150px] h-9 text-right shrink-0 bg-white"
-                      id="purchase_other"
-                      type="tel"
-                      {...form.register("purchase_other")}
-                      onChange={(e) =>
-                        handleChargeChange("purchase_other", e.target.value)
-                      }
-                      maxLength={10}
-                      onKeyDown={handleKeyDown}
-                      placeholder="0"
-                    />
                   </div>
+                  <Input
+                    className="w-[220px] h-9 text-right shrink-0 bg-white"
+                    id="purchase_other"
+                    type="tel"
+                    {...form.register("purchase_other")}
+                    onChange={(e) =>
+                      handleChargeChange("purchase_other", e.target.value)
+                    }
+                    maxLength={10}
+                    onKeyDown={handleKeyDown}
+                    placeholder="0"
+                  />
+                </div>
 
-                  {/* Other Charges 2 */}
-                  <div className="flex items-center justify-between gap-2">
+                {/* Other Charges 2 */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0">
                     <Input
                       type="text"
                       placeholder="Other Label 2"
-                      className="flex-1 h-9 bg-white"
+                      className="w-full h-9 bg-white"
                       {...form.register("purchase_other1_label")}
                     />
-                    <Input
-                      className="w-[150px] h-9 text-right shrink-0 bg-white"
-                      id="purchase_other1"
-                      type="tel"
-                      {...form.register("purchase_other1")}
-                      onChange={(e) =>
-                        handleChargeChange("purchase_other1", e.target.value)
-                      }
-                      maxLength={10}
-                      onKeyDown={handleKeyDown}
-                      placeholder="0"
-                    />
                   </div>
+                  <Input
+                    className="w-[220px] h-9 text-right shrink-0 bg-white"
+                    id="purchase_other1"
+                    type="tel"
+                    {...form.register("purchase_other1")}
+                    onChange={(e) =>
+                      handleChargeChange("purchase_other1", e.target.value)
+                    }
+                    maxLength={10}
+                    onKeyDown={handleKeyDown}
+                    placeholder="0"
+                  />
+                </div>
 
-                  {/* Gross Total */}
-                  <div className="flex items-center justify-between gap-2">
+                {/* Gross Total */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
                     <Label className="font-medium">Gross Total</Label>
-                    <Input
-                      className="w-[150px] bg-gray-100 font-medium text-right shrink-0"
-                      type="text"
-                      value={Number(displayGrandTotal).toFixed(0)}
-                      disabled
-                    />
                   </div>
+                  <Input
+                    className="w-[220px] bg-gray-100 font-medium text-right shrink-0"
+                    type="text"
+                    value={Number(displayGrandTotal).toFixed(0)}
+                    disabled
+                  />
+                </div>
 
-                  {/* Tax Amount */}
-                  <div className="flex items-center justify-between">
+                {/* Tax Amount */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
                     <Label className="font-medium">
-                      Tax Amount{" "}
-                      <Label className="font-medium text-xs text-gray-500">
-                        (GST @ 18% = {Number(autoGst18).toFixed(2)})
-                      </Label>
+                      Tax{" "}
+                      <span className="font-medium text-xs text-gray-500">
+                        (GST 18% = {Number(autoGst18).toFixed(0)})
+                      </span>
                     </Label>
-                    <Input
-                      className="w-[150px] text-right bg-white"
-                      type="tel"
-                      {...form.register("purchase_tax")}
-                      onChange={handleTaxChange}
-                      placeholder="0"
-                      maxLength={10}
-                    />
                   </div>
+                  <Input
+                    className="w-[220px] text-right bg-white"
+                    type="tel"
+                    {...form.register("purchase_tax")}
+                    onChange={handleTaxChange}
+                    placeholder="0"
+                    maxLength={10}
+                  />
+                </div>
 
-                  {/* Net Total */}
-                  <div className="flex items-center justify-between gap-2">
+                {/* Net Total */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
                     <Label className="font-medium">Net Total</Label>
-                    <Input
-                      className="w-[150px] text-right font-medium shrink-0 bg-gray-100"
-                      type="tel"
-                      {...form.register("purchase_temp_amount")}
-                      onKeyDown={handleKeyDown}
-                      maxLength={10}
-                      placeholder="0"
-                      readOnly
-                    />
                   </div>
+                  <Input
+                    className="w-[220px] text-right font-medium shrink-0 bg-gray-100"
+                    type="tel"
+                    {...form.register("purchase_temp_amount")}
+                    onKeyDown={handleKeyDown}
+                    maxLength={10}
+                    placeholder="0"
+                    readOnly
+                  />
+                </div>
 
-                  {/* Round Off */}
-                  <div className="flex items-center justify-between gap-2">
+                {/* Round Off */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
                     <Label className="font-medium">Round Off</Label>
-                    <Input
-                      className="w-[150px] text-right font-medium bg-gray-100 shrink-0"
-                      type="text"
-                      {...form.register("purchase_amount_round")}
-                      onChange={handleRoundOffChange}
-                      placeholder="0"
-                    />
                   </div>
+                  <Input
+                    className="w-[220px] text-right font-medium bg-gray-100 shrink-0"
+                    type="text"
+                    {...form.register("purchase_amount_round")}
+                    onChange={handleRoundOffChange}
+                    placeholder="0"
+                  />
+                </div>
 
-                  {/* Final Amount */}
-                  <div className="flex items-center justify-between gap-2">
+                {/* Final Amount */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-[305px] shrink-0 flex items-center">
                     <Label className="font-semibold text-blue-900">
                       Final Amount
                     </Label>
-                    <Input
-                      className="w-[150px] bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
-                      type="text"
-                      value={Number(amountToBePaid).toFixed(0)}
-                      disabled
-                    />
                   </div>
+                  <Input
+                    className="w-[220px] bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
+                    type="text"
+                    value={Number(amountToBePaid).toFixed(0)}
+                    disabled
+                  />
+                </div>
 
-                  {/* Final Amount Paid */}
-                  {/* <div className="flex items-center justify-between gap-2">
+                {/* Final Amount Paid */}
+                {/* <div className="flex items-center justify-between gap-2">
                     <Label className="font-medium">Final Amount Paid</Label>
                     <Input
                       className="w-[150px] text-right shrink-0 bg-white"
@@ -506,7 +549,6 @@ const DesktopPurchaseForm = ({
                       placeholder="0"
                     />
                   </div> */}
-                </div>
               </div>
             </div>
 
@@ -523,15 +565,26 @@ const DesktopPurchaseForm = ({
               <Button
                 type="button"
                 variant="outline"
+                disabled={isSubmitting}
                 onClick={() => {
-                  const formElement = document.getElementById("purchase-form");
-                  if (formElement) {
-                    formElement.requestSubmit();
-                  }
+                  setSaveAction("print");
+                  document.getElementById("purchase-form")?.requestSubmit();
                 }}
-                className="border-gray-300 bg-blue-600 hover:bg-blue-700 text-white hover:text-white"
+                className="border-gray-300 bg-green-600 hover:bg-green-700 text-white hover:text-white disabled:bg-gray-400"
               >
-                Save and Close
+                {isSubmitting ? "Saving..." : "Save & Print"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setSaveAction("exit");
+                  document.getElementById("purchase-form")?.requestSubmit();
+                }}
+                className="border-gray-300 bg-blue-600 hover:bg-blue-700 text-white hover:text-white disabled:bg-gray-400"
+              >
+                {isSubmitting ? "Saving..." : "Save & Exit"}
               </Button>
             </div>
           </form>

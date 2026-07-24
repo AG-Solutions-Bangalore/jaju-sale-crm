@@ -14,7 +14,12 @@ export const useEstimateList = () => {
     queryKey: ["estimate"],
     queryFn: async () => {
       const response = await fetchEstimateList();
-      return response.data.estimate || [];
+      const rawData = response?.data;
+      if (Array.isArray(rawData?.data?.data)) return rawData.data.data;
+      if (Array.isArray(rawData?.estimate)) return rawData.estimate;
+      if (Array.isArray(rawData?.data)) return rawData.data;
+      if (Array.isArray(rawData)) return rawData;
+      return [];
     },
   });
 };

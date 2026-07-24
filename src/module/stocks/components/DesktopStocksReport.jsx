@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import ProductEditDialog from "@/module/product/components/ProductEditDialog";
+import SingleItemStockReportDialog from "./SingleItemStockReportDialog";
 
 const DesktopStocksReport = ({
   form,
@@ -132,7 +133,7 @@ const DesktopStocksReport = ({
                 <CardTitle className="text-lg flex flex-row items-center gap-2">
                 </CardTitle>
                 <div className="flex gap-2">
-                  <Button
+                  {/* <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowNewItemDialog(true)}
@@ -140,7 +141,7 @@ const DesktopStocksReport = ({
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     New Item
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="outline"
                     size="sm"
@@ -214,16 +215,16 @@ const DesktopStocksReport = ({
                         Items Name
                       </TableHead>
                       <TableHead className="text-center text-black font-bold border-r w-[16%]">
-                        Open Balance
+                        Opening Balance
                       </TableHead>
                       <TableHead className="text-center text-black font-bold border-r w-[16%]">
-                        Purchase
+                        Purchases
                       </TableHead>
                       <TableHead className="text-center text-black font-bold border-r w-[16%]">
-                        Sale
+                        Sales
                       </TableHead>
                       <TableHead className="text-center text-black font-bold w-[16%]">
-                        Close Balance
+                        Closing Balance
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -231,8 +232,13 @@ const DesktopStocksReport = ({
                     {(() => {
                       const displayVal = (val, unit) => {
                         const formatted = formatStockValue(val);
-                        if (formatted === "-") return "-";
-                        return `${formatted} ${unit}`;
+                        if (formatted === "-") return <span className="text-gray-400">-</span>;
+                        return (
+                          <span>
+                            <span className="text-gray-900 font-semibold">{formatted}</span>{" "}
+                            <span className="text-gray-400 font-normal text-[10px]">{unit}</span>
+                          </span>
+                        );
                       };
 
                       if (isLoading) {
@@ -248,10 +254,33 @@ const DesktopStocksReport = ({
                         );
                       }
 
-                      const filteredStocks = (stocksData?.stocks || []).filter((item) => {
-                        const closingPcs = (item.openpurch_pcs || 0) - (item.closesale_pcs || 0) + ((item.purch_pcs || 0) - (item.sale_pcs || 0));
-                        const closingSqr = (item.openpurch_sqr || 0) - (item.closesale_sqr || 0) + ((item.purch_sqr || 0) - (item.sale_sqr || 0));
-                        return closingPcs !== 0 || closingSqr !== 0;
+                      const rawList = stocksData?.stocks || stocksData?.data || (Array.isArray(stocksData) ? stocksData : []);
+                      const filteredStocks = rawList.filter((item) => {
+                        const openPcs = parseFloat(item.openpurch_pcs || 0);
+                        const closePcs = parseFloat(item.closesale_pcs || 0);
+                        const purchPcs = parseFloat(item.purch_pcs || 0);
+                        const salePcs = parseFloat(item.sale_pcs || 0);
+
+                        const openSqr = parseFloat(item.openpurch_sqr || 0);
+                        const closeSqr = parseFloat(item.closesale_sqr || 0);
+                        const purchSqr = parseFloat(item.purch_sqr || 0);
+                        const saleSqr = parseFloat(item.sale_sqr || 0);
+
+                        const closingPcs = openPcs - closePcs + (purchPcs - salePcs);
+                        const closingSqr = openSqr - closeSqr + (purchSqr - saleSqr);
+
+                        return (
+                          purchPcs !== 0 ||
+                          salePcs !== 0 ||
+                          purchSqr !== 0 ||
+                          saleSqr !== 0 ||
+                          openPcs !== 0 ||
+                          closePcs !== 0 ||
+                          openSqr !== 0 ||
+                          closeSqr !== 0 ||
+                          closingPcs !== 0 ||
+                          closingSqr !== 0
+                        );
                       });
 
                       if (!filteredStocks.length) {
@@ -279,70 +308,73 @@ const DesktopStocksReport = ({
                             index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
                           }
                         >
-                          <TableCell className="text-left border-r">
-                            <span className="flex items-center gap-1">
+                          <TableCell className="text-left border-r py-2">
+                            <div className="flex items-center justify-between w-full gap-2">
                               {(() => {
                                 const matchedProduct = productTypes?.find(
                                   (p) =>
                                     (p.product_type || p.item_name || "").toLowerCase() ===
                                     item.item_name?.toLowerCase()
                                 );
-                                return matchedProduct ? (
-                                  <div className="flex items-center gap-1.5">
-                                    <button
-                                      type="button"
-                                      onClick={() => navigate(`/single-item-stock?productId=${matchedProduct.id}`)}
-                                      className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold"
-                                    >
-                                      {item.item_name}
-                                    </button>
-                                    <ProductEditDialog productId={matchedProduct.id} />
-                                  </div>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={() => navigate(`/single-item-stock?item_name=${encodeURIComponent(item.item_name)}`)}
-                                    className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold"
-                                  >
-                                    {item.item_name}
-                                  </button>
+
+                                const itemNameBtn = (
+                                  <SingleItemStockReportDialog
+                                    itemName={item.item_name}
+                                    trigger={
+                                      <button
+                                        type="button"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold truncate"
+                                      >
+                                        {item.item_name}
+                                      </button>
+                                    }
+                                  />
+                                );
+
+                                return (
+                                  <>
+                                    {itemNameBtn}
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <SingleItemStockReportDialog itemName={item.item_name} />
+                                    </div>
+                                  </>
                                 );
                               })()}
-                            </span>
+                            </div>
                           </TableCell>
                           <TableCell className="text-center border-r">
                             {selectedUnits.box &&
-                              displayVal(item.openpurch_pcs - item.closesale_pcs, "Pcs")}
+                              displayVal(item.openpurch_pcs - item.closesale_pcs, "Pcs/Box")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
-                              " , "}
+                              <span className="text-gray-300"> , </span>}
                             {selectedUnits.sqft &&
                               displayVal(item.openpurch_sqr - item.closesale_sqr, "Sqft")}
                           </TableCell>
                           <TableCell className="text-center border-r">
                             {selectedUnits.box &&
-                              displayVal(item.purch_pcs, "Pcs")}
+                              displayVal(item.purch_pcs, "Pcs/Box")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
-                              " , "}
+                              <span className="text-gray-300"> , </span>}
                             {selectedUnits.sqft &&
                               displayVal(item.purch_sqr, "Sqft")}
                           </TableCell>
                           <TableCell className="text-center border-r">
                             {selectedUnits.box &&
-                              displayVal(item.sale_pcs, "Pcs")}
+                              displayVal(item.sale_pcs, "Pcs/Box")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
-                              " , "}
+                              <span className="text-gray-300"> , </span>}
                             {selectedUnits.sqft &&
                               displayVal(item.sale_sqr, "Sqft")}
                           </TableCell>
                           <TableCell className="text-center">
                             {selectedUnits.box &&
-                              displayVal(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs), "Pcs")}
+                              displayVal(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs), "Pcs/Box")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
-                              " , "}
+                              <span className="text-gray-300"> , </span>}
                             {selectedUnits.sqft &&
                               displayVal(item.openpurch_sqr - item.closesale_sqr + (item.purch_sqr - item.sale_sqr), "Sqft")}
                           </TableCell>

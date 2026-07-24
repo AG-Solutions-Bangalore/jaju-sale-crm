@@ -7,18 +7,21 @@ export const loginApi = (credentials) => {
   return axiosInstance.post("/api/web-login", formData);
 };
 
+export const logoutApi = () => {
+  return axiosInstance.post("/api/web-logout", "");
+};
+
 export const changePasswordApi = (data) => {
-  return axiosInstance.post("/api/web-change-password", data);
+  const formData = new FormData();
+  formData.append("username", data.username || "");
+  formData.append("old_password", data.old_password || data.oldPassword || "");
+  formData.append("new_password", data.new_password || data.newPassword || "");
+  return axiosInstance.post("/api/web-change-password", formData);
 };
 
 export const forgotPasswordApi = (data) => {
   const formData = new FormData();
-  formData.append("username", data.username);
-  formData.append("email", data.email);
-  // Optional name field to support legacy format
-  formData.append("name", data.username);
-  return axiosInstance.post(
-    `/api/web-send-password?username=${encodeURIComponent(data.username)}&email=${encodeURIComponent(data.email)}`,
-    formData
-  );
+  formData.append("username", data.username || "");
+  formData.append("email", data.email || "");
+  return axiosInstance.post("/api/web-send-password", formData);
 };

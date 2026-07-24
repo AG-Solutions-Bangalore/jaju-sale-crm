@@ -66,6 +66,14 @@ export function AppBottombar() {
           title: "Sales Report",
           url: "/sales-report",
         },
+        {
+          title: "Sale List",
+          url: "/reports/sales-list",
+        },
+        {
+          title: "Purchase List",
+          url: "/reports/purchase-list",
+        },
       ],
     },
   ];

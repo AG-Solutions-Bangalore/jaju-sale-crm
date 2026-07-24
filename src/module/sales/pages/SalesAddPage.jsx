@@ -50,6 +50,7 @@ const SalesAddPage = () => {
   const [gstEdited, setGstEdited] = useState(false);
   const [autoGst18, setAutoGst18] = useState(0);
   const [roundOffEdited, setRoundOffEdited] = useState(false);
+  const saveActionRef = useRef("exit");
 
   const { data: currentYear, isLoading: isYearLoading } = useCurrentYear();
   const { data: salesListForSerial, isLoading: isSalesListLoading } = useSalesList();
@@ -332,6 +333,7 @@ const SalesAddPage = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     const formData = form.getValues();
@@ -441,7 +443,6 @@ const SalesAddPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      const { sales_amount_round, ...restData } = data;
       const formattedItemEntries = itemEntries.map((entry, index) => ({
         ...entry,
         sales_sub_pcs: entry.sales_sub_qnty || "0",
@@ -449,42 +450,57 @@ const SalesAddPage = () => {
       }));
 
       const itemsTotal = itemEntries.reduce(
-        (sum, entry) => sum + parseFloat(entry.sales_sub_amount || 0),
+        (sum, entry) => sum + (parseFloat(entry.sales_sub_amount) || 0),
         0
       );
-      const tempo = parseFloat(form.watch("sales_tempo") || 0);
-      const loading = parseFloat(form.watch("sales_loading") || 0);
-      const unloading = parseFloat(form.watch("sales_unloading") || 0);
-      const other = parseFloat(form.watch("sales_other") || 0);
-      const other1 = parseFloat(form.watch("sales_other1") || 0);
+      const tempo = parseFloat(data.sales_tempo) || 0;
+      const loading = parseFloat(data.sales_loading) || 0;
+      const unloading = parseFloat(data.sales_unloading) || 0;
+      const other = parseFloat(data.sales_other) || 0;
+      const other1 = parseFloat(data.sales_other1) || 0;
 
       const grandTotal = itemsTotal + tempo + loading + unloading + other + other1;
-      const gstAmount = parseFloat(form.watch("sales_tax") || 0);
+      const gstAmount = parseFloat(data.sales_tax) || 0;
       const netTotal = grandTotal + gstAmount;
-      const roundOff = parseFloat(form.watch("sales_amount_round") || 0);
+      const roundOff = parseFloat(data.sales_amount_round) || 0;
       const finalAmount = netTotal + roundOff;
 
       const payload = {
-        ...restData,
-        sales_tempo: tempo.toString(),
-        sales_loading: loading.toString(),
-        sales_unloading: unloading.toString(),
-        sales_other: other.toString(),
-        sales_other1: other1.toString(),
+        sales_date: data.sales_date || moment().format("YYYY-MM-DD"),
+        sales_estimate_ref: data.sales_estimate_ref || "",
+        sales_customer: data.sales_customer || "",
+        sales_address: data.sales_address || "",
+        sales_mobile: data.sales_mobile || "",
         sales_tax: gstAmount.toString(),
-        sales_temp_amount: netTotal.toString(),
-        sales_gross: finalAmount.toString(), // Bill Amount (Final Total)
-        sales_balance: (finalAmount - parseFloat(restData.sales_amount_received || 0)).toString(), // Pending Amount
+        sales_tempo: tempo.toString(),
+        sales_labour_label: loadingType || data.sales_labour_label || "Labour Charges",
+        sales_labour_value: (loading + unloading).toString(),
+        sales_other_label: data.sales_other_label || "Other Charges",
+        sales_other: other.toString(),
+        sales_other1_label: data.sales_other1_label || "Other Charges 1",
+        sales_other1: other1.toString(),
+        sales_gross: finalAmount.toString(),
+        sales_net_total: netTotal.toString(),
         sales_amount_round: roundOff.toString(),
-        sales_advance: (restData.sales_amount_received || "0").toString(), // Amount Collected
-        sales_amount_received: (restData.sales_amount_received || "0").toString(), // Amount Collected
-        sales_year: currentYear || "",
-        sales_no_of_count: formattedItemEntries.length,
-        sales_sub_data: formattedItemEntries,
+        sales_amount_payable: finalAmount.toString(),
+        sales_amount_received: (data.sales_amount_received || "0.00").toString(),
+        subs: formattedItemEntries.map((item) => ({
+          ...(item.id ? { id: item.id } : {}),
+          sales_sub_item: item.sales_sub_item || "",
+          sales_sub_qnty_sqr: item.sales_sub_qnty_sqr || "0",
+          sales_sub_pcs: item.sales_sub_pcs || item.sales_sub_qnty || "0",
+          sales_sub_rate: item.sales_sub_rate || "0",
+          sales_sub_amount: item.sales_sub_amount || "0",
+        })),
       };
 
-      await createMutation.mutateAsync(payload);
-      navigate("/sales");
+      const response = await createMutation.mutateAsync(payload);
+      if (saveActionRef.current === "print") {
+        const id = response?.data?.data || response?.data?.id || response?.data;
+        navigate(`/sales/view/${id}`);
+      } else {
+        navigate("/sales");
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -536,6 +552,7 @@ const SalesAddPage = () => {
     handleToggleCustomItem,
     isSubmitting,
     title: "Add Sales",
+    setSaveAction: (action) => { saveActionRef.current = action; },
   };
 
   return (

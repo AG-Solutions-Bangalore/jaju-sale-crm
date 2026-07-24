@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import NotInListIcon from "@/components/common/NotInListIcon";
+import { MemoizedProductSelect } from "@/components/common/MemoizedProductSelect";
 
 const MobileEstimateForm = ({
   form,
@@ -24,10 +26,22 @@ const MobileEstimateForm = ({
   handleCancel,
   handleFormSubmit,
   estimateRef,
-  productTypeGroup,
+  productTypeGroup = [],
+  subItemOptions = [],
   handleKeyDown,
   typeOptions,
+  loadingType = "Loading Only",
+  setLoadingType,
   isSubmitting,
+  productOptions = [],
+  customItems = {},
+  isCustomItem = {},
+  handleCustomItemChange,
+  handleToggleCustomItem,
+  amountToBeCollected,
+  displayGrandTotal,
+  autoGst18,
+  setSaveAction,
 }) => {
   return (
     <div className="sm:hidden">
@@ -63,7 +77,7 @@ const MobileEstimateForm = ({
       </div>
 
       <div className="mb-14">
-        <form onSubmit={handleFormSubmit} className="space-y-4">
+        <form id="estimate-form-mobile" onSubmit={handleFormSubmit} className="space-y-4">
           {/* Customer Info */}
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <h3 className="font-medium mb-3">Customer Information</h3>
@@ -108,33 +122,6 @@ const MobileEstimateForm = ({
                   maxLength={200}
                 />
               </div>
-              <div>
-                <Label htmlFor="mob_estimate_item_type">Item Type</Label>
-                <SelectShadcn
-                  id="mob_estimate_item_type"
-                  value={form.watch("estimate_item_type")}
-                  onValueChange={(value) =>
-                    form.setValue("estimate_item_type", value)
-                  }
-                >
-                  <SelectTrigger className="w-full bg-white">
-                    <SelectValue placeholder="Select item type..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Item Types</SelectLabel>
-                      {productTypeGroup.map((type) => (
-                        <SelectItem
-                          key={type.product_type_group}
-                          value={type.product_type_group}
-                        >
-                          {type.product_type_group}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </SelectShadcn>
-              </div>
             </div>
           </div>
 
@@ -151,15 +138,55 @@ const MobileEstimateForm = ({
                 <div className="grid grid-cols-12 gap-1 items-center">
                   <div className="col-span-11">
                     <div className="mb-1">
-                      <Input
-                        value={entry.estimate_sub_item}
-                        onChange={(e) =>
-                          handleItemChange(index, "estimate_sub_item", e.target.value)
-                        }
-                        className="h-8 text-sm bg-white"
-                        placeholder="Item Name"
-                        maxLength={50}
-                      />
+                      <div className="flex gap-1 items-center">
+                        {isCustomItem[index] ? (
+                          <div className="flex-1 flex gap-1">
+                            <Input
+                              type="text"
+                              className="h-8 text-sm uppercase placeholder:normal-case bg-white"
+                              placeholder="Enter Item Name"
+                              value={customItems[index] || ""}
+                              onChange={(e) =>
+                                handleCustomItemChange(
+                                  index,
+                                  e.target.value.toUpperCase()
+                                )
+                              }
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8 text-xs whitespace-nowrap shrink-0 px-2"
+                              onClick={() => handleToggleCustomItem(index)}
+                            >
+                              Select
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex-1">
+                              <MemoizedProductSelect
+                                value={entry.estimate_sub_item}
+                                onChange={(value) =>
+                                  handleItemChange(index, "estimate_sub_item", value)
+                                }
+                                options={productOptions}
+                                placeholder="Select item"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8 whitespace-nowrap shrink-0 px-2"
+                              onClick={() => handleToggleCustomItem(index)}
+                            >
+                              <NotInListIcon className="h-3 w-3" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <div className="grid grid-cols-4 gap-1">
                       <div>
@@ -192,7 +219,7 @@ const MobileEstimateForm = ({
                           maxLength={10}
                         />
                       </div>
-                      <div>
+                      {/* <div>
                         <Input
                           type="tel"
                           value={entry.estimate_sub_pcs}
@@ -208,7 +235,7 @@ const MobileEstimateForm = ({
                           placeholder="Pcs"
                           maxLength={10}
                         />
-                      </div>
+                      </div> */}
                       <div>
                         <Input
                           type="tel"
@@ -266,20 +293,6 @@ const MobileEstimateForm = ({
             <h3 className="font-medium mb-3">Charges</h3>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label htmlFor="mob_estimate_tax">Tax</Label>
-                <Input
-                  id="mob_estimate_tax"
-                  type="tel"
-                  {...form.register("estimate_tax")}
-                  onChange={(e) =>
-                    handleChargeChange("estimate_tax", e.target.value)
-                  }
-                  onKeyDown={handleKeyDown}
-                  className="mt-1"
-                  maxLength={10}
-                />
-              </div>
-              <div>
                 <Label htmlFor="mob_estimate_tempo">Tempo Charges</Label>
                 <Input
                   id="mob_estimate_tempo"
@@ -291,20 +304,68 @@ const MobileEstimateForm = ({
                   onKeyDown={handleKeyDown}
                   className="mt-1"
                   maxLength={10}
+                  placeholder="0"
                 />
               </div>
               <div>
-                <Label htmlFor="mob_estimate_loading">Loading Charges</Label>
+                <Label htmlFor="mob_estimate_loading">Labour Charges</Label>
+                <SelectShadcn
+                  value={loadingType}
+                  onValueChange={(val) => {
+                    if (setLoadingType) setLoadingType(val);
+                    if (val === "Loading Only") {
+                      form.setValue("estimate_unloading", "");
+                    } else {
+                      form.setValue("estimate_loading", "");
+                    }
+                    handleChargeChange(
+                      val === "Loading Only"
+                        ? "estimate_loading"
+                        : "estimate_unloading",
+                      form.watch(
+                        val === "Loading Only"
+                          ? "estimate_loading"
+                          : "estimate_unloading"
+                      ) || "0"
+                    );
+                  }}
+                >
+                  <SelectTrigger className="w-full bg-white mt-1">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Loading Only">Loading Only</SelectItem>
+                    <SelectItem value="Loading & Unloading">
+                      Loading & Unloading
+                    </SelectItem>
+                  </SelectContent>
+                </SelectShadcn>
                 <Input
-                  id="mob_estimate_loading"
-                  type="tel"
-                  {...form.register("estimate_loading")}
-                  onChange={(e) =>
-                    handleChargeChange("estimate_loading", e.target.value)
+                  id={
+                    loadingType === "Loading Only"
+                      ? "mob_estimate_loading"
+                      : "mob_estimate_unloading"
                   }
-                  onKeyDown={handleKeyDown}
-                  className="mt-1"
+                  type="tel"
+                  value={
+                    form.watch(
+                      loadingType === "Loading Only"
+                        ? "estimate_loading"
+                        : "estimate_unloading"
+                    ) || ""
+                  }
+                  onChange={(e) => {
+                    handleChargeChange(
+                      loadingType === "Loading Only"
+                        ? "estimate_loading"
+                        : "estimate_unloading",
+                      e.target.value
+                    );
+                  }}
+                  className="mt-1 text-right"
                   maxLength={10}
+                  onKeyDown={handleKeyDown}
+                  placeholder="0"
                 />
               </div>
               <div>
@@ -370,26 +431,29 @@ const MobileEstimateForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="mob_estimate_advance">Advance</Label>
+                <Label>Tax (GST 18% = {Number(autoGst18).toFixed(0)})</Label>
                 <Input
-                  id="mob_estimate_advance"
+                  id="mob_estimate_tax"
                   type="tel"
+                  {...form.register("estimate_tax")}
+                  onChange={(e) =>
+                    handleChargeChange("estimate_tax", e.target.value)
+                  }
                   onKeyDown={handleKeyDown}
-                  {...form.register("estimate_advance")}
-                  onChange={(e) => handleAdvanceChange(e.target.value)}
-                  className="mt-1"
+                  className="mt-1 text-right bg-white"
                   maxLength={10}
+                  placeholder="0"
                 />
               </div>
               <div>
-                <Label htmlFor="mob_estimate_balance">Balance</Label>
+                <Label htmlFor="mob_estimate_temp_amount">Net Total</Label>
                 <Input
-                  id="mob_estimate_balance"
+                  id="mob_estimate_temp_amount"
                   type="tel"
-                  {...form.register("estimate_balance")}
+                  {...form.register("estimate_temp_amount")}
                   disabled
                   onKeyDown={handleKeyDown}
-                  className="mt-1 bg-gray-100 font-semibold"
+                  className="mt-1 bg-gray-100 font-semibold text-right"
                 />
               </div>
               <div>
@@ -399,25 +463,24 @@ const MobileEstimateForm = ({
                   type="text"
                   {...form.register("estimate_amount_round")}
                   onKeyDown={handleKeyDown}
-                  className="mt-1"
+                  className="mt-1 text-right bg-white"
                   placeholder="0"
                 />
               </div>
-              <div>
-                <Label htmlFor="mob_estimate_temp_amount">Amount</Label>
+              <div className="col-span-2">
+                <Label className="font-semibold text-blue-900">Final Amount</Label>
                 <Input
-                  id="mob_estimate_temp_amount"
-                  type="tel"
-                  {...form.register("estimate_temp_amount")}
-                  onKeyDown={handleKeyDown}
-                  className="mt-1 font-semibold"
+                  type="text"
+                  value={Number(amountToBeCollected).toFixed(0)}
+                  disabled
+                  className="mt-1 bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md"
                 />
               </div>
             </div>
           </div>
 
           {/* Mobile bottom buttons */}
-          <div className="fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-between">
+          <div className="fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-between gap-2">
             <Button
               type="button"
               variant="outline"
@@ -426,13 +489,30 @@ const MobileEstimateForm = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-xs h-9 text-white"
-            >
-              {isSubmitting ? "Saving..." : "Save"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setSaveAction("print");
+                  document.getElementById("estimate-form-mobile")?.requestSubmit();
+                }}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-xs h-9 text-white"
+              >
+                {isSubmitting ? "Saving..." : "Save & Print"}
+              </Button>
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setSaveAction("exit");
+                  document.getElementById("estimate-form-mobile")?.requestSubmit();
+                }}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-xs h-9 text-white"
+              >
+                {isSubmitting ? "Saving..." : "Save & Exit"}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

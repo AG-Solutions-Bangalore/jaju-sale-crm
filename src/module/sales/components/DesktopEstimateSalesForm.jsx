@@ -150,22 +150,26 @@ const DesktopEstimateSalesForm = ({
                       <th className="text-left p-2 font-medium text-sm w-[100px]">
                         Type <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[120px]">
-                        Item Description <span className="text-xs text-red-400 ">*</span>
-                      </th>
                       <th className="text-left p-2 font-medium text-sm w-[160px]">
-                        Original Item <span className="text-xs text-red-400 ">*</span>
+                        Item Description{" "}
+                        <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[90px]">
-                        Qnty (pcs/box) <span className="text-xs text-red-400 ">*</span>
+                      <th className="text-left p-2 font-medium text-sm w-[220px]">
+                        Original Item{" "}
+                        <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[90px]">
-                        Qnty (sqft) <span className="text-xs text-red-400 ">*</span>
+                      <th className="text-right p-2 font-medium text-sm w-[90px]">
+                        Qnty (pcs/box){" "}
+                        <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[90px]">
+                      <th className="text-right p-2 font-medium text-sm w-[90px]">
+                        Qnty (sqft){" "}
+                        <span className="text-xs text-red-400 ">*</span>
+                      </th>
+                      <th className="text-right p-2 font-medium text-sm w-[90px]">
                         Rate <span className="text-xs text-red-400 ">*</span>
                       </th>
-                      <th className="text-left p-2 font-medium text-sm w-[110px]">
+                      <th className="text-right p-2 font-medium text-sm w-[110px]">
                         Amount
                       </th>
                       <th className="text-left p-2 font-medium text-sm w-[50px]"></th>
@@ -178,7 +182,11 @@ const DesktopEstimateSalesForm = ({
                           <SelectShadcn
                             value={entry.estimate_sub_type}
                             onValueChange={(value) =>
-                              handleItemChange(index, "estimate_sub_type", value)
+                              handleItemChange(
+                                index,
+                                "estimate_sub_type",
+                                value,
+                              )
                             }
                           >
                             <SelectTrigger className="w-full bg-white">
@@ -188,7 +196,10 @@ const DesktopEstimateSalesForm = ({
                               <SelectGroup>
                                 <SelectLabel>Item Types</SelectLabel>
                                 {typeOptions.map((type) => (
-                                  <SelectItem key={type.value} value={type.value}>
+                                  <SelectItem
+                                    key={type.value}
+                                    value={type.value}
+                                  >
                                     {type.label}
                                   </SelectItem>
                                 ))}
@@ -200,7 +211,11 @@ const DesktopEstimateSalesForm = ({
                           <Input
                             value={entry.estimate_sub_item}
                             onChange={(e) =>
-                              handleItemChange(index, "estimate_sub_item", e.target.value)
+                              handleItemChange(
+                                index,
+                                "estimate_sub_item",
+                                e.target.value,
+                              )
                             }
                             className="h-9 bg-white"
                             placeholder="Item Name"
@@ -214,7 +229,11 @@ const DesktopEstimateSalesForm = ({
                             <MemoizedProductSelect
                               value={entry.sales_sub_item_original}
                               onChange={(value) =>
-                                handleItemChange(index, "sales_sub_item_original", value)
+                                handleItemChange(
+                                  index,
+                                  "sales_sub_item_original",
+                                  value,
+                                )
                               }
                               options={productOptions}
                               placeholder="Select original item"
@@ -226,7 +245,11 @@ const DesktopEstimateSalesForm = ({
                             type="tel"
                             value={entry.estimate_sub_qnty || ""}
                             onChange={(e) =>
-                              handleItemChange(index, "estimate_sub_qnty", e.target.value)
+                              handleItemChange(
+                                index,
+                                "estimate_sub_qnty",
+                                e.target.value,
+                              )
                             }
                             maxLength={10}
                             onKeyDown={handleKeyDown}
@@ -242,7 +265,7 @@ const DesktopEstimateSalesForm = ({
                               handleItemChange(
                                 index,
                                 "estimate_sub_qnty_sqr",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             maxLength={10}
@@ -256,7 +279,11 @@ const DesktopEstimateSalesForm = ({
                             type="tel"
                             value={entry.estimate_sub_rate || ""}
                             onChange={(e) =>
-                              handleItemChange(index, "estimate_sub_rate", e.target.value)
+                              handleItemChange(
+                                index,
+                                "estimate_sub_rate",
+                                e.target.value,
+                              )
                             }
                             maxLength={10}
                             onKeyDown={handleKeyDown}
@@ -269,7 +296,7 @@ const DesktopEstimateSalesForm = ({
                             type="tel"
                             value={entry.estimate_sub_amount || ""}
                             disabled
-                            className="h-9 bg-gray-100 text-right font-medium"
+                            className="h-9 bg-gray-100 text-right font-semibold"
                           />
                         </td>
                         <td className="p-2">
@@ -306,15 +333,17 @@ const DesktopEstimateSalesForm = ({
             {/* Charges */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div></div>
-              <div className="border ml-20 rounded-lg p-3 bg-white space-y-2">
+              <div className="border rounded-lg p-3 bg-white space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="sales_tax">Tax</Label>
                   <Input
-                    className="w-[150px] text-right shrink-0 bg-white"
+                    className="w-[220px] text-right shrink-0 bg-white"
                     id="sales_tax"
                     type="tel"
                     {...form.register("sales_tax")}
-                    onChange={(e) => handleChargeChange("sales_tax", e.target.value)}
+                    onChange={(e) =>
+                      handleChargeChange("sales_tax", e.target.value)
+                    }
                     maxLength={10}
                     onKeyDown={handleKeyDown}
                     placeholder="0"
@@ -323,11 +352,13 @@ const DesktopEstimateSalesForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="sales_tempo">Tempo Charges</Label>
                   <Input
-                    className="w-[150px] text-right shrink-0 bg-white"
+                    className="w-[220px] text-right shrink-0 bg-white"
                     id="sales_tempo"
                     type="tel"
                     {...form.register("sales_tempo")}
-                    onChange={(e) => handleChargeChange("sales_tempo", e.target.value)}
+                    onChange={(e) =>
+                      handleChargeChange("sales_tempo", e.target.value)
+                    }
                     maxLength={10}
                     onKeyDown={handleKeyDown}
                     placeholder="0"
@@ -336,11 +367,13 @@ const DesktopEstimateSalesForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="sales_loading">Loading Charges</Label>
                   <Input
-                    className="w-[150px] text-right shrink-0 bg-white"
+                    className="w-[220px] text-right shrink-0 bg-white"
                     id="sales_loading"
                     type="tel"
                     {...form.register("sales_loading")}
-                    onChange={(e) => handleChargeChange("sales_loading", e.target.value)}
+                    onChange={(e) =>
+                      handleChargeChange("sales_loading", e.target.value)
+                    }
                     maxLength={10}
                     onKeyDown={handleKeyDown}
                     placeholder="0"
@@ -349,11 +382,13 @@ const DesktopEstimateSalesForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="sales_unloading">Unloading Charges</Label>
                   <Input
-                    className="w-[150px] text-right shrink-0 bg-white"
+                    className="w-[220px] text-right shrink-0 bg-white"
                     id="sales_unloading"
                     type="tel"
                     {...form.register("sales_unloading")}
-                    onChange={(e) => handleChargeChange("sales_unloading", e.target.value)}
+                    onChange={(e) =>
+                      handleChargeChange("sales_unloading", e.target.value)
+                    }
                     maxLength={10}
                     onKeyDown={handleKeyDown}
                     placeholder="0"
@@ -362,20 +397,24 @@ const DesktopEstimateSalesForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="sales_other">Other Charges</Label>
                   <Input
-                    className="w-[150px] text-right shrink-0 bg-white"
+                    className="w-[220px] text-right shrink-0 bg-white"
                     id="sales_other"
                     type="tel"
                     {...form.register("sales_other")}
-                    onChange={(e) => handleChargeChange("sales_other", e.target.value)}
+                    onChange={(e) =>
+                      handleChargeChange("sales_other", e.target.value)
+                    }
                     maxLength={10}
                     onKeyDown={handleKeyDown}
                     placeholder="0"
                   />
                 </div>
-                 <div className="flex items-center justify-between gap-2">
-                  <Label className="font-semibold text-gray-700">Net Total</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="font-semibold text-gray-700">
+                    Net Total
+                  </Label>
                   <Input
-                    className="w-[150px] font-bold text-right rounded-md shrink-0 bg-gray-50"
+                    className="w-[220px] font-bold text-right rounded-md shrink-0 bg-gray-50"
                     type="text"
                     value={form.watch("sales_temp_amount") || 0}
                     disabled
@@ -384,7 +423,7 @@ const DesktopEstimateSalesForm = ({
                 <div className="flex items-center justify-between gap-2">
                   <Label className="font-medium text-gray-700">Round Off</Label>
                   <Input
-                    className="w-[150px] text-right font-medium bg-white border border-gray-200 shrink-0"
+                    className="w-[220px] text-right font-medium bg-white border border-gray-200 shrink-0"
                     type="text"
                     {...form.register("sales_amount_round")}
                     onChange={handleRoundOffChange}
@@ -401,9 +440,11 @@ const DesktopEstimateSalesForm = ({
                   />
                 </div> */}
                 <div className="flex items-center justify-between gap-2">
-                  <Label className="font-medium text-gray-700">Amount Collected</Label>
+                  <Label className="font-medium text-gray-700">
+                    Amount Collected
+                  </Label>
                   <Input
-                    className="w-[150px] text-right shrink-0 bg-white"
+                    className="w-[220px] text-right shrink-0 bg-white"
                     type="tel"
                     {...form.register("sales_amount_received")}
                     onChange={handleAmountReceivedChange}
@@ -413,9 +454,11 @@ const DesktopEstimateSalesForm = ({
                   />
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <Label className="font-semibold text-red-700">Pending Amount</Label>
+                  <Label className="font-semibold text-red-700">
+                    Pending Amount
+                  </Label>
                   <Input
-                    className="w-[150px] bg-red-50 font-bold border-red-200 text-red-900 text-right rounded-md shrink-0"
+                    className="w-[220px] bg-red-50 font-bold border-red-200 text-red-900 text-right rounded-md shrink-0"
                     type="text"
                     value={form.watch("sales_balance") || 0}
                     disabled
@@ -437,15 +480,16 @@ const DesktopEstimateSalesForm = ({
               <Button
                 type="button"
                 variant="outline"
+                disabled={isSubmitting}
                 onClick={() => {
                   const formElement = document.getElementById("est-sales-form");
                   if (formElement) {
                     formElement.requestSubmit();
                   }
                 }}
-                className="border-gray-300 bg-blue-600 hover:bg-blue-700 text-white hover:text-white"
+                className="border-gray-300 bg-blue-600 hover:bg-blue-700 text-white hover:text-white disabled:bg-gray-400"
               >
-                Save and Close
+                {isSubmitting ? "Saving..." : "Save and Close"}
               </Button>
             </div>
           </form>
