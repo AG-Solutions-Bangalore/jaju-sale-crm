@@ -151,7 +151,7 @@ const EstimateEditPage = () => {
       }
 
       if (subs.length > 0) {
-        setItemEntries(subs.map((sub) => ({
+        const mappedSubs = subs.map((sub) => ({
           id: sub.id,
           estimate_sub_item: sub.estimate_sub_item || "",
           estimate_sub_qnty: sub.estimate_sub_qnty || sub.estimate_sub_pcs || "",
@@ -159,7 +159,12 @@ const EstimateEditPage = () => {
           estimate_sub_pcs: sub.estimate_sub_pcs || "",
           estimate_sub_rate: formatToInteger(sub.estimate_sub_rate),
           estimate_sub_amount: formatToInteger(sub.estimate_sub_amount),
-        })));
+        }));
+        setItemEntries(mappedSubs);
+        setGstEdited(true);
+        setTimeout(() => {
+          calculateAndSetTotals(mappedSubs, true);
+        }, 100);
       } else {
         setItemEntries([{
           estimate_sub_item: "",
@@ -305,6 +310,7 @@ const EstimateEditPage = () => {
     const formErrors = {
       date: !data.estimate_date ? "Date is required" : "",
       customer: !data.estimate_customer ? "Customer name is required" : "",
+      mobile: !data.estimate_mobile ? "Mobile number is required" : "",
     };
 
     const itemErrors = itemEntries.map((entry, index) => ({
@@ -411,9 +417,9 @@ const EstimateEditPage = () => {
       updateMutation.mutate({ id, payload }, {
         onSuccess: (response) => {
           if (saveActionRef.current === "print") {
-            navigate(`/estimate/view/${id}`);
+            navigate(`/rough-estimate/view/${id}`);
           } else {
-            navigate("/estimate");
+            navigate("/rough-estimate");
           }
         },
       });
@@ -429,7 +435,7 @@ const EstimateEditPage = () => {
   };
 
   const handleCancel = () => {
-    navigate("/estimate");
+    navigate("/rough-estimate");
   };
 
   const displayGrandTotal = itemEntries.reduce(

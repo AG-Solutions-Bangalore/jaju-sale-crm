@@ -17,14 +17,20 @@ export const usePurchaseList = () => {
   return useQuery({
     queryKey: ["purchaseGranite"],
     queryFn: async () => {
-      const response = await fetchPurchaseList();
-      const rawData = response?.data;
-      if (Array.isArray(rawData?.data?.data)) return rawData.data.data;
-      if (Array.isArray(rawData?.purchase)) return rawData.purchase;
-      if (Array.isArray(rawData?.purchases)) return rawData.purchases;
-      if (Array.isArray(rawData?.data)) return rawData.data;
-      if (Array.isArray(rawData)) return rawData;
-      return [];
+      const first = await fetchPurchaseList();
+      const raw = first?.data?.data;
+      if (!raw?.data || !raw?.last_page || raw.last_page <= 1) {
+        if (Array.isArray(raw?.data)) return raw.data;
+        if (Array.isArray(raw)) return raw;
+        return [];
+      }
+      const pages = [raw.data];
+      for (let p = 2; p <= raw.last_page; p++) {
+        const res = await fetchPurchaseList(p);
+        const d = res?.data?.data;
+        if (Array.isArray(d?.data)) pages.push(d.data);
+      }
+      return pages.flat();
     },
   });
 };

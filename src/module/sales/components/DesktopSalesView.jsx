@@ -41,7 +41,7 @@ const DesktopSalesView = ({
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-              <CardTitle className="text-xl">Sales Details</CardTitle>
+              <CardTitle className="text-xl">Sales Estimate Details</CardTitle>
             </div>
             <div className="flex justify-end gap-2">
               <Button

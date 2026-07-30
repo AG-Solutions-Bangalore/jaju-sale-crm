@@ -287,13 +287,17 @@ const DesktopSingleItemStockReport = ({
                       <div className="flex items-center gap-1">
                         <span className="text-gray-500">From Date:</span>
                         <span className="text-gray-800 bg-gray-100 px-2 py-1 rounded">
-                          {moment(searchParams?.from_date || form.watch("from_date")).format("MM/DD/YYYY")}
+                          {moment(
+                            searchParams?.from_date || form.watch("from_date"),
+                          ).format("MM/DD/YYYY")}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="text-gray-500">To Date:</span>
                         <span className="text-gray-800 bg-gray-100 px-2 py-1 rounded">
-                          {moment(searchParams?.to_date || form.watch("to_date")).format("MM/DD/YYYY")}
+                          {moment(
+                            searchParams?.to_date || form.watch("to_date"),
+                          ).format("MM/DD/YYYY")}
                         </span>
                       </div>
                     </div>
@@ -303,7 +307,7 @@ const DesktopSingleItemStockReport = ({
                 {/* Transaction History Table */}
                 <div
                   ref={tableRef}
-                  className="overflow-x-auto border rounded-lg border-gray-200"
+                  className="overflow-x-scroll thick-scrollbar border rounded-lg border-gray-200"
                 >
                   <div className="hidden print:block text-center p-4">
                     <h2 className="text-xl font-bold">{selectedItem}</h2>
@@ -317,12 +321,12 @@ const DesktopSingleItemStockReport = ({
                   <Table className="border-collapse w-full text-[11px]">
                     <TableHeader className="bg-gray-100 text-gray-900 sticky top-0">
                       <TableRow className="bg-gray-100 hover:bg-gray-100 border-b border-gray-200">
-                        {/* <TableHead
+                        <TableHead
                           rowSpan={2}
                           className="text-center text-gray-800 font-bold border-r border-gray-200 align-middle w-32"
                         >
                           DATE
-                        </TableHead> */}
+                        </TableHead>
                         <TableHead
                           rowSpan={2}
                           className="text-left text-gray-800 font-bold border-r border-gray-200 align-middle pl-3 min-w-40"
@@ -379,11 +383,11 @@ const DesktopSingleItemStockReport = ({
                               index % 2 === 0 ? "bg-white" : "bg-gray-50/30",
                             )}
                           >
-                            {/* <TableCell className="text-center border-r border-gray-200 font-medium py-2">
+                            <TableCell className="text-center border-r border-gray-200 font-medium py-2">
                               {t.date
                                 ? moment(t.date).format("DD MMMM YYYY")
                                 : ""}
-                            </TableCell> */}
+                            </TableCell>
                             <TableCell className="text-left pl-3 border-r border-gray-200 font-medium text-gray-800 py-2">
                               {t.reference}
                             </TableCell>
@@ -428,12 +432,13 @@ const DesktopSingleItemStockReport = ({
                       {/* Final Closing Balance Row */}
                       {normalizedTxs.length > 0 && (
                         <TableRow className="bg-slate-900 text-white hover:bg-slate-900 font-bold text-xs">
+                          {/* Right now i dont want to show the date */}
                           {/* <TableCell className="text-center py-2.5">
                             {lastTxDate
                               ? moment(lastTxDate).format("DD MMMM YYYY")
                               : ""}
                           </TableCell> */}
-                          <TableCell className="text-left pl-3 py-2.5">
+                          <TableCell colSpan={2} className="text-left pl-3 py-2.5 whitespace-nowrap">
                             Closing:{" "}
                             {formatClosingBalanceText(
                               closingPieces,

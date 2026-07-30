@@ -25,8 +25,8 @@ export function AppBottombar() {
       icon: Home,
     },
     {
-      title: "Estimate",
-      url: "/estimate",
+      title: "Rough Estimate",
+      url: "/rough-estimate",
       icon: File,
     },
     {
@@ -35,7 +35,7 @@ export function AppBottombar() {
       icon: File,
     },
     {
-      title: "Purchase",
+      title: "Purchase Estimate",
       url: "/purchase",
       icon: Settings2,
     },
@@ -45,7 +45,7 @@ export function AppBottombar() {
       icon: ShoppingBag,
     },
     {
-      title: "Sales",
+      title: "Sales Estimate",
       url: "/sales",
       icon: ShoppingBag,
     },
@@ -67,12 +67,8 @@ export function AppBottombar() {
           url: "/sales-report",
         },
         {
-          title: "Sale List",
-          url: "/reports/sales-list",
-        },
-        {
-          title: "Purchase List",
-          url: "/reports/purchase-list",
+          title: "Purchase Report",
+          url: "/purchase-report",
         },
       ],
     },

@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronLeft, Printer } from "lucide-react";
+import { ChevronLeft, Printer, Edit } from "lucide-react";
 import { FaRegFilePdf } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -23,14 +23,26 @@ const DesktopEstimateView = ({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/estimate")}
+                onClick={() => navigate("/rough-estimate")}
                 className="rounded-full"
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-              <CardTitle className="text-xl">Estimate Details</CardTitle>
+              <CardTitle className="text-xl">Rough Estimate Details</CardTitle>
             </div>
             <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  navigate(
+                    `/rough-estimate/edit/${estimateData?.estimate?.id}`
+                  )
+                }
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
               <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
                 <FaRegFilePdf className="mr-2 h-4 w-4" />
                 PDF

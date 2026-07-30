@@ -173,7 +173,7 @@ const DesktopStocksReport = ({
             </CardHeader>
 
             <CardContent>
-              <div ref={tableRef} className="overflow-x-auto print:p-4">
+              <div ref={tableRef} className="overflow-x-scroll thick-scrollbar print:p-4">
                 <div className="relative text-center mb-6">
                   <div className="font-semibold text-lg">Stocks Report</div>
                   <div className="text-sm text-gray-500 mt-1">

@@ -88,8 +88,10 @@ const MobileEstimateSalesForm = ({
                   maxLength={50}
                 />
               </div>
-              <div>
-                <Label htmlFor="mob_est_sales_mobile">Mobile No</Label>
+              <div className="space-y-1 text-left">
+                <Label htmlFor="mob_est_sales_mobile">
+                  Mobile No <span className="text-xs text-red-400 ">*</span>
+                </Label>
                 <Input
                   id="mob_est_sales_mobile"
                   {...form.register("sales_mobile")}

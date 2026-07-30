@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import ChangePassword from "@/module/auth/components/ChangePassword";
 import { useState } from "react";
 import Cookies from "js-cookie";
+import { logoutUser } from "@/lib/queryClient";
 
 export function NavUser({ user }) {
   const [open, setOpen] = useState(false);
@@ -27,10 +28,7 @@ export function NavUser({ user }) {
   const navigate = useNavigate();
   const user_position = Cookies.get("email");
   const handleLogout = () => {
-    ["token", "id", "name", "userType", "email"].forEach((cookie) => {
-      Cookies.remove(cookie);
-    });
-    localStorage.clear();
+    logoutUser();
     navigate("/");
   };
 

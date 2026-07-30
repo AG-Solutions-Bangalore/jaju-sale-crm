@@ -8,12 +8,18 @@ const ProtectedRoute = () => {
   const { data: authData, isLoading } = useAuth();
   const user = authData?.user;
    
+  console.log("ProtectedRoute auth check:", { isLoading, hasUser: !!user, user });
 
   if (isLoading) {
     return <DashboardSkeleton />;
   }
 
-  return user ? <Outlet /> : <Navigate to="/" replace />;
+  if (!user) {
+    console.warn("ProtectedRoute: No user found, redirecting to /");
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

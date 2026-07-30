@@ -1,7 +1,7 @@
 import axiosInstance from "@/api/axios";
 
-export const fetchPurchaseList = () => {
-  return axiosInstance.get("/api/purchase");
+export const fetchPurchaseList = (page = 1) => {
+  return axiosInstance.get(`/api/purchase?page=${page}`);
 };
 
 export const fetchPurchaseReport = (data) => {

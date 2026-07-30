@@ -58,7 +58,12 @@ import { useSalesList, useDeleteSales } from "../hooks/useSales";
 
 const SalesListPage = () => {
   const navigate = useNavigate();
-  const { data: sales, isLoading, isError, refetch } = useSalesList();
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
+
+  const { data, isLoading, isError, refetch } = useSalesList(currentPage + 1);
+  const sales = data?.sales || [];
+  const pagination = data?.pagination;
   const deleteMutation = useDeleteSales();
 
   const [sorting, setSorting] = useState([]);
@@ -67,8 +72,6 @@ const SalesListPage = () => {
   const [rowSelection, setRowSelection] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 10;
 
   const parseBillNumber = (billNo) => {
     if (billNo === undefined || billNo === null) return 0;
@@ -98,12 +101,6 @@ const SalesListPage = () => {
   const columns = React.useMemo(
     () => [
       {
-        id: "Sl No",
-        accessorKey: "index",
-        header: "Sl/No",
-        cell: ({ row }) => <div>{row.index + 1}</div>,
-      },
-      {
         accessorKey: "sales_date",
         id: "Date",
         header: "Date",
@@ -127,17 +124,17 @@ const SalesListPage = () => {
           return <div>{val}</div>;
         },
       },
-      // {
-      //   accessorKey: "sales_estimate_ref",
-      //   id: "Estimate Ref",
-      //   header: "Estimate Ref",
-      //   cell: ({ row }) => <div>{row.original.sales_estimate_ref || "-"}</div>,
-      // },
       {
         accessorKey: "sales_customer",
         id: "Customer",
         header: "Customer",
         cell: ({ row }) => <div>{row.getValue("Customer") || "-"}</div>,
+      },
+      {
+        accessorKey: "sales_mobile",
+        id: "Phone Number",
+        header: "Phone Number",
+        cell: ({ row }) => <div>{row.original.sales_mobile || "-"}</div>,
       },
       // {
       //   id: "Items Count",
@@ -151,14 +148,10 @@ const SalesListPage = () => {
         id: "Final Amount",
         header: () => <div className="text-right">Final Amount</div>,
         cell: ({ row }) => {
-          const subs = row.original.subs || row.original.salesSub || [];
-          const total = subs.reduce(
-            (sum, item) => sum + (parseFloat(item.sales_sub_amount) || 0),
-            0,
-          );
+          const amount = parseFloat(row.original.sales_amount_payable || 0);
           return (
             <div className="text-right font-semibold text-gray-800">
-              {total.toFixed(2)}
+              {amount.toFixed(2)}
             </div>
           );
         },
@@ -306,17 +299,26 @@ const SalesListPage = () => {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    pageCount: pagination?.last_page ?? -1,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
-    },
-    initialState: {
       pagination: {
+        pageIndex: currentPage,
         pageSize: 10,
       },
     },
+    onPaginationChange: (updater) => {
+      if (typeof updater === "function") {
+        const nextState = updater({ pageIndex: currentPage, pageSize: 10 });
+        setCurrentPage(nextState.pageIndex);
+      } else {
+        setCurrentPage(updater.pageIndex);
+      }
+    },
+    manualPagination: true,
   });
 
   if (isLoading) {
@@ -358,7 +360,7 @@ const SalesListPage = () => {
           >
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center px-2 py-2">
-                <h1 className="text-base font-bold text-gray-800">Sale List</h1>
+                <h1 className="text-base font-bold text-gray-800">Sales Estimate List</h1>
                 <Button
                   size="sm"
                   className={`h-8 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
@@ -384,10 +386,6 @@ const SalesListPage = () => {
 
           <div className="space-y-2 p-2 max-h-[calc(100vh-180px)] overflow-y-auto">
             {filteredSales
-              .slice(
-                currentPage * itemsPerPage,
-                currentPage * itemsPerPage + itemsPerPage,
-              )
               .map((sale, index) => (
                 <Card key={sale.id} className="p-2">
                   <div className="flex justify-between items-center">
@@ -433,17 +431,11 @@ const SalesListPage = () => {
                     <div>
                       <div className="text-gray-500">Total Amount</div>
                       <div className="font-semibold text-gray-800">
-                        {(sale.subs || sale.salesSub || [])
-                          .reduce(
-                            (sum, item) =>
-                              sum + (parseFloat(item.sales_sub_amount) || 0),
-                            0,
-                          )
-                          .toFixed(2)}
+                        {parseFloat(sale.sales_amount_payable || 0).toFixed(2)}
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Final Payable</div>
+                      <div className="text-gray-500">Final Amount</div>
                       <div className="font-semibold text-orange-600">
                         {(() => {
                           const payable = parseFloat(
@@ -492,8 +484,7 @@ const SalesListPage = () => {
               Prev
             </Button>
             <span className="text-xs text-gray-600">
-              Page {currentPage + 1} of{" "}
-              {Math.ceil(filteredSales.length / itemsPerPage) || 1}
+              Page {currentPage + 1} of {pagination?.last_page ?? 1}
             </span>
             <Button
               variant="outline"
@@ -502,15 +493,11 @@ const SalesListPage = () => {
                 setCurrentPage((prev) =>
                   Math.min(
                     prev + 1,
-                    Math.ceil(filteredSales.length / itemsPerPage) - 1,
+                    (pagination?.last_page ?? 1) - 1,
                   ),
                 )
               }
-              disabled={
-                currentPage >=
-                  Math.ceil(filteredSales.length / itemsPerPage) - 1 ||
-                filteredSales.length <= itemsPerPage
-              }
+              disabled={currentPage >= (pagination?.last_page ?? 1) - 1}
               className="h-8 text-xs px-3"
             >
               Next
@@ -521,7 +508,7 @@ const SalesListPage = () => {
         {/* Desktop View */}
         <div className="hidden sm:block">
           <div className="flex text-left text-2xl text-gray-800 font-[400]">
-            Sale List
+            Sales Estimate List
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center py-4 gap-2">
@@ -565,7 +552,7 @@ const SalesListPage = () => {
                 className={`ml-2 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
                 onClick={() => navigate("/sales/create")}
               >
-                <SquarePlus className="h-4 w-4 mr-1" /> Add Sales
+                <SquarePlus className="h-4 w-4 mr-1" /> Add New
               </Button>
             </div>
           </div>
@@ -625,7 +612,7 @@ const SalesListPage = () => {
           <div className="flex items-center justify-end space-x-2 py-4">
             <div className="flex-1 text-sm text-muted-foreground">
               Total Sales : &nbsp;
-              {table.getFilteredRowModel().rows.length}
+              {pagination?.total ?? table.getFilteredRowModel().rows.length}
             </div>
             <div className="space-x-2">
               <Button

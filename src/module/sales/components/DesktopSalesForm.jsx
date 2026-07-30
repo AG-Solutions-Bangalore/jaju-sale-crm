@@ -114,7 +114,9 @@ const DesktopSalesForm = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sales_mobile">Mobile No</Label>
+                <Label htmlFor="sales_mobile">
+                  Mobile No <span className="text-xs text-red-400 ">*</span>
+                </Label>
                 <Input
                   id="sales_mobile"
                   {...form.register("sales_mobile")}
@@ -526,7 +528,7 @@ const DesktopSalesForm = ({
                 <div className="flex items-center justify-between gap-4">
                   <div className="w-[305px] shrink-0 flex items-center">
                     <Label className="font-semibold text-blue-900">
-                      Final Payable
+                      Final Amount
                     </Label>
                   </div>
                   <Input

@@ -7,6 +7,7 @@ import DesktopSidebar from "./DesktopSidebar";
 import DesktopHeader from "./DesktopHeader";
 import MobileHeader from "./MobileHeader";
 import MobileBottomNav from "./MobileBottomNav";
+import { logoutUser } from "@/lib/queryClient";
 
 // eslint-disable-next-line react/prop-types
 export default function PageLayout({ children }) {
@@ -22,10 +23,7 @@ export default function PageLayout({ children }) {
   };
 
   const handleLogout = () => {
-    ["token", "id", "name", "userType", "email"].forEach((cookie) => {
-      Cookies.remove(cookie);
-    });
-    localStorage.clear();
+    logoutUser();
     navigate("/");
   };
 

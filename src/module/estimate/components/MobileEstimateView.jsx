@@ -1,8 +1,7 @@
 import React from "react";
-import { ChevronLeft, Printer } from "lucide-react";
+import { ChevronLeft, Printer, Edit, Loader2 } from "lucide-react";
 import { FaRegFilePdf } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
-import { Loader2 } from "lucide-react";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import CommonPrintTemplate from "@/components/common/CommonPrintTemplate";
 
@@ -25,16 +24,27 @@ const MobileEstimateView = ({
             <div className="flex items-center gap-2 p-2">
               <button
                 type="button"
-                onClick={() => navigate("/estimate")}
+                onClick={() => navigate("/rough-estimate")}
                 className="rounded-full p-1"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <h1 className="text-base font-bold text-gray-800">
-                Estimate Details
+                Rough Estimate Details
               </h1>
             </div>
             <div className="flex gap-[2px]">
+              <button
+                type="button"
+                className={`sm:w-auto ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} text-sm p-3 rounded-b-md`}
+                onClick={() =>
+                  navigate(
+                    `/rough-estimate/edit/${estimateData?.estimate?.id}`
+                  )
+                }
+              >
+                <Edit className="h-4 w-4" />
+              </button>
               <button
                 type="button"
                 className={`sm:w-auto ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} text-sm p-3 rounded-b-md`}

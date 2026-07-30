@@ -114,8 +114,10 @@ const MobileSalesForm = ({
                   }}
                 />
               </div>
-              <div>
-                <Label htmlFor="mob_sales_mobile">Mobile No</Label>
+              <div className="space-y-1 text-left">
+                <Label htmlFor="mob_sales_mobile">
+                  Mobile No <span className="text-xs text-red-400 ">*</span>
+                </Label>
                 <Input
                   id="mob_sales_mobile"
                   {...form.register("sales_mobile")}
@@ -478,7 +480,7 @@ const MobileSalesForm = ({
 
             <div>
               <Label className="font-semibold text-blue-900">
-                Final Payable
+                Final Amount
               </Label>
               <Input
                 type="text"
