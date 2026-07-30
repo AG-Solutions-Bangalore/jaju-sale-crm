@@ -123,13 +123,6 @@ const EstimateListPage = () => {
   const columns = React.useMemo(
     () => [
       {
-        id: "Sl No",
-        accessorKey: "index",
-        header: "Sl No",
-        size: 60,
-        cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
-      },
-      {
         accessorKey: "estimate_date",
         id: "Date",
         header: "Date",
@@ -156,6 +149,13 @@ const EstimateListPage = () => {
         header: "Customer",
         minSize: 150,
         cell: ({ row }) => <div>{row.getValue("Customer") || "-"}</div>,
+      },
+      {
+        accessorKey: "estimate_mobile",
+        id: "Phone Number",
+        header: "Phone Number",
+        size: 130,
+        cell: ({ row }) => <div>{row.original.estimate_mobile || "-"}</div>,
       },
       {
         accessorKey: "estimate_amount",
@@ -191,7 +191,7 @@ const EstimateListPage = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() =>
-                        navigate(`/estimate/view/${estimateId}`)
+                        navigate(`/rough-estimate/view/${estimateId}`)
                       }
                     >
                       <Eye className="h-4 w-4 text-green-600" />
@@ -211,7 +211,7 @@ const EstimateListPage = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() =>
-                            navigate(`/estimate/edit/${estimateId}`)
+                            navigate(`/rough-estimate/edit/${estimateId}`)
                           }
                         >
                           <Edit className="h-4 w-4 text-blue-600" />
@@ -330,12 +330,12 @@ const EstimateListPage = () => {
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center px-2 py-2">
                 <h1 className="text-base font-bold text-gray-800">
-                  Estimate List
+                 Rough Estimate List
                 </h1>
                 <Button
                   size="sm"
                   className={`h-8 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
-                  onClick={() => navigate("/estimate/create")}
+                  onClick={() => navigate("/rough-estimate/create")}
                 >
                   <SquarePlus className="h-3.5 w-3.5" />
                 </Button>
@@ -388,7 +388,7 @@ const EstimateListPage = () => {
                         size="iconSm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/estimate/edit/${est.id}`);
+                          navigate(`/rough-estimate/edit/${est.id}`);
                         }}
                         className="h-6 w-6 text-blue-600 hover:text-blue-800"
                       >
@@ -399,7 +399,7 @@ const EstimateListPage = () => {
                         size="iconSm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/estimate/view/${est.id}`);
+                          navigate(`/rough-estimate/view/${est.id}`);
                         }}
                         className="h-6 w-6 text-blue-600 hover:text-blue-800"
                       >
@@ -511,7 +511,7 @@ const EstimateListPage = () => {
         {/* Desktop View */}
         <div className="hidden sm:block">
           <div className="flex text-left text-2xl text-gray-800 font-[400]">
-            Estimate List
+          Rough Estimate List
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center py-4 gap-2">
@@ -564,10 +564,10 @@ const EstimateListPage = () => {
               <Button
                 variant="default"
                 className={`ml-2 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
-                onClick={() => navigate("/estimate/create")}
+                onClick={() => navigate("/rough-estimate/create")}
               >
                 <SquarePlus className="h-4 w-4" />
-                Add Estimate
+                Add New
               </Button>
             </div>
           </div>

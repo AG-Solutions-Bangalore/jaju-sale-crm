@@ -105,7 +105,7 @@ const PurchaseViewPage = () => {
   const unloading = 0;
   const other = parseFloat(purchase.purchase_other || 0);
   const other1 = parseFloat(purchase.purchase_other1 || 0);
-  const gross = parseFloat(purchase.purchase_gross || purchase.purchase_amount_received || 0);
+  const gross = parseFloat(purchase.purchase_amount_received || purchase.purchase_gross || 0);
 
   const unroundedTotal = subTotal + tax + tempo + labourValue + other + other1;
   const grandTotal = subTotal + tempo + labourValue + other + other1;

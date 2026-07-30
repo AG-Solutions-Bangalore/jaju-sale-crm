@@ -39,7 +39,7 @@ const MobileSalesView = ({
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <h1 className="text-base font-bold text-gray-800">
-                Sales Details
+                Sales Estimate Details
               </h1>
             </div>
             <div className="flex justify-end pr-2 gap-1.5">

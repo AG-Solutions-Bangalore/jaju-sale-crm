@@ -410,7 +410,7 @@ const PurchaseEditPage = () => {
     const formErrors = {
       date: !data.purchase_date ? "Date is required" : "",
       supplier: !data.purchase_supplier ? "Supplier is required" : "",
-      billNo: !data.purchase_bill_no ? "Bill number is required" : "",
+      billNo: !data.purchase_no ? "Bill number is required" : "",
     };
 
     const itemErrors = itemEntries.map((entry, index) => ({
@@ -592,6 +592,7 @@ const PurchaseEditPage = () => {
         purchase_date: restData.purchase_date || moment().format("YYYY-MM-DD"),
         purchase_supplier: restData.purchase_supplier || "",
         purchase_bill_no: restData.purchase_bill_no || "",
+        purchase_no: restData.purchase_no || "",
         purchase_tax: (parseFloat(form.watch("purchase_tax")) || 0).toString(),
         purchase_tempo: tempo.toString(),
         purchase_labour_label: loadingType || restData.purchase_labour_label || "Labour Charges",
@@ -600,10 +601,10 @@ const PurchaseEditPage = () => {
         purchase_other: other.toString(),
         purchase_other1_label: restData.purchase_other1_label || "Other Charges 1",
         purchase_other1: other1.toString(),
-        purchase_gross: finalAmount.toString(),
+        purchase_gross: grandTotal.toString(),
         purchase_net_total: netTotal.toString(),
         purchase_amount_round: roundOff.toString(),
-        purchase_amount_received: restData.purchase_amount_received || finalAmount.toString(),
+        purchase_amount_received: finalAmount.toString(),
         subs: formattedItemEntries.map((item) => {
           const subObj = {
             purchase_sub_item: item.purchase_sub_item || "",

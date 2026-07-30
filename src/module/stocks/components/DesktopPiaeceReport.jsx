@@ -166,7 +166,7 @@ const DesktopPiaeceReport = ({
             </CardHeader>
 
             <CardContent>
-              <div ref={tableRef} className="overflow-x-auto print:p-4">
+              <div ref={tableRef} className="overflow-x-scroll thick-scrollbar print:p-4">
                 <div className="text-center mb-4 font-semibold">
                   Stocks Sqft Report
                 </div>

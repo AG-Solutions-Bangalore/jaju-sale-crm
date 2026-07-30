@@ -7,11 +7,13 @@ import DisabledRightClick from "./components/common/DisabledRightClick";
 
 import AppRoutes from "./routes/AppRoutes";
 import Cookies from "js-cookie";
+import { logoutUser } from "./lib/queryClient";
 
 function App() {
   const navigate = useNavigate();
   const time = Cookies.get("token-expire-time");
   const handleLogout = () => {
+    logoutUser();
     navigate("/");
   };
   return (

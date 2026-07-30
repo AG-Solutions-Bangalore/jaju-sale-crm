@@ -30,6 +30,7 @@ import PiaeceReport from "@/app/stocks/PiaeceReport";
 import SaleDashboard from "@/app/home/SaleDashboard";
 import SingleItemStockReport from "@/app/stocks/SingleItemStockReport";
 import SalesReport from "@/app/sales/SalesReport";
+import PurchaseReport from "@/app/purchaseGranite/PurchaseReport";
 import SalesReportSalesList from "@/app/sales/SalesReportSalesList";
 import SalesReportPurchaseList from "@/app/purchaseGranite/SalesReportPurchaseList";
 
@@ -50,10 +51,10 @@ function AppRoutes() {
         <Route path="/oldestimate" element={<OldEstimateList />} />
         <Route path="/oldestimate/create" element={<OldEstimateAdd />} />
         <Route path="/oldestimate/view/:id" element={<OldEstimateView />} />
-        <Route path="/estimate" element={<EstimateList />} />
-        <Route path="/estimate/create" element={<EstimateAdd />} />
-        <Route path="/estimate/edit/:id" element={<EstimateEdit />} />
-        <Route path="/estimate/view/:id" element={<EstimateView />} />
+        <Route path="/rough-estimate" element={<EstimateList />} />
+        <Route path="/rough-estimate/create" element={<EstimateAdd />} />
+        <Route path="/rough-estimate/edit/:id" element={<EstimateEdit />} />
+        <Route path="/rough-estimate/view/:id" element={<EstimateView />} />
         <Route path="/sale-dashboard" element={<SaleDashboard />} />
         <Route path="/stocks-piece" element={<PiaeceReport />} />
         <Route path="/product" element={<ProductList />} />
@@ -72,6 +73,7 @@ function AppRoutes() {
         <Route path="/sales/view/:id" element={<SalesView />} />
         <Route path="/sales/edit/:id" element={<SalesEdit />} />
         <Route path="/sales-report" element={<SalesReport />} />
+        <Route path="/purchase-report" element={<PurchaseReport />} />
         <Route path="/reports/sales-list" element={<SalesReportSalesList />} />
         <Route path="/reports/purchase-list" element={<SalesReportPurchaseList />} />
         <Route path="/stocks" element={<StocksReport />} />

@@ -93,22 +93,22 @@ const MobilePurchaseForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="mob_purchase_bill_no">
+                <Label htmlFor="mob_purchase_no">
                   JFC Bill No. <span className="text-xs text-red-400 ">*</span>
                 </Label>
                 <Input
-                  id="mob_purchase_bill_no"
-                  {...form.register("purchase_bill_no")}
+                  id="mob_purchase_no"
+                  {...form.register("purchase_no")}
                   className="mt-1 bg-white"
                   placeholder="Enter JFC Purchase Number"
                   maxLength={10}
                 />
               </div>
               <div>
-                <Label htmlFor="mob_purchase_no">Supplier Bill No.</Label>
+                <Label htmlFor="mob_purchase_bill_no">Supplier Bill No.</Label>
                 <Input
-                  id="mob_purchase_no"
-                  {...form.register("purchase_no")}
+                  id="mob_purchase_bill_no"
+                  {...form.register("purchase_bill_no")}
                   className="mt-1 bg-white"
                   placeholder="Supplier Bill No."
                 />

@@ -1,9 +1,8 @@
 import React from "react";
 import moment from "moment";
-import { ChevronLeft, Printer } from "lucide-react";
+import { ChevronLeft, Printer, Edit, Loader2 } from "lucide-react";
 import { FaRegFilePdf } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
-import { Loader2 } from "lucide-react";
 import { ButtonConfig } from "@/config/ButtonConfig";
 
 const MobilePurchaseView = ({
@@ -41,10 +40,17 @@ const MobilePurchaseView = ({
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <h1 className="text-base font-bold text-gray-800">
-                Purchase Details
+                Purchase Estimate Details
               </h1>
             </div>
             <div className="flex gap-[2px]">
+              <button
+                type="button"
+                className={`sm:w-auto ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} text-sm p-3 rounded-b-md`}
+                onClick={() => navigate(`/purchase/edit/${purchaseData?.purchase?.id}`)}
+              >
+                <Edit className="h-4 w-4" />
+              </button>
               <button
                 type="button"
                 className={`sm:w-auto ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} text-sm p-3 rounded-b-md`}
@@ -78,7 +84,7 @@ const MobilePurchaseView = ({
           ) : (
             <>
               <div className="text-center border p-2 space-y-1 mb-3 text-xs bg-white">
-                <h3 className="text-sm font-semibold">JAJU'S PURCHASE</h3>
+                <h3 className="text-sm font-semibold">JAJU'S ESTIMATE PURCHASE</h3>
                 <p className="text-xs">New 80 ft Sompura, Sriniwaspura Road</p>
                 <p className="text-xs">Bengaluru, Karnataka 560098</p>
                 <p className="text-xs">Phone: 097420 42097</p>

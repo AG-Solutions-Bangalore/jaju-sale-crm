@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AlertTriangle, Clock, Timer } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { logoutUser } from '@/lib/queryClient';
 
 const SessionTimeoutTracker = ({ expiryTime, onLogout }) => {
   const [showBanner, setShowBanner] = useState(false);
@@ -37,6 +38,7 @@ const SessionTimeoutTracker = ({ expiryTime, onLogout }) => {
     const performLogout = () => {
       if (!hasLoggedOut.current && isTokenPresent()) {
         hasLoggedOut.current = true;
+        logoutUser();
         onLogout();
       }
     };

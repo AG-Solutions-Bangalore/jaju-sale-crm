@@ -121,12 +121,12 @@ const PurchaseListPage = () => {
         },
       },
       {
-        accessorKey: "purchase_bill_no",
+        accessorKey: "purchase_no",
         id: "JFC Bill No.",
         header: "JFC Bill No.",
         cell: ({ row }) => {
           const val =
-            row.original.purchase_bill_no || row.original.purchase_ref || "-";
+            row.original.purchase_no || row.original.purchase_ref || "-";
           return <div>{val}</div>;
         },
       },
@@ -137,11 +137,11 @@ const PurchaseListPage = () => {
         cell: ({ row }) => <div>{row.getValue("Supplier") || "-"}</div>,
       },
       {
-        accessorKey: "purchase_no",
+        accessorKey: "purchase_bill_no",
         id: "Supplier Bill No.",
         header: "Supplier Bill No.",
         cell: ({ row }) => {
-          const val = row.original.purchase_no || "-";
+          const val = row.original.purchase_bill_no || "-";
           return <div>{val}</div>;
         },
       },
@@ -159,6 +159,14 @@ const PurchaseListPage = () => {
         header: () => <div className="text-right">Final Amount</div>,
         cell: ({ row }) => {
           const rec = row.original;
+          const recvd = parseFloat(rec?.purchase_amount_received);
+          if (!isNaN(recvd) && recvd > 0)
+            return (
+              <div className="text-right font-semibold text-gray-800">
+                {rec.purchase_amount_received}
+              </div>
+            );
+
           const gross = parseFloat(rec?.purchase_gross);
           if (!isNaN(gross) && gross > 0)
             return (
@@ -191,20 +199,12 @@ const PurchaseListPage = () => {
               </div>
             );
 
-          const recvd = parseFloat(rec?.purchase_amount_received);
-          if (!isNaN(recvd) && recvd > 0)
-            return (
-              <div className="text-right font-semibold text-gray-800">
-                {rec.purchase_amount_received}
-              </div>
-            );
-
           const fallback =
+            rec?.purchase_amount_received ||
             rec?.purchase_gross ||
             rec?.purchase_net_total ||
             rec?.purchase_amount ||
             rec?.purchase_amount_payable ||
-            rec?.purchase_amount_received ||
             "0.00";
           return (
             <div className="text-right font-semibold text-gray-800">
@@ -357,7 +357,7 @@ const PurchaseListPage = () => {
           >
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center px-2 py-2">
-                <h1 className="text-base font-bold text-gray-800">Add</h1>
+                <h1 className="text-base font-bold text-gray-800">Purchase Estimate List</h1>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
@@ -442,6 +442,11 @@ const PurchaseListPage = () => {
                       <div className="font-semibold text-gray-800">
                         ₹
                         {(() => {
+                          const recvd = parseFloat(
+                            purchase?.purchase_amount_received,
+                          );
+                          if (!isNaN(recvd) && recvd > 0)
+                            return purchase.purchase_amount_received;
                           const gross = parseFloat(purchase?.purchase_gross);
                           if (!isNaN(gross) && gross > 0)
                             return purchase.purchase_gross;
@@ -456,17 +461,12 @@ const PurchaseListPage = () => {
                           const amt = parseFloat(purchase?.purchase_amount);
                           if (!isNaN(amt) && amt > 0)
                             return purchase.purchase_amount;
-                          const recvd = parseFloat(
-                            purchase?.purchase_amount_received,
-                          );
-                          if (!isNaN(recvd) && recvd > 0)
-                            return purchase.purchase_amount_received;
                           return (
+                            purchase?.purchase_amount_received ||
                             purchase?.purchase_gross ||
                             purchase?.purchase_net_total ||
                             purchase?.purchase_amount ||
                             purchase?.purchase_amount_payable ||
-                            purchase?.purchase_amount_received ||
                             "0.00"
                           );
                         })()}
@@ -523,7 +523,7 @@ const PurchaseListPage = () => {
         {/* Desktop View */}
         <div className="hidden sm:block">
           <div className="flex text-left text-2xl text-gray-800 font-[400]">
-            Purchase List
+            Purchase Estimate List
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center py-4 gap-2">
@@ -568,7 +568,7 @@ const PurchaseListPage = () => {
                 className={`ml-2 ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
                 onClick={() => navigate("/purchase/create")}
               >
-                <SquarePlus className="h-4 w-4 mr-1" /> Add
+                <SquarePlus className="h-4 w-4 mr-1" /> Add New
               </Button>
             </div>
           </div>

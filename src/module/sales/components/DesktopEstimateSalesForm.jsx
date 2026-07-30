@@ -85,7 +85,9 @@ const DesktopEstimateSalesForm = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="est_sales_mobile">Mobile No</Label>
+                <Label htmlFor="est_sales_mobile">
+                  Mobile No <span className="text-xs text-red-400 ">*</span>
+                </Label>
                 <Input
                   id="est_sales_mobile"
                   {...form.register("sales_mobile")}

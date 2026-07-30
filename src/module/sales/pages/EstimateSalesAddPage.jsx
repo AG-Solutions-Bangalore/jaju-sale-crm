@@ -272,6 +272,7 @@ const EstimateSalesAddPage = () => {
       date: !data.sales_date ? "Date is required" : "",
       customer: !data.sales_customer ? "Customer name is required" : "",
       itemType: !data.sales_item_type ? "Item type is required" : "",
+      mobile: !data.sales_mobile ? "Mobile number is required" : "",
     };
 
     const itemErrors = itemEntries.map((entry) => ({
@@ -349,6 +350,16 @@ const EstimateSalesAddPage = () => {
                         </td>
                         <td className="px-2 py-1.5 text-red-600 border-b border-gray-200 break-all">
                           {formErrors.customer}
+                        </td>
+                      </tr>
+                    )}
+                    {formErrors.mobile && (
+                      <tr className="bg-white hover:bg-gray-50">
+                        <td className="px-2 py-1.5 text-gray-600 border-b border-gray-200 font-medium">
+                          Mobile No
+                        </td>
+                        <td className="px-2 py-1.5 text-red-600 border-b border-gray-200 break-all">
+                          {formErrors.mobile}
                         </td>
                       </tr>
                     )}

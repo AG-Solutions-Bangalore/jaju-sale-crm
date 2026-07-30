@@ -12,10 +12,13 @@ const AuthRoute = () => {
 
   const _isAuthRoute = isAuthRoute(location.pathname);
 
+  console.log("AuthRoute check:", { isLoading, hasUser: !!user, user, isAuthPath: _isAuthRoute });
+
   if (isLoading && !_isAuthRoute) return <DashboardSkeleton />;
 
   if (!user) return <Outlet />;
-  // return <Navigate to="/home" replace />;
+
+  console.log("AuthRoute: User exists, redirecting to /sale-dashboard");
   return <Navigate to="/sale-dashboard" replace />;
 };
 

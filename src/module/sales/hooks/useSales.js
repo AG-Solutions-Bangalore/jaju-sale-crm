@@ -15,17 +15,36 @@ import {
 } from "../api/sales";
 import { useToast } from "@/hooks/use-toast";
 
-export const useSalesList = () => {
+export const useSalesList = (page = 1) => {
   return useQuery({
-    queryKey: ["sales"],
+    queryKey: ["sales", page],
     queryFn: async () => {
-      const response = await fetchSalesList();
+      const response = await fetchSalesList(page);
       const rawData = response?.data;
-      if (Array.isArray(rawData?.data?.data)) return rawData.data.data;
-      if (Array.isArray(rawData?.sales)) return rawData.sales;
-      if (Array.isArray(rawData?.data)) return rawData.data;
-      if (Array.isArray(rawData)) return rawData;
-      return [];
+      
+      let salesData = [];
+      let pagination = null;
+      
+      if (rawData?.data && Array.isArray(rawData.data.data)) {
+        salesData = rawData.data.data;
+        pagination = {
+          current_page: rawData.data.current_page,
+          last_page: rawData.data.last_page,
+          per_page: rawData.data.per_page,
+          total: rawData.data.total,
+        };
+      } else if (Array.isArray(rawData?.sales)) {
+        salesData = rawData.sales;
+      } else if (Array.isArray(rawData?.data)) {
+        salesData = rawData.data;
+      } else if (Array.isArray(rawData)) {
+        salesData = rawData;
+      }
+      
+      return {
+        sales: salesData,
+        pagination,
+      };
     },
   });
 };

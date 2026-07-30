@@ -60,8 +60,8 @@ export function AppSidebar({ ...props }) {
         isActive: false,
       },
       {
-        title: "ESTIMATE",
-        url: "/estimate",
+        title: "ROUGH ESTIMATE",
+        url: "/rough-estimate",
         icon: FileText,
         isActive: false,
       },
@@ -78,13 +78,13 @@ export function AppSidebar({ ...props }) {
       //   isActive: false,
       // },
       {
-        title: "PURCHASE",
+        title: "PURCHASE ESTIMATE",
         url: "/purchase",
         icon: Mountain,
         isActive: false,
       },
       {
-        title: "SALE",
+        title: "SALES ESTIMATE",
         url: "/sales",
         icon: ShoppingCart,
         isActive: false,
@@ -110,13 +110,8 @@ export function AppSidebar({ ...props }) {
             icon: FileText,
           },
           {
-            title: "Sale List",
-            url: "/reports/sales-list",
-            icon: FileText,
-          },
-          {
-            title: "Purchase List",
-            url: "/reports/purchase-list",
+            title: "Purchase Report",
+            url: "/purchase-report",
             icon: FileText,
           },
         ],

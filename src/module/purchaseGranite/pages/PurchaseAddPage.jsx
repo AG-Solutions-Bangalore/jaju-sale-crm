@@ -58,7 +58,8 @@ const PurchaseAddPage = () => {
 
   const { data: currentYear, isLoading: isYearLoading } = useCurrentYear();
   const { data: productTypeGroup = [] } = useProductTypeGroup();
-  const { data: product = [], isLoading: isProductLoading } = useProductTypeGroupNew();
+  const { data: product = [], isLoading: isProductLoading } =
+    useProductTypeGroupNew();
   const createMutation = useCreatePurchase();
   const { data: purchaseList = [] } = usePurchaseList();
 
@@ -98,7 +99,6 @@ const PurchaseAddPage = () => {
     }
   }, [currentYear, form]);
 
-
   const [itemEntries, setItemEntries] = useState([
     {
       purchase_sub_item: "",
@@ -128,7 +128,8 @@ const PurchaseAddPage = () => {
 
   const productOptions = useMemo(() => {
     return product.map((item) => {
-      const name = item.item_name || item.product_type_group || item.product_type;
+      const name =
+        item.item_name || item.product_type_group || item.product_type;
       return { value: name, label: name };
     });
   }, [product]);
@@ -136,7 +137,7 @@ const PurchaseAddPage = () => {
   const calculateAndSetTotals = (entries, skipGst = false) => {
     const itemsTotal = entries.reduce(
       (sum, entry) => sum + parseFloat(entry.purchase_sub_amount || 0),
-      0
+      0,
     );
     const tempo = parseFloat(form.getValues("purchase_tempo") || 0);
     const loading = parseFloat(form.getValues("purchase_loading") || 0);
@@ -144,7 +145,8 @@ const PurchaseAddPage = () => {
     const other = parseFloat(form.getValues("purchase_other") || 0);
     const other1 = parseFloat(form.getValues("purchase_other1") || 0);
 
-    const grandTotal = itemsTotal + tempo + loading + unloading + other + other1;
+    const grandTotal =
+      itemsTotal + tempo + loading + unloading + other + other1;
     setAutoGst18(grandTotal * 0.18);
 
     if (!skipGst && !gstEdited) {
@@ -166,7 +168,7 @@ const PurchaseAddPage = () => {
 
   const itemsTotal = itemEntries.reduce(
     (sum, entry) => sum + parseFloat(entry.purchase_sub_amount || 0),
-    0
+    0,
   );
   const watchTempo = parseFloat(form.watch("purchase_tempo") || 0);
   const watchLoading = parseFloat(form.watch("purchase_loading") || 0);
@@ -175,7 +177,12 @@ const PurchaseAddPage = () => {
   const watchOther1 = parseFloat(form.watch("purchase_other1") || 0);
 
   const displayGrandTotal =
-    itemsTotal + watchTempo + watchLoading + watchUnloading + watchOther + watchOther1;
+    itemsTotal +
+    watchTempo +
+    watchLoading +
+    watchUnloading +
+    watchOther +
+    watchOther1;
   const displayGst = parseFloat(form.watch("purchase_tax") || 0);
   const displayNetTotal = displayGrandTotal + displayGst;
 
@@ -194,7 +201,7 @@ const PurchaseAddPage = () => {
     ) {
       updatedEntries[index].purchase_sub_amount = Math.round(
         parseFloat(updatedEntries[index].purchase_sub_qnty_sqr || 0) *
-          parseFloat(updatedEntries[index].purchase_sub_rate || 0)
+          parseFloat(updatedEntries[index].purchase_sub_rate || 0),
       ).toString();
       setItemEntries([...updatedEntries]);
     }
@@ -219,7 +226,7 @@ const PurchaseAddPage = () => {
       form.setValue("purchase_amount_round", value);
       setRoundOffEdited(true);
       const netTotal = parseFloat(form.getValues("purchase_temp_amount") || 0);
-      form.setValue("purchase_gross", netTotal.toString());
+      form.setValue("purchase_net_total", netTotal.toString());
       form.setValue("purchase_balance", netTotal.toString());
       return;
     }
@@ -283,28 +290,32 @@ const PurchaseAddPage = () => {
     const formErrors = {
       date: !data.purchase_date ? "Date is required" : "",
       supplier: !data.purchase_supplier ? "Supplier is required" : "",
-      billNo: !data.purchase_bill_no ? "Bill number is required" : "",
+      billNo: !data.purchase_no ? "Bill number is required" : "",
     };
 
     const itemErrors = itemEntries.map((entry, index) => ({
       item: isCustomItem[index]
-        ? (!customItems[index] ? "required" : "")
-        : (!entry.purchase_sub_item ? "required" : ""),
+        ? !customItems[index]
+          ? "required"
+          : ""
+        : !entry.purchase_sub_item
+          ? "required"
+          : "",
       qntySqr: !entry.purchase_sub_qnty_sqr
         ? "required"
         : isNaN(entry.purchase_sub_qnty_sqr)
-        ? "Quantity (sqft) must be a number"
-        : "",
+          ? "Quantity (sqft) must be a number"
+          : "",
       rate: !entry.purchase_sub_rate
         ? "required"
         : isNaN(entry.purchase_sub_rate)
-        ? "Rate must be a number"
-        : "",
+          ? "Rate must be a number"
+          : "",
     }));
 
     const hasFormErrors = Object.values(formErrors).some((err) => err);
     const hasItemErrors = itemErrors.some(
-      (err) => err.item || err.qntySqr || err.rate
+      (err) => err.item || err.qntySqr || err.rate,
     );
 
     return { formErrors, itemErrors, hasFormErrors, hasItemErrors };
@@ -412,7 +423,7 @@ const PurchaseAddPage = () => {
                               {error.rate}
                             </td>
                           </tr>
-                        )
+                        ),
                     )}
                   </tbody>
                 </table>
@@ -436,7 +447,9 @@ const PurchaseAddPage = () => {
         return {
           ...entry,
           purchase_sub_pcs: entry.purchase_sub_qnty || "0",
-          purchase_sub_item: isCustomItem[index] ? customItems[index] : entry.purchase_sub_item,
+          purchase_sub_item: isCustomItem[index]
+            ? customItems[index]
+            : entry.purchase_sub_item,
         };
       });
 
@@ -449,9 +462,10 @@ const PurchaseAddPage = () => {
 
       const itemsTotal = itemEntries.reduce(
         (sum, entry) => sum + parseFloat(entry.purchase_sub_amount || 0),
-        0
+        0,
       );
-      const grandTotal = itemsTotal + tempo + loading + unloading + other + other1;
+      const grandTotal =
+        itemsTotal + tempo + loading + unloading + other + other1;
       const gstAmount = parseFloat(form.watch("purchase_tax") || 0);
       const netTotal = grandTotal + gstAmount;
       const roundOff = parseFloat(form.watch("purchase_amount_round") || 0);
@@ -461,22 +475,29 @@ const PurchaseAddPage = () => {
         purchase_date: restData.purchase_date || moment().format("YYYY-MM-DD"),
         purchase_supplier: restData.purchase_supplier || "",
         purchase_bill_no: restData.purchase_bill_no || "",
+        purchase_no: restData.purchase_no || "",
         purchase_tax: (parseFloat(form.watch("purchase_tax")) || 0).toString(),
         purchase_tempo: tempo.toString(),
-        purchase_labour_label: loadingType || restData.purchase_labour_label || "Labour Charges",
+        purchase_labour_label:
+          loadingType || restData.purchase_labour_label || "Labour Charges",
         purchase_labour_value: (loading + unloading).toString(),
         purchase_other_label: restData.purchase_other_label || "Other Charges",
         purchase_other: other.toString(),
-        purchase_other1_label: restData.purchase_other1_label || "Other Charges 1",
+        purchase_other1_label:
+          restData.purchase_other1_label || "Other Charges 1",
         purchase_other1: other1.toString(),
-        purchase_gross: finalAmount.toString(),
+        purchase_gross: grandTotal.toString(),
         purchase_net_total: netTotal.toString(),
         purchase_amount_round: roundOff.toString(),
-        purchase_amount_received: restData.purchase_amount_received || finalAmount.toString(),
+        purchase_amount_received: finalAmount.toString(),
         subs: formattedItemEntries.map((item) => ({
           purchase_sub_item: item.purchase_sub_item || "",
           purchase_sub_qnty_sqr: (item.purchase_sub_qnty_sqr || "0").toString(),
-          purchase_sub_pcs: (item.purchase_sub_pcs || item.purchase_sub_qnty || "0").toString(),
+          purchase_sub_pcs: (
+            item.purchase_sub_pcs ||
+            item.purchase_sub_qnty ||
+            "0"
+          ).toString(),
           purchase_sub_rate: (item.purchase_sub_rate || "0").toString(),
           purchase_sub_amount: (item.purchase_sub_amount || "0").toString(),
         })),
@@ -540,7 +561,9 @@ const PurchaseAddPage = () => {
     isSubmitting,
     purchaseList,
     title: "Add Purchases",
-    setSaveAction: (action) => { saveActionRef.current = action; },
+    setSaveAction: (action) => {
+      saveActionRef.current = action;
+    },
   };
 
   return (

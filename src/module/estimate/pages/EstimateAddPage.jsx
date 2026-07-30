@@ -244,6 +244,7 @@ const EstimateAddPage = () => {
     const formErrors = {
       date: !data.estimate_date ? "Date is required" : "",
       customer: !data.estimate_customer ? "Customer name is required" : "",
+      mobile: !data.estimate_mobile ? "Mobile number is required" : "",
     };
 
     const itemErrors = itemEntries.map((entry, index) => ({
@@ -326,6 +327,16 @@ const EstimateAddPage = () => {
                           </td>
                           <td className="px-2 py-1.5 text-red-600 border-b border-gray-200">
                             {formErrors.customer}
+                          </td>
+                        </tr>
+                      )}
+                      {formErrors.mobile && (
+                        <tr className="bg-white text-gray-700">
+                          <td className="px-2 py-1.5 border-b border-gray-200 font-medium">
+                            Mobile No
+                          </td>
+                          <td className="px-2 py-1.5 text-red-600 border-b border-gray-200">
+                            {formErrors.mobile}
                           </td>
                         </tr>
                       )}
@@ -468,9 +479,9 @@ const EstimateAddPage = () => {
         onSuccess: (response) => {
           const id = response?.data?.data || response?.data?.id || response?.data;
           if (saveActionRef.current === "print") {
-            navigate(`/estimate/view/${id}`);
+            navigate(`/rough-estimate/view/${id}`);
           } else {
-            navigate("/estimate");
+            navigate("/rough-estimate");
           }
         },
       });
@@ -486,7 +497,7 @@ const EstimateAddPage = () => {
   };
 
   const handleCancel = () => {
-    navigate("/estimate");
+    navigate("/rough-estimate");
   };
 
   const displayGrandTotal = itemEntries.reduce(

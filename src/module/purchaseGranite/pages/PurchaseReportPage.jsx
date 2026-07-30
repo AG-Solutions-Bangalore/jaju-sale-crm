@@ -3,17 +3,13 @@ import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import {
   FileText,
-  ShoppingBag,
   Percent,
   Truck,
   Upload,
   TrendingUp,
-  CheckCircle,
-  AlertCircle,
   Calendar,
   ChevronLeft,
   Loader2,
-  DollarSign,
   Calculator,
   Download,
 } from "lucide-react";
@@ -31,120 +27,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { useSalesReport } from "../hooks/useSales";
+import { usePurchaseReport } from "../hooks/usePurchase";
 import { ButtonConfig } from "@/config/ButtonConfig";
 
-const SalesReportPage = () => {
+const PurchaseReportPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const handleExportCsv = () => {
-    try {
-      if (filteredSales.length === 0) {
-        toast({
-          title: "No Data",
-          description: "There is no data to export in the selected period",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const headers = [
-        "Sl No",
-        "Bill Date",
-        "Bill No.",
-        "Customer Name",
-        "Customer Mobile Number",
-        "Goods Value",
-        "Tempo Charges",
-        "Labor Charges",
-        "Gross Total",
-        "Tax",
-        "Net Total",
-        "Round Off",
-        "Final Amount",
-      ];
-
-      const rows = filteredSales.map((sale, idx) => {
-        const getNetValue = (s) => {
-          const netTotal = parseFloat(s.sales_net_total);
-          if (!isNaN(netTotal) && netTotal > 0) return netTotal;
-          const payable = parseFloat(s.sales_amount_payable);
-          if (!isNaN(payable) && payable > 0) return payable;
-          const gross = parseFloat(s.sales_gross);
-          if (!isNaN(gross) && gross > 0) return gross;
-          const temp = parseFloat(s.sales_temp_amount);
-          if (!isNaN(temp) && temp > 0) return temp;
-          const amt = parseFloat(s.sales_amount);
-          if (!isNaN(amt) && amt > 0) return amt;
-          return 0;
-        };
-        const net = getNetValue(sale);
-        const tax = parseFloat(sale.sales_tax || 0);
-        const tempo = parseFloat(sale.sales_tempo || 0);
-        const loading = parseFloat(
-          sale.sales_labour_value || sale.sales_loading || 0,
-        );
-        const other =
-          parseFloat(sale.sales_other || 0) + parseFloat(sale.sales_other1 || 0);
-        const roundOff = parseFloat(sale.sales_amount_round || 0);
-        const billTotal = net + roundOff;
-        const grossVal = net - tax;
-
-        const itemsSubtotal =
-          Array.isArray(sale.subs) && sale.subs.length > 0
-            ? sale.subs.reduce(
-                (sum, sub) => sum + parseFloat(sub.sales_sub_amount || 0),
-                0,
-              )
-            : net - tax - tempo - loading - other;
-
-        return [
-          idx + 1,
-          moment(sale.sales_date).format("DD-MMM-YYYY"),
-          `"${sale.sales_no || ""}"`,
-          `"${sale.sales_customer || ""}"`,
-          `"${sale.sales_mobile || ""}"`,
-          itemsSubtotal.toFixed(2),
-          tempo.toFixed(2),
-          loading.toFixed(2),
-          grossVal.toFixed(2),
-          tax.toFixed(2),
-          net.toFixed(2),
-          roundOff.toFixed(2),
-          billTotal.toFixed(2),
-        ];
-      });
-
-      const csvContent = [
-        headers.join(","),
-        ...rows.map((row) => row.join(",")),
-      ].join("\n");
-
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute(
-        "download",
-        `sales_report_${fromDate}_to_${toDate}.csv`,
-      );
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast({
-        title: "Download Successful",
-        description: "Sales report downloaded successfully as CSV",
-      });
-    } catch (error) {
-      toast({
-        title: "Export Failed",
-        description: error.message || "Failed to download CSV",
-        variant: "destructive",
-      });
-    }
-  };
 
   const getToday = () => moment().format("YYYY-MM-DD");
   const getNDaysAgo = (n) => moment().subtract(n, "days").format("YYYY-MM-DD");
@@ -153,11 +41,7 @@ const SalesReportPage = () => {
   const [toDate, setToDate] = useState(getToday());
   const [activePreset, setActivePreset] = useState("10");
 
-  const {
-    data: salesReportData,
-    isLoading,
-    isError,
-  } = useSalesReport(fromDate, toDate);
+  const { data: purchaseReportData = [], isLoading } = usePurchaseReport(fromDate, toDate);
 
   const handlePresetClick = (days) => {
     setActivePreset(days);
@@ -174,99 +58,158 @@ const SalesReportPage = () => {
     }
   };
 
-  // Extract sales list from API response
-  const filteredSales = useMemo(() => {
-    if (!salesReportData) return [];
-    const list =
-      salesReportData.data?.data ||
-      salesReportData.data ||
-      salesReportData.sales ||
-      salesReportData ||
-      [];
-    return Array.isArray(list) ? list : [];
-  }, [salesReportData]);
+  // Compute calculated metrics for each purchase record
+  const computedData = useMemo(() => {
+    return purchaseReportData.map((purchase) => {
+      const gross = parseFloat(purchase.purchase_gross || 0);
+      const net = parseFloat(
+        purchase.purchase_net_total || purchase.purchase_amount || 0,
+      );
+      const tax = parseFloat(purchase.purchase_tax || 0);
+      const tempo = parseFloat(purchase.purchase_tempo || 0);
+      const loading = parseFloat(
+        purchase.purchase_labour_value || purchase.purchase_loading || 0,
+      );
+      const other =
+        parseFloat(purchase.purchase_other || 0) +
+        parseFloat(purchase.purchase_other1 || 0);
+      const roundOff = parseFloat(purchase.purchase_amount_round || 0);
+      const finalAmount = parseFloat(purchase.purchase_amount_received || 0);
+      const grossVal = net - tax;
+
+      const goodsValue =
+        Array.isArray(purchase.subs) && purchase.subs.length > 0
+          ? purchase.subs.reduce(
+              (sum, sub) => sum + parseFloat(sub.purchase_sub_amount || 0),
+              0,
+            )
+          : gross || net - tax - tempo - loading - other || finalAmount;
+
+      return {
+        ...purchase,
+        goodsValue: goodsValue || 0,
+        tempoCharges: tempo,
+        laborCharges: loading,
+        grossVal,
+        tax,
+        roundOff,
+        finalAmount,
+      };
+    });
+  }, [purchaseReportData]);
 
   // Calculate totals
   const totals = useMemo(() => {
-    let totalSales = filteredSales.length;
+    let totalPurchases = computedData.length;
     let goodsSubtotal = 0;
-    let gstTotal = 0;
     let tempoCharges = 0;
     let loadingCharges = 0;
     let grossTotal = 0;
+    let gstTotal = 0;
     let roundOffTotal = 0;
-    let netReceivable = 0;
+    let netReceivable = 0; // matching naming for identical UI logic
     let netTotalSum = 0;
-    let amountCollected = 0;
-    let pendingAmount = 0;
 
-    filteredSales.forEach((sale) => {
-      const getNetValue = (s) => {
-        const netTotal = parseFloat(s.sales_net_total);
-        if (!isNaN(netTotal) && netTotal > 0) return netTotal;
-        const payable = parseFloat(s.sales_amount_payable);
-        if (!isNaN(payable) && payable > 0) return payable;
-        const gross = parseFloat(s.sales_gross);
-        if (!isNaN(gross) && gross > 0) return gross;
-        const temp = parseFloat(s.sales_temp_amount);
-        if (!isNaN(temp) && temp > 0) return temp;
-        const amt = parseFloat(s.sales_amount);
-        if (!isNaN(amt) && amt > 0) return amt;
-        return 0;
-      };
-      const net = getNetValue(sale);
-      const tax = parseFloat(sale.sales_tax || 0);
-      const tempo = parseFloat(sale.sales_tempo || 0);
-      const loading = parseFloat(
-        sale.sales_labour_value || sale.sales_loading || 0,
-      );
-      const other =
-        parseFloat(sale.sales_other || 0) + parseFloat(sale.sales_other1 || 0);
-      const roundOff = parseFloat(sale.sales_amount_round || 0);
-      const collected = parseFloat(
-        sale.sales_amount_received ||
-          sale.sales_advance ||
-          sale.sales_received ||
-          0,
-      );
-
-      // Calculations
-      const billTotal = net + roundOff;
-      const itemsSubtotal =
-        Array.isArray(sale.subs) && sale.subs.length > 0
-          ? sale.subs.reduce(
-              (sum, sub) => sum + parseFloat(sub.sales_sub_amount || 0),
-              0,
-            )
-          : net - tax - tempo - loading - other;
-
-      goodsSubtotal += itemsSubtotal;
-      gstTotal += tax;
-      tempoCharges += tempo;
-      loadingCharges += loading;
-      grossTotal += net - tax;
-      roundOffTotal += roundOff;
-      netReceivable += billTotal;
-      netTotalSum += net;
-      amountCollected += collected;
+    computedData.forEach((item) => {
+      goodsSubtotal += item.goodsValue;
+      tempoCharges += item.tempoCharges;
+      loadingCharges += item.laborCharges;
+      grossTotal += item.grossVal;
+      gstTotal += item.tax;
+      roundOffTotal += item.roundOff;
+      netReceivable += item.finalAmount;
+      netTotalSum += (item.purchase_net_total || item.purchase_amount) ? parseFloat(item.purchase_net_total || item.purchase_amount) : item.grossVal + item.tax;
     });
 
-    pendingAmount = netReceivable - amountCollected;
-
     return {
-      totalSales,
+      totalPurchases,
       goodsSubtotal,
-      gstTotal,
       tempoCharges,
       loadingCharges,
       grossTotal,
+      gstTotal,
       roundOffTotal,
       netReceivable,
       netTotalSum,
-      amountCollected,
-      pendingAmount,
     };
-  }, [filteredSales]);
+  }, [computedData]);
+
+  // Export to CSV/Excel
+  const handleExportCsv = () => {
+    try {
+      if (computedData.length === 0) {
+        toast({
+          title: "No Data",
+          description: "There is no data to export in the selected period",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const headers = [
+        "Sl No",
+        "Bill Date",
+        "Bill No.",
+        "Supplier Name",
+        "Supplier Mobile Number",
+        "Goods Value",
+        "Tempo Charges",
+        "Labor Charges",
+        "Gross Total",
+        "Tax",
+        "Net Total",
+        "Round Off",
+        "Final Amount",
+      ];
+
+      const rows = computedData.map((purchase, idx) => {
+        const net = (purchase.purchase_net_total || purchase.purchase_amount) ? parseFloat(purchase.purchase_net_total || purchase.purchase_amount) : purchase.grossVal + purchase.tax;
+        return [
+          idx + 1,
+          moment(purchase.purchase_date).format("DD-MMM-YYYY"),
+          `"${purchase.purchase_bill_no || purchase.purchase_no || ""}"`,
+          `"${purchase.purchase_supplier || ""}"`,
+          `"-"`, // Mobile not in purchase schema
+          purchase.goodsValue.toFixed(2),
+          purchase.tempoCharges.toFixed(2),
+          purchase.laborCharges.toFixed(2),
+          purchase.grossVal.toFixed(2),
+          purchase.tax.toFixed(2),
+          net.toFixed(2),
+          purchase.roundOff.toFixed(2),
+          purchase.finalAmount.toFixed(2),
+        ];
+      });
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row) => row.join(",")),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `purchase_report_${fromDate}_to_${toDate}.csv`,
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Download Successful",
+        description: "Purchase report downloaded successfully as CSV",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: error.message || "Failed to download CSV",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -290,21 +233,21 @@ const SalesReportPage = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/sales")}
+                onClick={() => navigate("/purchase")}
                 className="rounded-full bg-white/50 hover:bg-white"
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
               <div>
                 <h1 className="text-xl font-bold text-gray-800">
-                  Sales Report
+                  Purchase Report
                 </h1>
                 <div className="flex flex-wrap items-center gap-2 mt-0.5">
                   <span className="text-xs text-gray-500">
-                    Period analytics and totals summary
+                    Period analytics and purchase summary
                   </span>
                   <span className="inline-flex items-center text-md font-bold bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full shadow-sm animate-pulse-subtle">
-                    Total Sales: {totals.totalSales}
+                    Total Purchases: {totals.totalPurchases}
                   </span>
                 </div>
               </div>
@@ -495,6 +438,7 @@ const SalesReportPage = () => {
             </CardContent>
           </Card>
         </div>
+
         {/* Transactions Table */}
         <Card className="shadow-xs border rounded-lg bg-white overflow-hidden">
           <CardHeader className="bg-gray-50/50 border-b py-3 px-4">
@@ -509,7 +453,7 @@ const SalesReportPage = () => {
                   <TableRow>
                     <TableHead className="w-[6%]">Bill No</TableHead>
                     <TableHead className="w-[10%]">Date</TableHead>
-                    <TableHead className="w-[16%]">Customer</TableHead>
+                    <TableHead className="w-[16%]">Supplier</TableHead>
                     <TableHead className="w-[10%]">Mobile</TableHead>
                     <TableHead className="text-right w-[8%]">Goods Value</TableHead>
                     <TableHead className="text-right w-[6%]">Tempo</TableHead>
@@ -522,81 +466,49 @@ const SalesReportPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSales.length ? (
+                  {computedData.length ? (
                     <>
-                      {filteredSales.map((sale, index) => {
-                        const getNetValue = (s) => {
-                          const netTotal = parseFloat(s.sales_net_total);
-                          if (!isNaN(netTotal) && netTotal > 0) return netTotal;
-                          const payable = parseFloat(s.sales_amount_payable);
-                          if (!isNaN(payable) && payable > 0) return payable;
-                          const gross = parseFloat(s.sales_gross);
-                          if (!isNaN(gross) && gross > 0) return gross;
-                          const temp = parseFloat(s.sales_temp_amount);
-                          if (!isNaN(temp) && temp > 0) return temp;
-                          const amt = parseFloat(s.sales_amount);
-                          if (!isNaN(amt) && amt > 0) return amt;
-                          return 0;
-                        };
-                        const net = getNetValue(sale);
-                        const tax = parseFloat(sale.sales_tax || 0);
-                        const tempo = parseFloat(sale.sales_tempo || 0);
-                        const loading = parseFloat(
-                          sale.sales_labour_value || sale.sales_loading || 0,
-                        );
-                        const other =
-                          parseFloat(sale.sales_other || 0) + parseFloat(sale.sales_other1 || 0);
-                        const roundOff = parseFloat(sale.sales_amount_round || 0);
-                        const billTotal = net + roundOff;
-                        const grossVal = net - tax;
-
-                        const itemsSubtotal =
-                          Array.isArray(sale.subs) && sale.subs.length > 0
-                            ? sale.subs.reduce(
-                                (sum, sub) => sum + parseFloat(sub.sales_sub_amount || 0),
-                                0,
-                              )
-                            : net - tax - tempo - loading - other;
-
+                      {computedData.map((purchase, index) => {
+                        const net = (purchase.purchase_net_total || purchase.purchase_amount) ? parseFloat(purchase.purchase_net_total || purchase.purchase_amount) : purchase.grossVal + purchase.tax;
                         return (
                           <TableRow key={index} className="hover:bg-gray-50/50">
                             <TableCell className="font-semibold text-gray-800">
-                              {sale.sales_no}
+                              {purchase.purchase_bill_no || purchase.purchase_no || "-"}
                             </TableCell>
                             <TableCell>
-                              {moment(sale.sales_date).format("DD-MMM-YYYY")}
+                              {moment(purchase.purchase_date).format("DD-MMM-YYYY")}
                             </TableCell>
                             <TableCell className="font-medium text-gray-800 truncate max-w-[120px]">
-                              {sale.sales_customer}
+                              {purchase.purchase_supplier || "-"}
                             </TableCell>
                             <TableCell className="text-gray-600">
-                              {sale.sales_mobile || "-"}
+                              -
                             </TableCell>
                             <TableCell className="text-right">
-                              {itemsSubtotal.toFixed(2)}
+                              {purchase.goodsValue.toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right text-gray-600">
-                              {tempo.toFixed(2)}
+                              {purchase.tempoCharges.toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right text-gray-600">
-                              {loading.toFixed(2)}
+                              {purchase.laborCharges.toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right font-medium">
-                              {grossVal.toFixed(2)}
+                              {purchase.grossVal.toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right text-gray-600">
-                              {tax.toFixed(2)}
+                              {purchase.tax.toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right font-medium">
                               {net.toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right text-gray-500">
-                              {roundOff >= 0
-                                ? `+${roundOff.toFixed(2)}`
-                                : roundOff.toFixed(2)}
+                              {purchase.roundOff >= 0
+                                ? `+${purchase.roundOff.toFixed(2)}`
+                                : purchase.roundOff.toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right font-bold">
-                              {billTotal.toFixed(2)}
+                              {purchase.finalAmount.toFixed(2)}
                             </TableCell>
                           </TableRow>
                         );
@@ -655,4 +567,4 @@ const SalesReportPage = () => {
   );
 };
 
-export default SalesReportPage;
+export default PurchaseReportPage;

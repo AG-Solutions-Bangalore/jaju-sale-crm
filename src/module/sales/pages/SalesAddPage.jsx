@@ -53,7 +53,8 @@ const SalesAddPage = () => {
   const saveActionRef = useRef("exit");
 
   const { data: currentYear, isLoading: isYearLoading } = useCurrentYear();
-  const { data: salesListForSerial, isLoading: isSalesListLoading } = useSalesList();
+  const { data, isLoading: isSalesListLoading } = useSalesList();
+  const salesListForSerial = data?.sales || [];
   const { data: product = [], isLoading: isProductLoading } = useProductTypeGroupNew();
   const createMutation = useCreateSalesDirect();
 
@@ -164,7 +165,7 @@ const SalesAddPage = () => {
     const roundOff = parseFloat(form.getValues("sales_amount_round") || 0);
     const finalAmount = netTotal + roundOff;
 
-    form.setValue("sales_gross", finalAmount.toString());
+    form.setValue("sales_gross", grandTotal.toString());
     const amountReceived = parseFloat(form.getValues("sales_amount_received") || 0);
     form.setValue("sales_balance", (finalAmount - amountReceived).toString());
     form.setValue("sales_advance", amountReceived.toString());
@@ -306,6 +307,7 @@ const SalesAddPage = () => {
     const formErrors = {
       date: !data.sales_date ? "Date is required" : "",
       customer: !data.sales_customer ? "Customer name is required" : "",
+      mobile: !data.sales_mobile ? "Mobile number is required" : "",
     };
 
     const itemErrors = itemEntries.map((entry, index) => ({
@@ -377,6 +379,16 @@ const SalesAddPage = () => {
                         </td>
                         <td className="px-2 py-1.5 text-red-600 border-b border-gray-200 break-all">
                           {formErrors.customer}
+                        </td>
+                      </tr>
+                    )}
+                    {formErrors.mobile && (
+                      <tr className="bg-white hover:bg-gray-50">
+                        <td className="px-2 py-1.5 text-gray-600 border-b border-gray-200 font-medium">
+                          Mobile No
+                        </td>
+                        <td className="px-2 py-1.5 text-red-600 border-b border-gray-200 break-all">
+                          {formErrors.mobile}
                         </td>
                       </tr>
                     )}
@@ -479,7 +491,7 @@ const SalesAddPage = () => {
         sales_other: other.toString(),
         sales_other1_label: data.sales_other1_label || "Other Charges 1",
         sales_other1: other1.toString(),
-        sales_gross: finalAmount.toString(),
+        sales_gross: grandTotal.toString(),
         sales_net_total: netTotal.toString(),
         sales_amount_round: roundOff.toString(),
         sales_amount_payable: finalAmount.toString(),

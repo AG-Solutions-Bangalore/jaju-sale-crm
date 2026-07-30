@@ -1,6 +1,6 @@
 import React from "react";
 import moment from "moment";
-import { ChevronLeft, Printer } from "lucide-react";
+import { ChevronLeft, Printer, Edit } from "lucide-react";
 import { FaRegFilePdf } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -49,9 +49,17 @@ const DesktopPurchaseView = ({
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-              <CardTitle className="text-xl">Purchase Details</CardTitle>
+              <CardTitle className="text-xl">Purchase Estimate Details</CardTitle>
             </div>
             <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/purchase/edit/${purchaseData?.purchase?.id}`)}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
               <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
                 <FaRegFilePdf className="mr-2 h-4 w-4" />
                 PDF
@@ -73,7 +81,7 @@ const DesktopPurchaseView = ({
         <CardContent>
           <div ref={tableRef} className="overflow-x-auto print:p-4">
             <div className="text-center border-l border-t border-r p-4 space-y-1">
-              <h3 className="text-2xl font-semibold">JAJU'S PURCHASE</h3>
+              <h3 className="text-2xl font-semibold">JAJU'S ESTIMATE PURCHASE</h3>
             </div>
 
             <div className="grid grid-cols-2 border m-0">
