@@ -81,7 +81,7 @@ const DesktopPurchaseView = ({
         <CardContent>
           <div ref={tableRef} className="overflow-x-auto print:p-4">
             <div className="text-center border-l border-t border-r p-4 space-y-1">
-              <h3 className="text-2xl font-semibold">JAJU'S ESTIMATE PURCHASE</h3>
+              <h3 className="text-2xl font-semibold">Jaju's Purchase Estimate</h3>
             </div>
 
             <div className="grid grid-cols-2 border m-0">
@@ -96,7 +96,7 @@ const DesktopPurchaseView = ({
               <div className="flex items-center justify-center py-2 px-3">
                 <span className="font-medium">JFC Bill No.:</span>
                 <span className="ml-1">
-                  {purchaseData?.purchase?.purchase_bill_no}
+                  {purchaseData?.purchase?.purchase_no}
                 </span>
               </div>
             </div>
@@ -106,34 +106,39 @@ const DesktopPurchaseView = ({
                 <span className="font-semibold">Supplier:</span>{" "}
                 <span>{purchaseData?.purchase?.purchase_supplier}</span>
               </div>
-              {purchaseData?.purchase?.purchase_no && (
+              {purchaseData?.purchase?.purchase_bill_no && (
                 <div className="ml-4">
                   <span className="font-semibold">Supplier Bill No:</span>{" "}
-                  <span>{purchaseData?.purchase?.purchase_no}</span>
+                  <span>{purchaseData?.purchase?.purchase_bill_no}</span>
                 </div>
               )}
             </div>
 
             <Table className="border">
               <TableHeader>
-                <TableRow className="bg-gray-100 hover:bg-gray-100">
-                  <TableHead className="text-center text-black font-bold border-r">
+                <TableRow className="bg-gray-100 hover:bg-gray-100 border-b">
+                  <TableHead rowSpan={2} className="text-center text-black font-bold border-r align-middle">
                     Sl No
                   </TableHead>
-                  <TableHead className="text-center text-black font-bold border-r">
+                  <TableHead rowSpan={2} className="text-center text-black font-bold border-r align-middle">
                     Item Name
                   </TableHead>
-                  <TableHead className="text-center text-black font-bold border-r">
-                    Qnty (pcs/box)
+                  <TableHead colSpan={2} className="text-center text-black font-bold border-r py-1">
+                    Quantity
                   </TableHead>
-                  <TableHead className="text-center text-black font-bold border-r">
-                    Qnty (sqft)
-                  </TableHead>
-                  <TableHead className="text-center text-black font-bold border-r">
+                  <TableHead rowSpan={2} className="text-center text-black font-bold border-r align-middle">
                     Rate
                   </TableHead>
-                  <TableHead className="text-center text-black font-bold">
+                  <TableHead rowSpan={2} className="text-center text-black font-bold align-middle">
                     Amount
+                  </TableHead>
+                </TableRow>
+                <TableRow className="bg-gray-100 hover:bg-gray-100 border-b">
+                  <TableHead className="text-center text-black font-bold border-r py-1">
+                    Pcs / Box
+                  </TableHead>
+                  <TableHead className="text-center text-black font-bold border-r py-1">
+                    Sqft
                   </TableHead>
                 </TableRow>
               </TableHeader>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import moment from "moment";
 import { Printer, Search, Plus, Pencil, Loader2, CalendarDays, Eye } from "lucide-react";
 import { FaRegFilePdf, FaRegFileExcel } from "react-icons/fa";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { MemoizedSelect } from "@/components/common/MemoizedSelect";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import { cn } from "@/lib/utils";
 import ProductEditDialog from "@/module/product/components/ProductEditDialog";
@@ -40,6 +41,8 @@ const MobileSingleItemStockReport = ({
   isPopup = false,
 }) => {
   const navigate = useNavigate();
+  const [selectedTxDetail, setSelectedTxDetail] = useState(null);
+
   return (
     <div className="sm:hidden space-y-4">
       {/* Title Controls */}
@@ -151,69 +154,66 @@ const MobileSingleItemStockReport = ({
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                Generating...
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                Searching...
               </>
             ) : (
               <>
-                <Search className="h-3.5 w-3.5 mr-1.5" />
-                Generate Report
+                <Search className="mr-1.5 h-3.5 w-3.5" />
+                Search
               </>
             )}
           </Button>
         </div>
       )}
 
-      {/* Results */}
-      {searchParams && (
-        <div className="space-y-3">
-          {isPopup && (
-            <div className="flex items-center justify-between gap-2 p-2 bg-gray-50 border rounded-lg text-[11px] font-semibold">
-              <div>
-                <span className="text-gray-500 mr-1">From Date:</span>
-                <span className="text-gray-800 bg-white px-2 py-0.5 rounded border">
-                  {moment(searchParams?.from_date || form.watch("from_date")).format("MM/DD/YYYY")}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-500 mr-1">To Date:</span>
-                <span className="text-gray-800 bg-white px-2 py-0.5 rounded border">
-                  {moment(searchParams?.to_date || form.watch("to_date")).format("MM/DD/YYYY")}
-                </span>
-              </div>
-            </div>
-          )}
-
+      {/* Main Content Card */}
+      {selectedItem && (
+        <div className="bg-white p-3 rounded-lg border border-gray-200 space-y-3">
           {!isPopup && (
-            <div className="flex justify-between items-center bg-gray-50 p-2 rounded border">
-              <div>
-                <div className="font-bold text-sm text-gray-800">{selectedItem}</div>
-                <div className="text-[10px] text-gray-500">
-                  {moment(searchParams.from_date).format("DD-MM-YY")} to{" "}
-                  {moment(searchParams.to_date).format("DD-MM-YY")}
-                </div>
+            <div className="flex justify-between items-center flex-wrap gap-2 pb-2 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-gray-800">{selectedItem}</h2>
+                {productId && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-gray-500 hover:text-blue-600"
+                    onClick={handleEditItem}
+                    title="Edit Item Details"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
-              <div className="flex gap-1">
+              <div className="flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleDownloadCsv}
-                  className="h-8 text-xs px-2 border-gray-300"
+                  className="h-7 px-2 text-[10px] border-gray-300"
                 >
-                  <FaRegFileExcel className="h-3.5 w-3.5 text-green-600" />
+                  <FaRegFileExcel className="mr-1 h-3 w-3 text-green-600" />
+                  Excel
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleDownloadPDF}
-                  className="h-8 text-xs px-2 border-gray-300"
+                  className="h-7 px-2 text-[10px] border-gray-300"
                 >
-                  <FaRegFilePdf className="h-3.5 w-3.5 text-red-600" />
+                  <FaRegFilePdf className="mr-1 h-3 w-3 text-red-600" />
+                  PDF
                 </Button>
                 <ReactToPrint
                   trigger={() => (
-                    <Button variant="outline" size="sm" className="h-8 text-xs px-2 border-gray-300">
-                      <Printer className="h-3.5 w-3.5 text-gray-600" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2 text-[10px] border-gray-300"
+                    >
+                      <Printer className="mr-1 h-3 w-3 text-gray-600" />
+                      Print
                     </Button>
                   )}
                   content={() => tableRef.current}
@@ -227,15 +227,15 @@ const MobileSingleItemStockReport = ({
             <div className="hidden print:block text-center p-4">
               <h2 className="text-xl font-bold">{selectedItem}</h2>
               <p className="text-xs text-gray-500 mt-1">
-                Stock Transaction History (From {moment(searchParams.from_date).format("DD MMMM YYYY")} to {moment(searchParams.to_date).format("DD MMMM YYYY")})
+                Stock Transaction History (From {moment(searchParams?.from_date).format("DD MMMM YYYY")} to {moment(searchParams?.to_date).format("DD MMMM YYYY")})
               </p>
             </div>
 
             <table className="w-full border-collapse text-[10px]">
               <thead>
                 <tr className="bg-gray-100 border-b border-gray-200">
-                  {/* <th className="text-center font-bold border-r p-1.5 w-20 text-gray-700">DATE</th> */}
-                  <th className="text-left font-bold border-r p-1.5 text-gray-700">REF</th>
+                  <th className="text-left font-bold border-r p-1.5 text-gray-700 min-w-20">JFC NUMBER</th>
+                  <th className="text-left font-bold border-r p-1.5 text-gray-700 min-w-24">CUSTOMER NAME</th>
                   <th className="text-right font-bold border-r p-1.5 text-green-800 bg-green-50/30">IN (pcs)</th>
                   <th className="text-right font-bold border-r p-1.5 text-green-800 bg-green-50/30">IN (sqft)</th>
                   <th className="text-right font-bold border-r p-1.5 text-red-800 bg-red-50/30">OUT (pcs)</th>
@@ -249,33 +249,41 @@ const MobileSingleItemStockReport = ({
                   normalizedTxs.map((t, index) => (
                     <tr
                       key={index}
+                      onClick={() => !t.isOpening && setSelectedTxDetail(t)}
                       className={cn(
-                        "border-b border-gray-200",
+                        "border-b border-gray-200 transition-colors",
+                        !t.isOpening && "cursor-pointer active:bg-blue-50/80",
                         index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
                       )}
                     >
-                      {/* <td className="text-center border-r p-1.5">
-                        {t.date ? moment(t.date).format("DD-MM-YY") : ""}
-                      </td> */}
-                      <td className="text-left p-1.5 border-r truncate max-w-[80px]">
-                        {t.reference}
+                      <td className="text-left p-1.5 border-r font-bold truncate max-w-[90px]">
+                        {t.isOpening ? (
+                          <span className="text-gray-900 font-medium">Opening Balance</span>
+                        ) : (
+                          <span className="text-blue-600 hover:text-blue-800 active:underline font-bold">
+                            {t.jfcNumber || t.reference || "-"}
+                          </span>
+                        )}
                       </td>
-                      <td className="text-right border-r p-1.5 text-green-700">
+                      <td className="text-left p-1.5 border-r text-gray-700 truncate max-w-[100px]">
+                        {t.customerName || "-"}
+                      </td>
+                      <td className="text-right border-r p-1.5 text-green-700 font-semibold">
                         {formatCellValue(t.inward_pieces)}
                       </td>
-                      <td className="text-right border-r p-1.5 text-green-700">
+                      <td className="text-right border-r p-1.5 text-green-700 font-semibold">
                         {formatCellValue(t.inward_sqft)}
                       </td>
-                      <td className="text-right border-r p-1.5 text-red-700">
+                      <td className="text-right border-r p-1.5 text-red-700 font-semibold">
                         {formatCellValue(t.outward_pieces)}
                       </td>
-                      <td className="text-right border-r p-1.5 text-red-700">
+                      <td className="text-right border-r p-1.5 text-red-700 font-semibold">
                         {formatCellValue(t.outward_sqft)}
                       </td>
-                      <td className="text-right border-r p-1.5 font-bold">
+                      <td className="text-right border-r p-1.5 font-bold text-gray-800">
                         {formatCellValue(t.balance_pieces)}
                       </td>
-                      <td className="text-right p-1.5 font-bold">
+                      <td className="text-right p-1.5 font-bold text-gray-800">
                         {formatCellValue(t.balance_sqft)}
                       </td>
                     </tr>
@@ -290,20 +298,16 @@ const MobileSingleItemStockReport = ({
 
                 {normalizedTxs.length > 0 && (
                   <tr className="bg-slate-900 text-white font-bold">
-                    {/* <td className="text-center p-1.5">
-                      {lastTxDate ? moment(lastTxDate).format("DD-MM-YY") : ""}
-                    </td> */}
-                    <td className="text-left p-1.5">
+                    <td colSpan={2} className="text-left p-1.5">
                       Closing Balance
                     </td>
                     <td colSpan={4} className="p-1.5"></td>
                     <td className="text-right border-r p-1.5">
-                      {closingPieces}
+                      {formatCellValue(closingPieces)}
                     </td>
-                    <td className="text-right border-r p-1.5">
-                      {closingSqft}
+                    <td className="text-right p-1.5">
+                      {formatCellValue(closingSqft)}
                     </td>
-                    <td className="print:hidden"></td>
                   </tr>
                 )}
               </tbody>
@@ -311,6 +315,52 @@ const MobileSingleItemStockReport = ({
           </div>
         </div>
       )}
+
+      {/* Simplified Product Detail Popup */}
+      <Dialog open={!!selectedTxDetail} onOpenChange={(open) => !open && setSelectedTxDetail(null)}>
+        <DialogContent className="w-[92vw] max-w-md bg-white rounded-lg p-4 border shadow-xl">
+          <DialogHeader className="border-b pb-2">
+            <DialogTitle className="text-sm font-bold text-gray-900 flex justify-between items-center pr-4">
+              <span>{selectedTxDetail?.type === "purchase" ? "Purchase Product Detail" : "Sales Product Detail"}</span>
+              <span className="text-[11px] px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-mono font-semibold">
+                JFC #{selectedTxDetail?.jfcNumber}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-3 space-y-3">
+            <div className="bg-gray-50 p-2.5 rounded-md border border-gray-200">
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Item Name</p>
+              <p className="font-bold text-gray-800 text-xs mt-0.5">{selectedTxDetail?.itemName || selectedItem}</p>
+              {selectedTxDetail?.customerName && selectedTxDetail?.customerName !== "-" && (
+                <p className="text-[11px] text-gray-600 mt-1">
+                  <span className="font-semibold text-gray-700">Party:</span> {selectedTxDetail?.customerName}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-slate-50 p-2 rounded-md border border-slate-200">
+                <p className="text-[10px] text-slate-500 font-semibold mb-0.5">Price / Rate</p>
+                <p className="text-xs font-bold text-slate-900">₹ {parseFloat(selectedTxDetail?.rate || 0).toFixed(2)}</p>
+              </div>
+              <div className="bg-blue-50 p-2 rounded-md border border-blue-200">
+                <p className="text-[10px] text-blue-600 font-semibold mb-0.5">Quantity</p>
+                <p className="text-xs font-bold text-blue-900">{selectedTxDetail?.pcs || 0} Pcs</p>
+                <p className="text-[10px] text-blue-700 font-bold">{parseFloat(selectedTxDetail?.sqft || 0).toFixed(2)} Sqft</p>
+              </div>
+              <div className="bg-emerald-50 p-2 rounded-md border border-emerald-200">
+                <p className="text-[10px] text-emerald-600 font-semibold mb-0.5">Rate / Unit</p>
+                <p className="text-xs font-bold text-emerald-900">₹ {parseFloat(selectedTxDetail?.rate || 0).toFixed(2)}</p>
+              </div>
+            </div>
+
+            <div className="border-t pt-2 flex justify-between items-center text-xs font-bold text-gray-900">
+              <span>Total Amount:</span>
+              <span className="text-base text-emerald-700 font-extrabold">₹ {parseFloat(selectedTxDetail?.amount || 0).toFixed(2)}</span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

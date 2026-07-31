@@ -94,36 +94,58 @@ const SingleItemStockReportDialog = ({ itemName, trigger }) => {
       if (t.type === "purchase") {
         const inward_pcs = Number(t.purchase_sub_pcs || 0);
         const inward_sqft = Number(t.purchase_sub_qnty_sqr || 0);
+        const rate = Number(t.purchase_sub_rate || 0);
+        const amount = Number(t.purchase_sub_amount || (inward_sqft * rate) || 0);
 
         runningPieces += inward_pcs;
         runningSqft += inward_sqft;
 
         return {
+          type: "purchase",
           date: t.purchase_sub_date,
           reference: t.purchase_ref || "",
+          jfcNumber: t.purchase_bill_no || t.purchase_no || t.purchase_ref || "-",
+          customerName: t.purchase_supplier || t.supplier_name || t.sales_customer || t.customer_name || "-",
+          itemName: t.purchase_sub_item || stockItem.stock_item || "",
+          pcs: inward_pcs,
+          sqft: inward_sqft,
+          rate,
+          amount,
           inward_pieces: inward_pcs,
           inward_sqft: inward_sqft,
           outward_pieces: null,
           outward_sqft: null,
           balance_pieces: runningPieces,
           balance_sqft: runningSqft,
+          raw: t,
         };
       } else {
         const outward_pcs = Number(t.sales_sub_pcs || 0);
         const outward_sqft = Number(t.sales_sub_qnty_sqr || 0);
+        const rate = Number(t.sales_sub_rate || 0);
+        const amount = Number(t.sales_sub_amount || (outward_sqft * rate) || 0);
 
         runningPieces -= outward_pcs;
         runningSqft -= outward_sqft;
 
         return {
+          type: "sale",
           date: t.sales_sub_date,
           reference: t.sales_ref || "",
+          jfcNumber: t.sales_no || t.sales_bill_no || t.sales_ref || "-",
+          customerName: t.sales_customer || t.customer_name || "-",
+          itemName: t.sales_sub_item || stockItem.stock_item || "",
+          pcs: outward_pcs,
+          sqft: outward_sqft,
+          rate,
+          amount,
           inward_pieces: null,
           inward_sqft: null,
           outward_pieces: outward_pcs,
           outward_sqft: outward_sqft,
           balance_pieces: runningPieces,
           balance_sqft: runningSqft,
+          raw: t,
         };
       }
     });
@@ -132,6 +154,8 @@ const SingleItemStockReportDialog = ({ itemName, trigger }) => {
       normalized.unshift({
         date: searchParams.from_date || "",
         reference: "Opening Balance",
+        jfcNumber: "-",
+        customerName: "-",
         isOpening: true,
         inward_pieces: null,
         inward_sqft: null,
@@ -201,11 +225,13 @@ const SingleItemStockReportDialog = ({ itemName, trigger }) => {
   const formatCellValue = (value) => {
     if (value === undefined || value === null || value === "") return "";
     const num = parseFloat(value);
-    return isNaN(num) ? value : parseFloat(num.toFixed(4));
+    return isNaN(num) ? value : Number(num.toFixed(2));
   };
 
   const formatClosingBalanceText = () => {
-    return `${closingPieces} Pcs/Box , ${closingSqft.toFixed(2)} Sqft`;
+    const pcsVal = Number(parseFloat(closingPieces || 0).toFixed(2));
+    const sqftVal = Number(parseFloat(closingSqft || 0).toFixed(2));
+    return `${pcsVal} Pcs/Box , ${sqftVal} Sqft`;
   };
 
   const commonProps = {
