@@ -100,12 +100,16 @@ const SingleItemStockReportDialog = ({ itemName, trigger }) => {
         runningPieces += inward_pcs;
         runningSqft += inward_sqft;
 
+        const parent = t.purchase || {};
+        const jfcNo = parent.purchase_no || t.purchase_no || t.purchase_ref || parent.purchase_ref || "-";
+        const supplierName = parent.purchase_supplier || t.purchase_supplier || t.supplier_name || "-";
+
         return {
           type: "purchase",
           date: t.purchase_sub_date,
-          reference: t.purchase_ref || "",
-          jfcNumber: t.purchase_bill_no || t.purchase_no || t.purchase_ref || "-",
-          customerName: t.purchase_supplier || t.supplier_name || t.sales_customer || t.customer_name || "-",
+          reference: t.purchase_ref || parent.purchase_ref || "",
+          jfcNumber: jfcNo,
+          customerName: supplierName,
           itemName: t.purchase_sub_item || stockItem.stock_item || "",
           pcs: inward_pcs,
           sqft: inward_sqft,
@@ -128,12 +132,16 @@ const SingleItemStockReportDialog = ({ itemName, trigger }) => {
         runningPieces -= outward_pcs;
         runningSqft -= outward_sqft;
 
+        const parent = t.sale || {};
+        const jfcNo = parent.sales_no || t.sales_no || t.sales_ref || parent.sales_ref || "-";
+        const custName = parent.sales_customer || t.sales_customer || t.customer_name || "-";
+
         return {
           type: "sale",
           date: t.sales_sub_date,
-          reference: t.sales_ref || "",
-          jfcNumber: t.sales_no || t.sales_bill_no || t.sales_ref || "-",
-          customerName: t.sales_customer || t.customer_name || "-",
+          reference: t.sales_ref || parent.sales_ref || "",
+          jfcNumber: jfcNo,
+          customerName: custName,
           itemName: t.sales_sub_item || stockItem.stock_item || "",
           pcs: outward_pcs,
           sqft: outward_sqft,
