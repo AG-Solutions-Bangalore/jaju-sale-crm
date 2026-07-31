@@ -84,7 +84,7 @@ const MobilePurchaseView = ({
           ) : (
             <>
               <div className="text-center border p-2 space-y-1 mb-3 text-xs bg-white">
-                <h3 className="text-sm font-semibold">JAJU'S ESTIMATE PURCHASE</h3>
+                <h3 className="text-sm font-semibold">Jaju's Purchase Estimate</h3>
                 <p className="text-xs">New 80 ft Sompura, Sriniwaspura Road</p>
                 <p className="text-xs">Bengaluru, Karnataka 560098</p>
                 <p className="text-xs">Phone: 097420 42097</p>
@@ -103,7 +103,7 @@ const MobilePurchaseView = ({
                 <div className="flex justify-center border p-1 bg-white">
                   <span className="font-medium">JFC Bill No.:</span>{" "}
                   <span className="ml-1">
-                    {purchaseData?.purchase?.purchase_bill_no}
+                    {purchaseData?.purchase?.purchase_no}
                   </span>
                 </div>
               </div>
@@ -113,10 +113,10 @@ const MobilePurchaseView = ({
                   <span className="font-semibold">Supplier:</span>{" "}
                   <span>{purchaseData?.purchase?.purchase_supplier}</span>
                 </div>
-                {purchaseData?.purchase?.purchase_no && (
+                {purchaseData?.purchase?.purchase_bill_no && (
                   <div className="ml-4">
                     <span className="font-semibold">Supplier Bill No:</span>{" "}
-                    <span>{purchaseData?.purchase?.purchase_no}</span>
+                    <span>{purchaseData?.purchase?.purchase_bill_no}</span>
                   </div>
                 )}
               </div>
@@ -124,12 +124,15 @@ const MobilePurchaseView = ({
               <table className="w-full border-collapse text-xs mb-3">
                 <thead>
                   <tr className="bg-gray-100">
-                    <th className="border p-1 text-left">Sl No</th>
-                    <th className="border p-1 text-left">Item</th>
-                    <th className="border p-1 text-right">Qty (pcs/box)</th>
-                    <th className="border p-1 text-right">Qty (sqft)</th>
-                    <th className="border p-1 text-right">Rate</th>
-                    <th className="border p-1 text-right">Amount</th>
+                    <th rowSpan={2} className="border p-1 text-left align-middle">Sl No</th>
+                    <th rowSpan={2} className="border p-1 text-left align-middle">Item</th>
+                    <th colSpan={2} className="border p-1 text-center">Quantity</th>
+                    <th rowSpan={2} className="border p-1 text-right align-middle">Rate</th>
+                    <th rowSpan={2} className="border p-1 text-right align-middle">Amount</th>
+                  </tr>
+                  <tr className="bg-gray-100">
+                    <th className="border p-1 text-right">Pcs / Box</th>
+                    <th className="border p-1 text-right">Sqft</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -163,23 +163,28 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
       <Table className="border mb-4 text-xs w-full table-fixed">
         <TableHeader className="bg-gray-100">
           <TableRow className="hover:bg-transparent border-b">
-            <TableHead className="text-center font-bold text-black border-r w-[6%]">
+            <TableHead rowSpan={2} className="text-center font-bold text-black border-r w-[6%] align-middle">
               Sl No
             </TableHead>
-            <TableHead className="text-left font-bold text-black border-r pl-4 w-[39%]">
+            <TableHead rowSpan={2} className="text-left font-bold text-black border-r pl-4 w-[39%] align-middle">
               Item Name
             </TableHead>
-            <TableHead className="text-right font-bold text-black border-r pr-4 w-[10%]">
-              Pcs/Box
+            <TableHead colSpan={2} className="text-center font-bold text-black border-r w-[20%] py-1">
+              Quantity
             </TableHead>
-            <TableHead className="text-right font-bold text-black border-r pr-4 w-[10%]">
-              Sqft
-            </TableHead>
-            <TableHead className="text-right font-bold text-black border-r pr-4 w-[15%]">
+            <TableHead rowSpan={2} className="text-right font-bold text-black border-r pr-4 w-[15%] align-middle">
               Rate
             </TableHead>
-            <TableHead className="text-right font-bold text-black pr-4 w-[20%]">
+            <TableHead rowSpan={2} className="text-right font-bold text-black pr-4 w-[20%] align-middle">
               Amount
+            </TableHead>
+          </TableRow>
+          <TableRow className="hover:bg-transparent border-b">
+            <TableHead className="text-right font-bold text-black border-r pr-4 py-1 w-[10%]">
+              Pcs / Box
+            </TableHead>
+            <TableHead className="text-right font-bold text-black border-r pr-4 py-1 w-[10%]">
+              Sqft
             </TableHead>
           </TableRow>
         </TableHeader>
