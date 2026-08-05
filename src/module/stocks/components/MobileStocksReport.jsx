@@ -151,8 +151,11 @@ const MobileStocksReport = ({
             </div>
           ) : (
             <>
-              <div className="text-center font-semibold text-sm mb-2">
+              <div className="text-center font-semibold text-sm mb-1">
                 Stocks Report
+              </div>
+              <div className="text-center text-xs font-semibold text-blue-600 italic mb-2 print:hidden">
+                "We'll find a way."
               </div>
               <div className="text-center text-xs mb-3">
                 From {moment(searchParams.from_date).format("DD-MMM-YYYY")}{" "}
