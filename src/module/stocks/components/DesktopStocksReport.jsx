@@ -176,6 +176,9 @@ const DesktopStocksReport = ({
               <div ref={tableRef} className="overflow-x-scroll thick-scrollbar print:p-4">
                 <div className="relative text-center mb-6">
                   <div className="font-semibold text-lg">Stocks Report</div>
+                  <div className="text-sm font-semibold text-blue-600 italic mt-0.5 print:hidden">
+                    "We'll find a way."
+                  </div>
                   <div className="text-sm text-gray-500 mt-1">
                     From{" "}
                     {moment(searchParams.from_date).format("DD-MMM-YYYY")}{" "}
@@ -208,22 +211,24 @@ const DesktopStocksReport = ({
                     </div>
                   </div>
                 </div>
-                <Table className="border table-fixed w-full">
+
+                {/* On-Screen Table */}
+                <Table className="border table-fixed w-full print:hidden">
                   <TableHeader>
                     <TableRow className="bg-gray-100 hover:bg-gray-100">
-                      <TableHead className="text-center text-black font-bold border-r w-[36%] print:w-[65%] print:text-left print:pl-4">
+                      <TableHead className="text-center text-black font-bold border-r w-[36%]">
                         Items Name
                       </TableHead>
-                      <TableHead className="text-center text-black font-bold border-r w-[16%] print:hidden">
+                      <TableHead className="text-center text-black font-bold border-r w-[16%]">
                         Opening Balance
                       </TableHead>
-                      <TableHead className="text-center text-black font-bold border-r w-[16%] print:hidden">
+                      <TableHead className="text-center text-black font-bold border-r w-[16%]">
                         Purchases
                       </TableHead>
-                      <TableHead className="text-center text-black font-bold border-r w-[16%] print:hidden">
+                      <TableHead className="text-center text-black font-bold border-r w-[16%]">
                         Sales
                       </TableHead>
-                      <TableHead className="text-center text-black font-bold w-[16%] print:w-[35%] print:text-right print:pr-6">
+                      <TableHead className="text-center text-black font-bold w-[16%]">
                         Closing Balance
                       </TableHead>
                     </TableRow>
@@ -232,11 +237,11 @@ const DesktopStocksReport = ({
                     {(() => {
                       const displayVal = (val, unit) => {
                         const formatted = formatStockValue(val);
-                        if (formatted === "-") return <span className="text-gray-400 print:text-gray-500">-</span>;
+                        if (formatted === "-") return <span className="text-gray-400">-</span>;
                         return (
                           <span>
-                            <span className="text-gray-900 font-semibold print:text-black print:font-bold">{formatted}</span>{" "}
-                            <span className="text-gray-400 font-normal text-[10px] print:text-gray-600 print:text-[11px] print:font-medium">{unit}</span>
+                            <span className="text-gray-900 font-semibold">{formatted}</span>{" "}
+                            <span className="text-gray-400 font-normal text-[10px]">{unit}</span>
                           </span>
                         );
                       };
@@ -260,18 +265,8 @@ const DesktopStocksReport = ({
                         const closePcs = parseFloat(item.closesale_pcs || 0);
                         const purchPcs = parseFloat(item.purch_pcs || 0);
                         const salePcs = parseFloat(item.sale_pcs || 0);
-
-                        const openSqr = parseFloat(item.openpurch_sqr || 0);
-                        const closeSqr = parseFloat(item.closesale_sqr || 0);
-                        const purchSqr = parseFloat(item.purch_sqr || 0);
-                        const saleSqr = parseFloat(item.sale_sqr || 0);
-
                         const closingPcs = openPcs - closePcs + (purchPcs - salePcs);
-                        const closingSqr = openSqr - closeSqr + (purchSqr - saleSqr);
-
-                        return (
-                          Math.abs(closingPcs) > 0.0001 || Math.abs(closingSqr) > 0.0001
-                        );
+                        return Math.abs(closingPcs) > 0.0001;
                       });
 
                       if (!filteredStocks.length) {
@@ -299,22 +294,16 @@ const DesktopStocksReport = ({
                             index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
                           }
                         >
-                          <TableCell className="text-left border-r py-2 print:pl-4">
+                          <TableCell className="text-left border-r py-2">
                             <div className="flex items-center justify-between w-full gap-2">
                               {(() => {
-                                const matchedProduct = productTypes?.find(
-                                  (p) =>
-                                    (p.product_type || p.item_name || "").toLowerCase() ===
-                                    item.item_name?.toLowerCase()
-                                );
-
                                 const itemNameBtn = (
                                   <SingleItemStockReportDialog
                                     itemName={item.item_name}
                                     trigger={
                                       <button
                                         type="button"
-                                        className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold truncate print:text-black print:no-underline print:font-bold"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold truncate"
                                       >
                                         {item.item_name}
                                       </button>
@@ -325,7 +314,7 @@ const DesktopStocksReport = ({
                                 return (
                                   <>
                                     {itemNameBtn}
-                                    <div className="flex items-center gap-1 shrink-0 print:hidden">
+                                    <div className="flex items-center gap-1 shrink-0">
                                       <SingleItemStockReportDialog itemName={item.item_name} />
                                     </div>
                                   </>
@@ -333,7 +322,7 @@ const DesktopStocksReport = ({
                               })()}
                             </div>
                           </TableCell>
-                          <TableCell className="text-center border-r print:hidden">
+                          <TableCell className="text-center border-r">
                             {selectedUnits.box &&
                               displayVal(item.openpurch_pcs - item.closesale_pcs, "Pcs/Box")}
                             {selectedUnits.box &&
@@ -342,7 +331,7 @@ const DesktopStocksReport = ({
                             {selectedUnits.sqft &&
                               displayVal(item.openpurch_sqr - item.closesale_sqr, "Sqft")}
                           </TableCell>
-                          <TableCell className="text-center border-r print:hidden">
+                          <TableCell className="text-center border-r">
                             {selectedUnits.box &&
                               displayVal(item.purch_pcs, "Pcs/Box")}
                             {selectedUnits.box &&
@@ -351,7 +340,7 @@ const DesktopStocksReport = ({
                             {selectedUnits.sqft &&
                               displayVal(item.purch_sqr, "Sqft")}
                           </TableCell>
-                          <TableCell className="text-center border-r print:hidden">
+                          <TableCell className="text-center border-r">
                             {selectedUnits.box &&
                               displayVal(item.sale_pcs, "Pcs/Box")}
                             {selectedUnits.box &&
@@ -360,12 +349,12 @@ const DesktopStocksReport = ({
                             {selectedUnits.sqft &&
                               displayVal(item.sale_sqr, "Sqft")}
                           </TableCell>
-                          <TableCell className="text-center print:text-right print:pr-6">
+                          <TableCell className="text-center">
                             {selectedUnits.box &&
                               displayVal(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs), "Pcs/Box")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
-                              <span className="text-gray-300 print:text-gray-500"> , </span>}
+                              <span className="text-gray-300"> , </span>}
                             {selectedUnits.sqft &&
                               displayVal(item.openpurch_sqr - item.closesale_sqr + (item.purch_sqr - item.sale_sqr), "Sqft")}
                           </TableCell>
@@ -374,6 +363,80 @@ const DesktopStocksReport = ({
                     })()}
                   </TableBody>
                 </Table>
+
+                {/* Print-Only 4-Column Table (Side-by-Side Pairs) */}
+                <div className="hidden print:block w-full">
+                  <table className="w-full border-collapse border border-gray-400 text-xs">
+                    <thead>
+                      <tr className="bg-gray-200 border-b border-gray-400">
+                        <th className="border-r border-gray-400 p-1.5 text-left font-bold text-black w-[32%]">Item Name</th>
+                        <th className="border-r border-gray-400 p-1.5 text-right font-bold text-black w-[18%]">Closing Quantity</th>
+                        <th className="border-r border-gray-400 p-1.5 text-left font-bold text-black w-[32%]">Item Name</th>
+                        <th className="p-1.5 text-right font-bold text-black w-[18%]">Closing Quantity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(() => {
+                        const rawList = stocksData?.stocks || stocksData?.data || (Array.isArray(stocksData) ? stocksData : []);
+                        const filteredStocks = rawList.filter((item) => {
+                          const openPcs = parseFloat(item.openpurch_pcs || 0);
+                          const closePcs = parseFloat(item.closesale_pcs || 0);
+                          const purchPcs = parseFloat(item.purch_pcs || 0);
+                          const salePcs = parseFloat(item.sale_pcs || 0);
+                          const closingPcs = openPcs - closePcs + (purchPcs - salePcs);
+                          return Math.abs(closingPcs) > 0.0001;
+                        });
+
+                        const formatClosingQty = (item) => {
+                          if (!item) return "";
+                          const openPcs = parseFloat(item.openpurch_pcs || 0);
+                          const closePcs = parseFloat(item.closesale_pcs || 0);
+                          const purchPcs = parseFloat(item.purch_pcs || 0);
+                          const salePcs = parseFloat(item.sale_pcs || 0);
+
+                          const openSqr = parseFloat(item.openpurch_sqr || 0);
+                          const closeSqr = parseFloat(item.closesale_sqr || 0);
+                          const purchSqr = parseFloat(item.purch_sqr || 0);
+                          const saleSqr = parseFloat(item.sale_sqr || 0);
+
+                          const closingPcs = openPcs - closePcs + (purchPcs - salePcs);
+                          const closingSqr = openSqr - closeSqr + (purchSqr - saleSqr);
+
+                          const parts = [];
+                          if (selectedUnits.box && Math.abs(closingPcs) > 0.0001) {
+                            parts.push(`${formatStockValue(closingPcs)} Pcs/Box`);
+                          }
+                          if (selectedUnits.sqft && Math.abs(closingSqr) > 0.0001) {
+                            parts.push(`${formatStockValue(closingSqr)} Sqft`);
+                          }
+                          return parts.length > 0 ? parts.join(" , ") : "-";
+                        };
+
+                        const pairs = [];
+                        for (let i = 0; i < filteredStocks.length; i += 2) {
+                          pairs.push([filteredStocks[i], filteredStocks[i + 1]]);
+                        }
+
+                        return pairs.map(([itemA, itemB], idx) => (
+                          <tr key={idx} className="border-b border-gray-300">
+                            <td className="border-r border-gray-300 p-1.5 text-left font-bold text-black">
+                              {itemA?.item_name || ""}
+                            </td>
+                            <td className="border-r border-gray-300 p-1.5 text-right font-semibold text-black">
+                              {itemA ? formatClosingQty(itemA) : ""}
+                            </td>
+                            <td className="border-r border-gray-300 p-1.5 text-left font-bold text-black">
+                              {itemB?.item_name || ""}
+                            </td>
+                            <td className="p-1.5 text-right font-semibold text-black">
+                              {itemB ? formatClosingQty(itemB) : ""}
+                            </td>
+                          </tr>
+                        ));
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </CardContent>
           </>

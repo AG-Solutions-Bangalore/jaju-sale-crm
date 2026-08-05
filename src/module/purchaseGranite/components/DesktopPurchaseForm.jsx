@@ -70,7 +70,7 @@ const DesktopPurchaseForm = ({
             className="space-y-2"
           >
             {/* Purchase Information */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2 bg-blue-50 p-3 rounded-lg items-end">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-2 bg-blue-50 p-3 rounded-lg items-end">
               <div className="space-y-2">
                 <Label htmlFor="purchase_date">Date</Label>
                 <Input
@@ -97,19 +97,6 @@ const DesktopPurchaseForm = ({
                     )
                   }
                   disabled={form.watch("purchase_type") === "Opening Stock"}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="purchase_no">
-                  JFC Bill No.
-                </Label>
-                <Input
-                  id="purchase_no"
-                  {...form.register("purchase_no")}
-                  className="bg-white"
-                  placeholder="Enter JFC Purchase Number"
-                  maxLength={10}
-                  autoComplete="off"
                 />
               </div>
               <div className="space-y-2">

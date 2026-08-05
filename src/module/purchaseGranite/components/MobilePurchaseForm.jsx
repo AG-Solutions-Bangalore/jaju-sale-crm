@@ -99,19 +99,6 @@ const MobilePurchaseForm = ({
                 />
               </div>
               <div>
-                <Label htmlFor="mob_purchase_no">
-                  JFC Bill No.
-                </Label>
-                <Input
-                  id="mob_purchase_no"
-                  {...form.register("purchase_no")}
-                  className="mt-1 bg-white"
-                  placeholder="Enter JFC Purchase Number"
-                  maxLength={10}
-                  autoComplete="off"
-                />
-              </div>
-              <div>
                 <Label htmlFor="mob_purchase_bill_no">Supplier Bill No.</Label>
                 <Input
                   id="mob_purchase_bill_no"
