@@ -86,15 +86,21 @@ const MobilePurchaseForm = ({
                 <Input
                   id="mob_purchase_supplier"
                   {...form.register("purchase_supplier")}
-                  className="mt-1 bg-white"
+                  className="mt-1 bg-white uppercase placeholder:normal-case"
                   placeholder="Enter Supplier Name"
                   maxLength={50}
+                  onChange={(e) =>
+                    form.setValue(
+                      "purchase_supplier",
+                      e.target.value.toUpperCase()
+                    )
+                  }
                   disabled={form.watch("purchase_type") === "Opening Stock"}
                 />
               </div>
               <div>
                 <Label htmlFor="mob_purchase_no">
-                  JFC Bill No. <span className="text-xs text-red-400 ">*</span>
+                  JFC Bill No.
                 </Label>
                 <Input
                   id="mob_purchase_no"
@@ -102,6 +108,7 @@ const MobilePurchaseForm = ({
                   className="mt-1 bg-white"
                   placeholder="Enter JFC Purchase Number"
                   maxLength={10}
+                  autoComplete="off"
                 />
               </div>
               <div>

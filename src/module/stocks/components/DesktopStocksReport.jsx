@@ -211,19 +211,19 @@ const DesktopStocksReport = ({
                 <Table className="border table-fixed w-full">
                   <TableHeader>
                     <TableRow className="bg-gray-100 hover:bg-gray-100">
-                      <TableHead className="text-center text-black font-bold border-r w-[36%]">
+                      <TableHead className="text-center text-black font-bold border-r w-[36%] print:w-[65%] print:text-left print:pl-4">
                         Items Name
                       </TableHead>
-                      <TableHead className="text-center text-black font-bold border-r w-[16%]">
+                      <TableHead className="text-center text-black font-bold border-r w-[16%] print:hidden">
                         Opening Balance
                       </TableHead>
-                      <TableHead className="text-center text-black font-bold border-r w-[16%]">
+                      <TableHead className="text-center text-black font-bold border-r w-[16%] print:hidden">
                         Purchases
                       </TableHead>
-                      <TableHead className="text-center text-black font-bold border-r w-[16%]">
+                      <TableHead className="text-center text-black font-bold border-r w-[16%] print:hidden">
                         Sales
                       </TableHead>
-                      <TableHead className="text-center text-black font-bold w-[16%]">
+                      <TableHead className="text-center text-black font-bold w-[16%] print:w-[35%] print:text-right print:pr-6">
                         Closing Balance
                       </TableHead>
                     </TableRow>
@@ -232,11 +232,11 @@ const DesktopStocksReport = ({
                     {(() => {
                       const displayVal = (val, unit) => {
                         const formatted = formatStockValue(val);
-                        if (formatted === "-") return <span className="text-gray-400">-</span>;
+                        if (formatted === "-") return <span className="text-gray-400 print:text-gray-500">-</span>;
                         return (
                           <span>
-                            <span className="text-gray-900 font-semibold">{formatted}</span>{" "}
-                            <span className="text-gray-400 font-normal text-[10px]">{unit}</span>
+                            <span className="text-gray-900 font-semibold print:text-black print:font-bold">{formatted}</span>{" "}
+                            <span className="text-gray-400 font-normal text-[10px] print:text-gray-600 print:text-[11px] print:font-medium">{unit}</span>
                           </span>
                         );
                       };
@@ -270,16 +270,7 @@ const DesktopStocksReport = ({
                         const closingSqr = openSqr - closeSqr + (purchSqr - saleSqr);
 
                         return (
-                          purchPcs !== 0 ||
-                          salePcs !== 0 ||
-                          purchSqr !== 0 ||
-                          saleSqr !== 0 ||
-                          openPcs !== 0 ||
-                          closePcs !== 0 ||
-                          openSqr !== 0 ||
-                          closeSqr !== 0 ||
-                          closingPcs !== 0 ||
-                          closingSqr !== 0
+                          Math.abs(closingPcs) > 0.0001 || Math.abs(closingSqr) > 0.0001
                         );
                       });
 
@@ -308,7 +299,7 @@ const DesktopStocksReport = ({
                             index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
                           }
                         >
-                          <TableCell className="text-left border-r py-2">
+                          <TableCell className="text-left border-r py-2 print:pl-4">
                             <div className="flex items-center justify-between w-full gap-2">
                               {(() => {
                                 const matchedProduct = productTypes?.find(
@@ -323,7 +314,7 @@ const DesktopStocksReport = ({
                                     trigger={
                                       <button
                                         type="button"
-                                        className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold truncate"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold truncate print:text-black print:no-underline print:font-bold"
                                       >
                                         {item.item_name}
                                       </button>
@@ -334,7 +325,7 @@ const DesktopStocksReport = ({
                                 return (
                                   <>
                                     {itemNameBtn}
-                                    <div className="flex items-center gap-1 shrink-0">
+                                    <div className="flex items-center gap-1 shrink-0 print:hidden">
                                       <SingleItemStockReportDialog itemName={item.item_name} />
                                     </div>
                                   </>
@@ -342,7 +333,7 @@ const DesktopStocksReport = ({
                               })()}
                             </div>
                           </TableCell>
-                          <TableCell className="text-center border-r">
+                          <TableCell className="text-center border-r print:hidden">
                             {selectedUnits.box &&
                               displayVal(item.openpurch_pcs - item.closesale_pcs, "Pcs/Box")}
                             {selectedUnits.box &&
@@ -351,7 +342,7 @@ const DesktopStocksReport = ({
                             {selectedUnits.sqft &&
                               displayVal(item.openpurch_sqr - item.closesale_sqr, "Sqft")}
                           </TableCell>
-                          <TableCell className="text-center border-r">
+                          <TableCell className="text-center border-r print:hidden">
                             {selectedUnits.box &&
                               displayVal(item.purch_pcs, "Pcs/Box")}
                             {selectedUnits.box &&
@@ -360,7 +351,7 @@ const DesktopStocksReport = ({
                             {selectedUnits.sqft &&
                               displayVal(item.purch_sqr, "Sqft")}
                           </TableCell>
-                          <TableCell className="text-center border-r">
+                          <TableCell className="text-center border-r print:hidden">
                             {selectedUnits.box &&
                               displayVal(item.sale_pcs, "Pcs/Box")}
                             {selectedUnits.box &&
@@ -369,12 +360,12 @@ const DesktopStocksReport = ({
                             {selectedUnits.sqft &&
                               displayVal(item.sale_sqr, "Sqft")}
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center print:text-right print:pr-6">
                             {selectedUnits.box &&
                               displayVal(item.openpurch_pcs - item.closesale_pcs + (item.purch_pcs - item.sale_pcs), "Pcs/Box")}
                             {selectedUnits.box &&
                               selectedUnits.sqft &&
-                              <span className="text-gray-300"> , </span>}
+                              <span className="text-gray-300 print:text-gray-500"> , </span>}
                             {selectedUnits.sqft &&
                               displayVal(item.openpurch_sqr - item.closesale_sqr + (item.purch_sqr - item.sale_sqr), "Sqft")}
                           </TableCell>

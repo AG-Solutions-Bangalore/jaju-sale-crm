@@ -178,7 +178,7 @@ const MobileStocksReport = ({
                         const purchPcs = parseFloat(item.purch_pcs || item.purch || 0);
                         const salePcs = parseFloat(item.sale_pcs || item.sale || 0);
                         const closing = openPcs - closePcs + (purchPcs - salePcs);
-                        return purchPcs !== 0 || salePcs !== 0 || openPcs !== 0 || closePcs !== 0 || closing !== 0;
+                        return Math.abs(closing) > 0.0001;
                       });
 
                       if (!filteredStocks.length) {
@@ -216,7 +216,7 @@ const MobileStocksReport = ({
                                     trigger={
                                       <button
                                         type="button"
-                                        className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold text-xs truncate"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline text-left font-semibold text-xs truncate print:text-black print:no-underline"
                                       >
                                         {item.item_name}
                                       </button>
@@ -227,7 +227,7 @@ const MobileStocksReport = ({
                                 return (
                                   <>
                                     {itemNameBtn}
-                                    <div className="flex items-center gap-1 shrink-0">
+                                    <div className="flex items-center gap-1 shrink-0 print:hidden">
                                       <SingleItemStockReportDialog itemName={item.item_name} />
                                     </div>
                                   </>

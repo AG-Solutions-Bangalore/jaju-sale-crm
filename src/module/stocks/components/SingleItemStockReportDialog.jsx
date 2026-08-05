@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Loader2 } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
 import { useStocksReportByItem } from "../hooks/useStocks";
 import { getTodayDate } from "@/utils/currentDate";
 import DesktopSingleItemStockReport from "./DesktopSingleItemStockReport";
@@ -275,7 +275,7 @@ const SingleItemStockReportDialog = ({ itemName, trigger }) => {
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-600 hover:text-blue-800">
-            <TrendingUp className="h-4 w-4" />
+            <Eye className="h-4 w-4" />
           </Button>
         )}
       </DialogTrigger>

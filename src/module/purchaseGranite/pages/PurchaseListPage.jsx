@@ -121,16 +121,6 @@ const PurchaseListPage = () => {
         },
       },
       {
-        accessorKey: "purchase_no",
-        id: "JFC Bill No.",
-        header: "JFC Bill No.",
-        cell: ({ row }) => {
-          const val =
-            row.original.purchase_no || row.original.purchase_ref || "-";
-          return <div>{val}</div>;
-        },
-      },
-      {
         accessorKey: "purchase_supplier",
         id: "Supplier",
         header: "Supplier",
