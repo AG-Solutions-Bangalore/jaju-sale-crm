@@ -87,15 +87,21 @@ const DesktopPurchaseForm = ({
                 <Input
                   id="purchase_supplier"
                   {...form.register("purchase_supplier")}
-                  className="bg-white"
+                  className="bg-white uppercase placeholder:normal-case"
                   placeholder="Enter Supplier Name"
                   maxLength={50}
+                  onChange={(e) =>
+                    form.setValue(
+                      "purchase_supplier",
+                      e.target.value.toUpperCase()
+                    )
+                  }
                   disabled={form.watch("purchase_type") === "Opening Stock"}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="purchase_no">
-                  JFC Bill No. <span className="text-xs text-red-400 ">*</span>
+                  JFC Bill No.
                 </Label>
                 <Input
                   id="purchase_no"
@@ -103,6 +109,7 @@ const DesktopPurchaseForm = ({
                   className="bg-white"
                   placeholder="Enter JFC Purchase Number"
                   maxLength={10}
+                  autoComplete="off"
                 />
               </div>
               <div className="space-y-2">

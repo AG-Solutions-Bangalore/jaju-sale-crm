@@ -115,16 +115,6 @@ const SalesListPage = () => {
         },
       },
       {
-        accessorKey: "sales_no",
-        id: "JFC Bill No.",
-        header: "JFC Bill No.",
-        cell: ({ row }) => {
-          const val =
-            row.getValue("JFC Bill No.") || row.original.sales_ref || "-";
-          return <div>{val}</div>;
-        },
-      },
-      {
         accessorKey: "sales_customer",
         id: "Customer",
         header: "Customer",

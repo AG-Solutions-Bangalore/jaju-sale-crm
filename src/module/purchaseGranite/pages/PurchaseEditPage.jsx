@@ -410,7 +410,7 @@ const PurchaseEditPage = () => {
     const formErrors = {
       date: !data.purchase_date ? "Date is required" : "",
       supplier: !data.purchase_supplier ? "Supplier is required" : "",
-      billNo: !data.purchase_no ? "Bill number is required" : "",
+      billNo: "",
     };
 
     const itemErrors = itemEntries.map((entry, index) => ({
