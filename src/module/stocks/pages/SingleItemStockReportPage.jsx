@@ -20,6 +20,7 @@ import MobileSingleItemStockReport from "../components/MobileSingleItemStockRepo
 import DesktopSingleItemStockReport from "../components/DesktopSingleItemStockReport";
 import NewItemDialog from "../components/NewItemDialog";
 import EditItemDialog from "../components/EditItemDialog";
+import ChangeItemNameDialog from "../components/ChangeItemNameDialog";
 
 const formSchema = z.object({
   from_date: z.string().min(1, "From date is required"),
@@ -41,6 +42,9 @@ const SingleItemStockReportPage = () => {
   const [showEditItemDialog, setShowEditItemDialog] = useState(false);
   const [editItemName, setEditItemName] = useState("");
   const [editingProductId, setEditingProductId] = useState(null);
+
+  // Change Item Name dialog
+  const [showChangeItemNameDialog, setShowChangeItemNameDialog] = useState(false);
 
   const formatCellValue = (value) => {
     if (value === undefined || value === null || value === "") return "";
@@ -490,6 +494,24 @@ const SingleItemStockReportPage = () => {
   );
   const productId = product?.id || null;
 
+  const handleChangeItemNameClick = () => {
+    if (!selectedItem) {
+      toast({
+        title: "Validation Error",
+        description: "Please select an item to change name.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowChangeItemNameDialog(true);
+  };
+
+  const handleChangeItemNameSuccess = () => {
+    setShowChangeItemNameDialog(false);
+    setSelectedItem("");
+    setSearchParams(null);
+  };
+
   const commonProps = {
     form,
     isLoading,
@@ -512,6 +534,7 @@ const SingleItemStockReportPage = () => {
     formatCellValue,
     formatClosingBalanceText,
     productId,
+    handleChangeItemNameClick,
   };
 
   return (
@@ -537,6 +560,13 @@ const SingleItemStockReportPage = () => {
         setEditItemName={setEditItemName}
         handleUpdateItem={handleUpdateItem}
         isPending={updateProductMutation.isPending}
+      />
+
+      <ChangeItemNameDialog
+        open={showChangeItemNameDialog}
+        onOpenChange={setShowChangeItemNameDialog}
+        currentItemName={selectedItem}
+        onSuccess={handleChangeItemNameSuccess}
       />
     </Page>
   );

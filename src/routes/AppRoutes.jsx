@@ -33,6 +33,7 @@ import SalesReport from "@/app/sales/SalesReport";
 import PurchaseReport from "@/app/purchaseGranite/PurchaseReport";
 import SalesReportSalesList from "@/app/sales/SalesReportSalesList";
 import SalesReportPurchaseList from "@/app/purchaseGranite/SalesReportPurchaseList";
+import ChangeItemName from "@/app/changeItemName/ChangeItemName";
 
 function AppRoutes() {
   return (
@@ -78,6 +79,7 @@ function AppRoutes() {
         <Route path="/reports/purchase-list" element={<SalesReportPurchaseList />} />
         <Route path="/stocks" element={<StocksReport />} />
         <Route path="/single-item-stock" element={<SingleItemStockReport />} />
+        <Route path="/change-item-name" element={<ChangeItemName />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />

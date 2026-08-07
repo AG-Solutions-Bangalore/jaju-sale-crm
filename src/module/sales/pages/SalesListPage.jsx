@@ -18,6 +18,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import Page from "@/app/dashboard/page";
+import DateFilter from "@/components/common/DateFilter";
 import Loader from "@/components/loader/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +72,7 @@ const SalesListPage = () => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState(undefined);
 
 
   const parseBillNumber = (billNo) => {
@@ -86,17 +88,28 @@ const SalesListPage = () => {
 
   const filteredSales = React.useMemo(() => {
     return sortedSales.filter((sale) => {
-      if (!searchQuery) return true;
-      return (
-        sale.sales_customer
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesCustomer = sale.sales_customer
           ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        String(sale.sales_no || "")
+          .includes(q);
+        const matchesNo = String(sale.sales_no || "")
           .toLowerCase()
-          .includes(searchQuery.toLowerCase())
-      );
+          .includes(q);
+        if (!matchesCustomer && !matchesNo) return false;
+      }
+
+      if (dateFilter) {
+        if (!sale.sales_date) return false;
+        const targetDate = moment(dateFilter).format("YYYY-MM-DD");
+        if (moment(sale.sales_date).format("YYYY-MM-DD") !== targetDate) {
+          return false;
+        }
+      }
+
+      return true;
     });
-  }, [sortedSales, searchQuery]);
+  }, [sortedSales, searchQuery, dateFilter]);
 
   const columns = React.useMemo(
     () => [
@@ -289,7 +302,7 @@ const SalesListPage = () => {
   );
 
   const table = useReactTable({
-    data: sortedSales || [],
+    data: filteredSales || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -369,16 +382,22 @@ const SalesListPage = () => {
                   <SquarePlus className="h-3.5 w-3.5" />
                 </Button>
               </div>
-              <div className="relative px-2 pb-2">
-                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-500" />
-                <Input
-                  placeholder="Search Gaya..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(0);
-                  }}
-                  className="pl-9 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full text-xs h-8"
+              <div className="flex flex-wrap gap-2 px-2 pb-2">
+                <div className="relative flex-1 min-w-[140px]">
+                  <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-500" />
+                  <Input
+                    placeholder="Search Gaya..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(0);
+                    }}
+                    className="pl-9 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full text-xs h-8"
+                  />
+                </div>
+                <DateFilter
+                  dateFilter={dateFilter}
+                  onDateChange={setDateFilter}
                 />
               </div>
             </div>
@@ -516,11 +535,16 @@ const SalesListPage = () => {
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 placeholder="Search Gaya..."
-                value={table.getState().globalFilter || ""}
-                onChange={(event) => table.setGlobalFilter(event.target.value)}
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full"
               />
             </div>
+
+            <DateFilter
+              dateFilter={dateFilter}
+              onDateChange={setDateFilter}
+            />
 
             <div className="flex flex-col md:flex-row md:ml-auto gap-2 w-full md:w-auto">
               <DropdownMenu>

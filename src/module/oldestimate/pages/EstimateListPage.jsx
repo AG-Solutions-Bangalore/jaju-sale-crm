@@ -12,6 +12,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import Page from "@/app/dashboard/page";
+import DateFilter from "@/components/common/DateFilter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ const EstimateListPage = () => {
   const [rowSelection, setRowSelection] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [yearFilter, setYearFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState(undefined);
 
   useEffect(() => {
     if (currentYear && !yearFilter) {
@@ -75,11 +77,22 @@ const EstimateListPage = () => {
     return estimate;
   }, [estimate, yearFilter]);
 
-  const filteredEstimates = React.useMemo(() => {
+  const dateFilteredEstimates = React.useMemo(() => {
     if (!Array.isArray(yearFilteredEstimates)) return [];
-    if (!searchQuery) return yearFilteredEstimates;
-    const q = searchQuery.toLowerCase().trim();
+    if (!dateFilter) return yearFilteredEstimates;
+
+    const targetDate = moment(dateFilter).format("YYYY-MM-DD");
     return yearFilteredEstimates.filter((est) => {
+      if (!est.estimate_date) return false;
+      return moment(est.estimate_date).format("YYYY-MM-DD") === targetDate;
+    });
+  }, [yearFilteredEstimates, dateFilter]);
+
+  const filteredEstimates = React.useMemo(() => {
+    if (!Array.isArray(dateFilteredEstimates)) return [];
+    if (!searchQuery) return dateFilteredEstimates;
+    const q = searchQuery.toLowerCase().trim();
+    return dateFilteredEstimates.filter((est) => {
       const formattedDate = est.estimate_date
         ? moment(est.estimate_date).format("DD-MMM-YYYY").toLowerCase()
         : "";
@@ -90,7 +103,7 @@ const EstimateListPage = () => {
         est.estimate_date?.toLowerCase().includes(q)
       );
     });
-  }, [yearFilteredEstimates, searchQuery]);
+  }, [dateFilteredEstimates, searchQuery]);
 
   const columns = React.useMemo(
     () => [
@@ -254,8 +267,8 @@ const EstimateListPage = () => {
                 </Button>
               </div>
 
-              <div className="flex gap-2 px-2 pb-2">
-                <div className="relative flex-1">
+              <div className="flex flex-wrap gap-2 px-2 pb-2">
+                <div className="relative flex-1 min-w-[140px]">
                   <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-500" />
                   <Input
                     placeholder="Search Estimate..."
@@ -268,7 +281,7 @@ const EstimateListPage = () => {
                   />
                 </div>
                 <Select value={yearFilter} onValueChange={setYearFilter}>
-                  <SelectTrigger className="w-[130px] h-8 text-xs bg-white">
+                  <SelectTrigger className="w-[110px] h-8 text-xs bg-white">
                     <SelectValue placeholder="Select Year" />
                   </SelectTrigger>
                   <SelectContent>
@@ -278,6 +291,10 @@ const EstimateListPage = () => {
                     <SelectItem value="all">All Data</SelectItem>
                   </SelectContent>
                 </Select>
+                <DateFilter
+                  dateFilter={dateFilter}
+                  onDateChange={setDateFilter}
+                />
               </div>
             </div>
           </div>
@@ -435,6 +452,11 @@ const EstimateListPage = () => {
                 <SelectItem value="all">All Data</SelectItem>
               </SelectContent>
             </Select>
+
+            <DateFilter
+              dateFilter={dateFilter}
+              onDateChange={setDateFilter}
+            />
 
             <div className="flex flex-col md:flex-row md:ml-auto gap-2 w-full md:w-auto">
               <DropdownMenu>
