@@ -8,6 +8,7 @@ import {
   Loader2,
   CalendarDays,
   Eye,
+  RefreshCw,
 } from "lucide-react";
 import { FaRegFilePdf, FaRegFileExcel } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
@@ -63,6 +64,7 @@ const DesktopSingleItemStockReport = ({
   formatCellValue,
   formatClosingBalanceText,
   productId,
+  handleChangeItemNameClick,
   isPopup = false,
 }) => {
   const navigate = useNavigate();
@@ -243,6 +245,17 @@ const DesktopSingleItemStockReport = ({
 
               {/* Action Toolbar */}
               <div className="flex items-center gap-2 flex-wrap">
+                {handleChangeItemNameClick && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleChangeItemNameClick}
+                    className="h-8 text-xs border-blue-200 text-blue-700 hover:bg-blue-50 font-medium"
+                  >
+                    <RefreshCw className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
+                    Change Name of Item
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

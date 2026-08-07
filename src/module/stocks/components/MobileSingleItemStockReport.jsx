@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import moment from "moment";
-import { Printer, Search, Plus, Pencil, Loader2, CalendarDays, Eye } from "lucide-react";
+import { Printer, Search, Plus, Pencil, Loader2, CalendarDays, Eye, RefreshCw } from "lucide-react";
 import { FaRegFilePdf, FaRegFileExcel } from "react-icons/fa";
 import ReactToPrint from "react-to-print";
 import { useNavigate } from "react-router-dom";
@@ -38,6 +38,7 @@ const MobileSingleItemStockReport = ({
   formatCellValue,
   formatClosingBalanceText,
   productId,
+  handleChangeItemNameClick,
   isPopup = false,
 }) => {
   const navigate = useNavigate();
@@ -186,7 +187,18 @@ const MobileSingleItemStockReport = ({
                   </Button>
                 )}
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
+                {handleChangeItemNameClick && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleChangeItemNameClick}
+                    className="h-7 px-2 text-[10px] border-blue-200 text-blue-700 hover:bg-blue-50 font-medium"
+                  >
+                    <RefreshCw className="mr-1 h-3 w-3 text-blue-600" />
+                    Change Name of Item
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

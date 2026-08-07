@@ -15,3 +15,4 @@ export const fetchProductById = (id) => {
 export const updateProduct = (id, data) => {
   return axiosInstance.put(`/api/web-update-product-type/${id}`, data);
 };
+

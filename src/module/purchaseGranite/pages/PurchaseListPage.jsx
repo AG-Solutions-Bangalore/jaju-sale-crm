@@ -18,6 +18,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import Page from "@/app/dashboard/page";
+import DateFilter from "@/components/common/DateFilter";
 import Loader from "@/components/loader/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,6 +74,7 @@ const PurchaseListPage = () => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState(undefined);
   const { toast } = useToast();
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -91,17 +93,28 @@ const PurchaseListPage = () => {
 
   const filteredPurchases = React.useMemo(() => {
     return sortedPurchases.filter((purchase) => {
-      if (!searchQuery) return true;
-      return (
-        purchase.purchase_supplier
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesSupplier = purchase.purchase_supplier
           ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        String(purchase.purchase_bill_no || "")
+          .includes(q);
+        const matchesBillNo = String(purchase.purchase_bill_no || "")
           .toLowerCase()
-          .includes(searchQuery.toLowerCase())
-      );
+          .includes(q);
+        if (!matchesSupplier && !matchesBillNo) return false;
+      }
+
+      if (dateFilter) {
+        if (!purchase.purchase_date) return false;
+        const targetDate = moment(dateFilter).format("YYYY-MM-DD");
+        if (moment(purchase.purchase_date).format("YYYY-MM-DD") !== targetDate) {
+          return false;
+        }
+      }
+
+      return true;
     });
-  }, [sortedPurchases, searchQuery]);
+  }, [sortedPurchases, searchQuery, dateFilter]);
 
   const columns = React.useMemo(
     () => [
@@ -285,7 +298,7 @@ const PurchaseListPage = () => {
   );
 
   const table = useReactTable({
-    data: sortedPurchases || [],
+    data: filteredPurchases || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -358,16 +371,22 @@ const PurchaseListPage = () => {
                   </Button>
                 </div>
               </div>
-              <div className="relative px-2 pb-2">
-                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-500" />
-                <Input
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(0);
-                  }}
-                  className="pl-9 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full text-xs h-8"
+              <div className="flex flex-wrap gap-2 px-2 pb-2">
+                <div className="relative flex-1 min-w-[140px]">
+                  <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-500" />
+                  <Input
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(0);
+                    }}
+                    className="pl-9 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full text-xs h-8"
+                  />
+                </div>
+                <DateFilter
+                  dateFilter={dateFilter}
+                  onDateChange={setDateFilter}
                 />
               </div>
             </div>
@@ -521,11 +540,16 @@ const PurchaseListPage = () => {
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 placeholder="Search..."
-                value={table.getState().globalFilter || ""}
-                onChange={(event) => table.setGlobalFilter(event.target.value)}
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full"
               />
             </div>
+
+            <DateFilter
+              dateFilter={dateFilter}
+              onDateChange={setDateFilter}
+            />
 
             <div className="flex flex-col md:flex-row md:ml-auto gap-2 w-full md:w-auto">
               <DropdownMenu>
