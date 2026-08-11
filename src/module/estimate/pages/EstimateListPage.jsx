@@ -121,15 +121,39 @@ const EstimateListPage = () => {
     if (!searchQuery) return dateFilteredEstimates;
     const q = searchQuery.toLowerCase().trim();
     return dateFilteredEstimates.filter((est) => {
-      const formattedDate = est.estimate_date
-        ? moment(est.estimate_date).format("DD-MMM-YYYY").toLowerCase()
-        : "";
-      return (
-        est.estimate_customer?.toLowerCase().includes(q) ||
-        est.estimate_no?.toLowerCase().includes(q) ||
-        formattedDate.includes(q) ||
-        est.estimate_date?.toLowerCase().includes(q)
-      );
+      const matchesCustomer = est.estimate_customer?.toLowerCase().includes(q);
+      const matchesNo = String(est.estimate_no || "").toLowerCase().includes(q);
+      const matchesMobile = String(est.estimate_mobile || "").toLowerCase().includes(q);
+
+      let matchesDate = false;
+      if (est.estimate_date) {
+        const m = moment(est.estimate_date);
+        if (m.isValid()) {
+          const formats = [
+            m.format("DD-MMM-YYYY"), // 31-Jul-2026
+            m.format("DD-MMM-YY"),   // 31-Jul-26
+            m.format("DD-MM-YYYY"),  // 31-07-2026
+            m.format("YYYY-MM-DD"),  // 2026-07-31
+            m.format("MMMM D, YYYY"),// July 31, 2026
+            m.format("MMMM,D,YYYY"), // July,31,2026
+            m.format("MMMM D"),      // July 31
+            m.format("MMMM,D"),      // July,31
+            m.format("D MMMM"),      // 31 July
+            m.format("D,MMMM"),      // 31,July
+            m.format("MMM D"),       // Jul 31
+            m.format("D MMM"),       // 31 Jul
+          ];
+          const lowerQ = q.toLowerCase().replace(/\s+/g, " ");
+          const normalizedQ = lowerQ.replace(/[\s,-]/g, "");
+          matchesDate = formats.some((f) => {
+            const lf = f.toLowerCase();
+            const nlf = lf.replace(/[\s,-]/g, "");
+            return lf.includes(lowerQ) || nlf.includes(normalizedQ);
+          });
+        }
+      }
+
+      return matchesCustomer || matchesNo || matchesMobile || matchesDate;
     });
   }, [dateFilteredEstimates, searchQuery]);
 
@@ -498,9 +522,11 @@ const EstimateListPage = () => {
             >
               Prev
             </Button>
-            <span className="text-xs text-gray-600">
+            <span className="text-xs text-gray-600 text-center">
               Page {currentPage + 1} of{" "}
               {Math.ceil(filteredEstimates.length / itemsPerPage) || 1}
+              <br />
+              Total Estimate: {filteredEstimates.length}
             </span>
             <Button
               variant="outline"

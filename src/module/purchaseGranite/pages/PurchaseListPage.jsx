@@ -101,7 +101,36 @@ const PurchaseListPage = () => {
         const matchesBillNo = String(purchase.purchase_bill_no || "")
           .toLowerCase()
           .includes(q);
-        if (!matchesSupplier && !matchesBillNo) return false;
+
+        let matchesDate = false;
+        if (purchase.purchase_date) {
+          const m = moment(purchase.purchase_date);
+          if (m.isValid()) {
+            const formats = [
+              m.format("DD-MMM-YYYY"), // 31-Jul-2026
+              m.format("DD-MMM-YY"),   // 31-Jul-26
+              m.format("DD-MM-YYYY"),  // 31-07-2026
+              m.format("YYYY-MM-DD"),  // 2026-07-31
+              m.format("MMMM D, YYYY"),// July 31, 2026
+              m.format("MMMM,D,YYYY"), // July,31,2026
+              m.format("MMMM D"),      // July 31
+              m.format("MMMM,D"),      // July,31
+              m.format("D MMMM"),      // 31 July
+              m.format("D,MMMM"),      // 31,July
+              m.format("MMM D"),       // Jul 31
+              m.format("D MMM"),       // 31 Jul
+            ];
+            const lowerQ = q.toLowerCase().replace(/\s+/g, " ");
+            const normalizedQ = lowerQ.replace(/[\s,-]/g, "");
+            matchesDate = formats.some((f) => {
+              const lf = f.toLowerCase();
+              const nlf = lf.replace(/[\s,-]/g, "");
+              return lf.includes(lowerQ) || nlf.includes(normalizedQ);
+            });
+          }
+        }
+
+        if (!matchesSupplier && !matchesBillNo && !matchesDate) return false;
       }
 
       if (dateFilter) {
@@ -502,9 +531,11 @@ const PurchaseListPage = () => {
             >
               Prev
             </Button>
-            <span className="text-xs text-gray-600">
+            <span className="text-xs text-gray-600 text-center">
               Page {currentPage + 1} of{" "}
               {Math.ceil(filteredPurchases.length / itemsPerPage) || 1}
+              <br />
+              Total Purchase: {filteredPurchases.length}
             </span>
             <Button
               variant="outline"
