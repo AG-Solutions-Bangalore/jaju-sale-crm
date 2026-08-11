@@ -62,9 +62,8 @@ const SalesListPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
-  const { data, isLoading, isError, refetch } = useSalesList(currentPage + 1);
+  const { data, isLoading, isError, refetch } = useSalesList();
   const sales = data?.sales || [];
-  const pagination = data?.pagination;
   const deleteMutation = useDeleteSales();
 
   const [sorting, setSorting] = useState([]);
@@ -96,7 +95,39 @@ const SalesListPage = () => {
         const matchesNo = String(sale.sales_no || "")
           .toLowerCase()
           .includes(q);
-        if (!matchesCustomer && !matchesNo) return false;
+        const matchesMobile = String(sale.sales_mobile || "")
+          .toLowerCase()
+          .includes(q);
+
+        let matchesDate = false;
+        if (sale.sales_date) {
+          const m = moment(sale.sales_date);
+          if (m.isValid()) {
+            const formats = [
+              m.format("DD-MMM-YYYY"), // 31-Jul-2026
+              m.format("DD-MMM-YY"),   // 31-Jul-26
+              m.format("DD-MM-YYYY"),  // 31-07-2026
+              m.format("YYYY-MM-DD"),  // 2026-07-31
+              m.format("MMMM D, YYYY"),// July 31, 2026
+              m.format("MMMM,D,YYYY"), // July,31,2026
+              m.format("MMMM D"),      // July 31
+              m.format("MMMM,D"),      // July,31
+              m.format("D MMMM"),      // 31 July
+              m.format("D,MMMM"),      // 31,July
+              m.format("MMM D"),       // Jul 31
+              m.format("D MMM"),       // 31 Jul
+            ];
+            const lowerQ = q.toLowerCase().replace(/\s+/g, " ");
+            const normalizedQ = lowerQ.replace(/[\s,-]/g, "");
+            matchesDate = formats.some((f) => {
+              const lf = f.toLowerCase();
+              const nlf = lf.replace(/[\s,-]/g, "");
+              return lf.includes(lowerQ) || nlf.includes(normalizedQ);
+            });
+          }
+        }
+
+        if (!matchesCustomer && !matchesNo && !matchesMobile && !matchesDate) return false;
       }
 
       if (dateFilter) {
@@ -312,26 +343,17 @@ const SalesListPage = () => {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    pageCount: pagination?.last_page ?? -1,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+    },
+    initialState: {
       pagination: {
-        pageIndex: currentPage,
-        pageSize: 10,
+        pageSize: 7,
       },
     },
-    onPaginationChange: (updater) => {
-      if (typeof updater === "function") {
-        const nextState = updater({ pageIndex: currentPage, pageSize: 10 });
-        setCurrentPage(nextState.pageIndex);
-      } else {
-        setCurrentPage(updater.pageIndex);
-      }
-    },
-    manualPagination: true,
   });
 
   if (isLoading) {
@@ -502,8 +524,11 @@ const SalesListPage = () => {
             >
               Prev
             </Button>
-            <span className="text-xs text-gray-600">
-              Page {currentPage + 1} of {pagination?.last_page ?? 1}
+            <span className="text-xs text-gray-600 text-center">
+              Page {currentPage + 1} of{" "}
+              {Math.ceil(filteredSales.length / itemsPerPage) || 1}
+              <br />
+              Total Sales: {filteredSales.length}
             </span>
             <Button
               variant="outline"
@@ -512,11 +537,15 @@ const SalesListPage = () => {
                 setCurrentPage((prev) =>
                   Math.min(
                     prev + 1,
-                    (pagination?.last_page ?? 1) - 1,
+                    Math.ceil(filteredSales.length / itemsPerPage) - 1,
                   ),
                 )
               }
-              disabled={currentPage >= (pagination?.last_page ?? 1) - 1}
+              disabled={
+                currentPage >=
+                  Math.ceil(filteredSales.length / itemsPerPage) - 1 ||
+                filteredSales.length <= itemsPerPage
+              }
               className="h-8 text-xs px-3"
             >
               Next
@@ -636,7 +665,7 @@ const SalesListPage = () => {
           <div className="flex items-center justify-end space-x-2 py-4">
             <div className="flex-1 text-sm text-muted-foreground">
               Total Sales : &nbsp;
-              {pagination?.total ?? table.getFilteredRowModel().rows.length}
+              {table.getFilteredRowModel().rows.length}
             </div>
             <div className="space-x-2">
               <Button

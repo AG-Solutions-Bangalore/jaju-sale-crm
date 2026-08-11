@@ -15,8 +15,20 @@ export const useEstimateList = () => {
   return useQuery({
     queryKey: ["estimate"],
     queryFn: async () => {
-      const response = await fetchEstimateList();
-      const rawData = response?.data;
+      const first = await fetchEstimateList();
+      const rawData = first?.data;
+      const raw = rawData?.data;
+
+      if (raw && raw.data && raw.last_page && raw.last_page > 1) {
+        const pages = [raw.data];
+        for (let p = 2; p <= raw.last_page; p++) {
+          const res = await fetchEstimateList(p);
+          const d = res?.data?.data;
+          if (Array.isArray(d?.data)) pages.push(d.data);
+        }
+        return pages.flat();
+      }
+
       if (Array.isArray(rawData?.data?.data)) return rawData.data.data;
       if (Array.isArray(rawData?.estimate)) return rawData.estimate;
       if (Array.isArray(rawData?.data)) return rawData.data;

@@ -15,30 +15,47 @@ import {
 } from "../api/sales";
 import { useToast } from "@/hooks/use-toast";
 
-export const useSalesList = (page = 1) => {
+export const useSalesList = () => {
   return useQuery({
-    queryKey: ["sales", page],
+    queryKey: ["sales"],
     queryFn: async () => {
-      const response = await fetchSalesList(page);
-      const rawData = response?.data;
+      const first = await fetchSalesList();
+      const rawData = first?.data;
+      const raw = rawData?.data;
       
       let salesData = [];
       let pagination = null;
       
-      if (rawData?.data && Array.isArray(rawData.data.data)) {
-        salesData = rawData.data.data;
+      if (raw && raw.data && raw.last_page && raw.last_page > 1) {
+        const pages = [raw.data];
+        for (let p = 2; p <= raw.last_page; p++) {
+          const res = await fetchSalesList(p);
+          const d = res?.data?.data;
+          if (Array.isArray(d?.data)) pages.push(d.data);
+        }
+        salesData = pages.flat();
         pagination = {
-          current_page: rawData.data.current_page,
-          last_page: rawData.data.last_page,
-          per_page: rawData.data.per_page,
-          total: rawData.data.total,
+          current_page: 1,
+          last_page: 1,
+          per_page: salesData.length,
+          total: salesData.length,
         };
-      } else if (Array.isArray(rawData?.sales)) {
-        salesData = rawData.sales;
-      } else if (Array.isArray(rawData?.data)) {
-        salesData = rawData.data;
-      } else if (Array.isArray(rawData)) {
-        salesData = rawData;
+      } else {
+        if (rawData?.data && Array.isArray(rawData.data.data)) {
+          salesData = rawData.data.data;
+          pagination = {
+            current_page: rawData.data.current_page,
+            last_page: rawData.data.last_page,
+            per_page: rawData.data.per_page,
+            total: rawData.data.total,
+          };
+        } else if (Array.isArray(rawData?.sales)) {
+          salesData = rawData.sales;
+        } else if (Array.isArray(rawData?.data)) {
+          salesData = rawData.data;
+        } else if (Array.isArray(rawData)) {
+          salesData = rawData;
+        }
       }
       
       return {
