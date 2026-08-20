@@ -317,7 +317,7 @@ const DesktopSingleItemStockReport = ({
                           rowSpan={2}
                           className="text-left text-gray-800 font-bold border-r border-gray-200 align-middle pl-3 min-w-32"
                         >
-                          JFC NUMBER
+                          BILL NUMBER
                         </TableHead>
                         <TableHead
                           rowSpan={2}
@@ -467,7 +467,7 @@ const DesktopSingleItemStockReport = ({
             <DialogTitle className="text-base font-bold text-gray-900 flex justify-between items-center pr-4">
               <span>{selectedTxDetail?.type === "purchase" ? "Purchase Product Detail" : "Sales Product Detail"}</span>
               <span className="text-xs px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full font-mono font-semibold">
-                JFC #{selectedTxDetail?.jfcNumber}
+                {selectedTxDetail?.type === "purchase" ? "Supplier Bill #" : "Bill #"}{selectedTxDetail?.billNumber || selectedTxDetail?.jfcNumber}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -477,23 +477,22 @@ const DesktopSingleItemStockReport = ({
               <p className="font-bold text-gray-800 text-sm mt-0.5">{selectedTxDetail?.itemName || selectedItem}</p>
               {selectedTxDetail?.customerName && selectedTxDetail?.customerName !== "-" && (
                 <p className="text-xs text-gray-600 mt-1">
-                  <span className="font-semibold text-gray-700">Party:</span> {selectedTxDetail?.customerName}
+                  <span className="font-semibold text-gray-700">{selectedTxDetail?.type === "purchase" ? "Supplier:" : "Customer:"}</span> {selectedTxDetail?.customerName}
                 </p>
               )}
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="bg-slate-50 p-3 rounded-md border border-slate-200">
-                <p className="text-xs text-slate-500 font-semibold mb-1">Price / Rate</p>
-                <p className="text-base font-bold text-slate-900">₹ {parseFloat(selectedTxDetail?.rate || 0).toFixed(2)}</p>
+                <p className="text-xs text-slate-500 font-semibold mb-1">Pieces</p>
+                <p className="text-base font-bold text-slate-900">{selectedTxDetail?.pcs || 0} Pcs</p>
               </div>
               <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
-                <p className="text-xs text-blue-600 font-semibold mb-1">Quantity</p>
-                <p className="text-sm font-bold text-blue-900">{selectedTxDetail?.pcs || 0} Pcs</p>
-                <p className="text-xs text-blue-700 font-bold mt-0.5">{parseFloat(selectedTxDetail?.sqft || 0).toFixed(2)} Sqft</p>
+                <p className="text-xs text-blue-600 font-semibold mb-1">Square Quantity</p>
+                <p className="text-base font-bold text-blue-900">{parseFloat(selectedTxDetail?.sqft || 0).toFixed(2)} Sqft</p>
               </div>
               <div className="bg-emerald-50 p-3 rounded-md border border-emerald-200">
-                <p className="text-xs text-emerald-600 font-semibold mb-1">Rate / Unit</p>
+                <p className="text-xs text-emerald-600 font-semibold mb-1">Rate</p>
                 <p className="text-base font-bold text-emerald-900">₹ {parseFloat(selectedTxDetail?.rate || 0).toFixed(2)}</p>
               </div>
             </div>

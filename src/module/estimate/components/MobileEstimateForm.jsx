@@ -42,6 +42,8 @@ const MobileEstimateForm = ({
   displayGrandTotal,
   autoGst18,
   setSaveAction,
+  title,
+  handleRoundOffChange,
 }) => {
   return (
     <div className="sm:hidden">
@@ -54,7 +56,7 @@ const MobileEstimateForm = ({
             className="flex items-center text-blue-800"
           >
             <ArrowLeft className="h-5 w-5 mr-1" />
-            <h1 className="text-base font-bold">Add Estimate</h1>
+            <h1 className="text-base font-bold">{title || "Add Estimate"}</h1>
           </button>
           <div className="text-sm font-medium">
             Ref: <span className="font-bold">{estimateRef}</span>
@@ -464,6 +466,14 @@ const MobileEstimateForm = ({
                   id="mob_estimate_amount_round"
                   type="text"
                   {...form.register("estimate_amount_round")}
+                  onChange={(e) =>
+                    handleRoundOffChange
+                      ? handleRoundOffChange(e)
+                      : handleChargeChange(
+                          "estimate_amount_round",
+                          e.target.value,
+                        )
+                  }
                   onKeyDown={handleKeyDown}
                   className="mt-1 text-right bg-white"
                   placeholder="0"

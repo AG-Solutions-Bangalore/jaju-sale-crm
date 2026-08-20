@@ -15,11 +15,11 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
 
   const isSales = type === "sales";
   const isPurchase = type === "purchase";
-  
+
   const title = passedTitle || (
     isSales ? "Jaju's Sales Estimate" :
-    isPurchase ? "Jaju's Purchase Estimate" :
-    "Jaju's Rough Estimate"
+      isPurchase ? "Jaju's Purchase Estimate" :
+        "Jaju's Rough Estimate"
   );
 
   const rawData = isSales
@@ -27,7 +27,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
     : isPurchase
       ? data?.data || data?.purchase || data
       : data?.data || data?.estimate || data;
-      
+
   const rawSub =
     rawData?.subs ||
     (isSales ? data?.salesSub : isPurchase ? data?.purchaseSub : data?.estimateSub) ||
@@ -69,15 +69,15 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
     "Labour Charges";
   const labourValue = parseFloat(
     rawData?.sales_labour_value ||
-      rawData?.estimate_labour_value ||
-      rawData?.purchase_labour_value ||
-      rawData?.sales_loading ||
-      rawData?.estimate_loading ||
-      rawData?.purchase_loading ||
-      rawData?.sales_unloading ||
-      rawData?.estimate_unloading ||
-      rawData?.purchase_unloading ||
-      0,
+    rawData?.estimate_labour_value ||
+    rawData?.purchase_labour_value ||
+    rawData?.sales_loading ||
+    rawData?.estimate_loading ||
+    rawData?.purchase_loading ||
+    rawData?.sales_unloading ||
+    rawData?.estimate_unloading ||
+    rawData?.purchase_unloading ||
+    0,
   );
   const other =
     parseFloat(rawData?.sales_other || rawData?.estimate_other || rawData?.purchase_other || 0);
@@ -107,12 +107,11 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
           <h2 className="text-2xl font-bold tracking-wide text-gray-900">
             {title}
           </h2>
-          <p className="text-[10px] text-gray-600 mt-1 max-w-[320px] sm:max-w-md sm:text-xs">
-            #857, 80 feet Technology Road, Ganakal, BSK 6th Stage, 11th Block,
-            Bangalore
+          <p className="text-sm gray-600 mt-1 max-w-[320px] sm:max-w-md">
+            #857, 80 feet Technology Road, Ganakal <br /> BSK 6th Stage, 11th Block, Bangalore
           </p>
         </div>
-        <div className="text-right text-[10px] sm:text-xs space-y-0.5 text-gray-800">
+        <div className="text-right text-sm space-y-0.5 text-gray-800">
           <p className="font-semibold">Owner Mobile : 9742042097</p>
           <p>Pappu Kumar : 9108130362</p>
           <p>Sonu Kumar : 8696989562</p>
@@ -120,7 +119,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
       </div>
 
       {/* Meta Info */}
-      <div className="grid grid-cols-2 gap-4 mb-4 text-xs border p-3 bg-gray-50/50 rounded-lg">
+      <div className="grid grid-cols-2 gap-4 mb-4 text-sm border p-3 bg-gray-50/50 rounded-lg">
         <div className="text-left">
           <span className="font-semibold text-gray-700">
             {isSales ? "Bill No:" : isPurchase ? "JFC Bill No:" : "Estimate No:"}
@@ -136,7 +135,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
       </div>
 
       {/* Customer Info */}
-      <div className="border p-3 rounded-lg mb-4 text-xs bg-white space-y-1">
+      <div className="border p-3 rounded-lg mb-4 text-sm bg-white space-y-1">
         <div className="flex justify-between">
           <div>
             <span className="font-semibold text-gray-700">
@@ -160,7 +159,7 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
       </div>
 
       {/* Items Table */}
-      <Table className="border mb-4 text-xs w-full table-fixed">
+      <Table className="border mb-4 text-sm w-full table-fixed">
         <TableHeader className="bg-gray-100">
           <TableRow className="hover:bg-transparent border-b">
             <TableHead rowSpan={2} className="text-center font-bold text-black border-r w-[6%] align-middle">
@@ -169,10 +168,10 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
             <TableHead rowSpan={2} className="text-left font-bold text-black border-r pl-4 w-[39%] align-middle">
               Item Name
             </TableHead>
-            <TableHead colSpan={2} className="text-center font-bold text-black border-r w-[20%] py-1">
+            <TableHead colSpan={2} className="text-center font-bold text-black border-r w-[40%] py-0">
               Quantity
             </TableHead>
-            <TableHead rowSpan={2} className="text-right font-bold text-black border-r pr-4 w-[15%] align-middle">
+            <TableHead rowSpan={2} className="text-right font-bold text-black border-r pr-4 w-[10%] align-middle">
               Rate
             </TableHead>
             <TableHead rowSpan={2} className="text-right font-bold text-black pr-4 w-[20%] align-middle">
@@ -190,23 +189,23 @@ const CommonPrintTemplate = React.forwardRef(({ data, type, title: passedTitle }
         </TableHeader>
         <TableBody>
           {items.map((item, index) => (
-            <TableRow key={index} className="hover:bg-transparent border-b">
-              <TableCell className="text-center border-r py-4">
+            <TableRow key={index} className="hover:bg-transparent text-sm border-b">
+              <TableCell className="text-center border-r py-2">
                 {index + 1}
               </TableCell>
-              <TableCell className="text-left border-r pl-4 py-4 font-medium break-words whitespace-normal">
+              <TableCell className="text-left  border-r pl-4 py-2 font-medium break-words whitespace-normal">
                 {item.name}
               </TableCell>
-              <TableCell className="text-right border-r pr-4 py-4">
+              <TableCell className="text-right border-r pr-4 py-2">
                 {item.pcs || "-"}
               </TableCell>
-              <TableCell className="text-right border-r pr-4 py-4">
+              <TableCell className="text-right border-r pr-4 py-2">
                 {item.sqft || "-"}
               </TableCell>
-              <TableCell className="text-right border-r pr-4 py-4">
+              <TableCell className="text-right border-r font-semibold text-md pr-4 py-2">
                 {parseFloat(item.rate || 0).toFixed(0)}
               </TableCell>
-              <TableCell className="text-right pr-4 py-4 font-semibold">
+              <TableCell className="text-right pr-4 py-2 font-semibold">
                 {parseFloat(item.amount || 0).toFixed(0)}
               </TableCell>
             </TableRow>

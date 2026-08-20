@@ -261,14 +261,15 @@ const SingleItemStockReportPage = () => {
         runningSqft += inward_sqft;
 
         const parent = t.purchase || {};
-        const jfcNo = parent.purchase_no || t.purchase_no || t.purchase_ref || parent.purchase_ref || "-";
+        const supplierBillNo = parent.purchase_bill_no || t.purchase_bill_no || parent.purchase_no || t.purchase_no || t.purchase_ref || parent.purchase_ref || "-";
         const supplierName = parent.purchase_supplier || t.purchase_supplier || t.supplier_name || "-";
 
         return {
           type: "purchase",
           date: t.purchase_sub_date,
           reference: t.purchase_ref || parent.purchase_ref || "",
-          jfcNumber: jfcNo,
+          jfcNumber: supplierBillNo,
+          billNumber: supplierBillNo,
           customerName: supplierName,
           itemName: t.purchase_sub_item || stockItem.stock_item || "",
           pcs: inward_pcs,
@@ -301,6 +302,7 @@ const SingleItemStockReportPage = () => {
           date: t.sales_sub_date,
           reference: t.sales_ref || parent.sales_ref || "",
           jfcNumber: jfcNo,
+          billNumber: jfcNo,
           customerName: custName,
           itemName: t.sales_sub_item || stockItem.stock_item || "",
           pcs: outward_pcs,
