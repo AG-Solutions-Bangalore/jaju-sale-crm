@@ -39,7 +39,7 @@ const MobileEstimateView = ({
                 className={`sm:w-auto ${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} text-sm p-3 rounded-b-md`}
                 onClick={() =>
                   navigate(
-                    `/rough-estimate/edit/${estimateData?.estimate?.id}`
+                    `/rough-estimate/edit/${estimateData?.estimate?.id || estimateData?.data?.id || estimateData?.id}`
                   )
                 }
               >

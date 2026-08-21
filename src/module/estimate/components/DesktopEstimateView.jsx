@@ -36,7 +36,7 @@ const DesktopEstimateView = ({
                 size="sm"
                 onClick={() =>
                   navigate(
-                    `/rough-estimate/edit/${estimateData?.estimate?.id}`
+                    `/rough-estimate/edit/${estimateData?.estimate?.id || estimateData?.data?.id || estimateData?.id}`
                   )
                 }
               >

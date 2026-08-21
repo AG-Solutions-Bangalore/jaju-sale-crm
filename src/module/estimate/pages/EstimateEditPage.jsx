@@ -181,6 +181,30 @@ const EstimateEditPage = () => {
   }, [estimateData, dataLoaded, currentYear, form]);
 
   useEffect(() => {
+    const est = estimateData?.data || estimateData?.estimate || estimateData || {};
+    const subs = est?.subs || estimateData?.estimateSub || [];
+    if (subs.length > 0 && product && product.length > 0) {
+      const newIsCustomItem = {};
+      const newCustomItems = {};
+      subs.forEach((sub, index) => {
+        const itemName = sub.estimate_sub_item || "";
+        if (itemName) {
+          const exists = product.some((item) => {
+            const name = item.item_name || item.product_type_group || item.product_type;
+            return name === itemName;
+          });
+          if (!exists) {
+            newIsCustomItem[index] = true;
+            newCustomItems[index] = itemName;
+          }
+        }
+      });
+      setIsCustomItem(newIsCustomItem);
+      setCustomItems(newCustomItems);
+    }
+  }, [estimateData, product]);
+
+  useEffect(() => {
     if (currentYear && !form.getValues("estimate_year")) {
       form.setValue("estimate_year", currentYear);
     }
@@ -462,6 +486,7 @@ const EstimateEditPage = () => {
     addItemEntry,
     removeItemEntry,
     handleChargeChange,
+    handleRoundOffChange,
     handleCancel,
     handleFormSubmit,
     estimateRef,
@@ -477,6 +502,7 @@ const EstimateEditPage = () => {
     amountToBeCollected,
     displayGrandTotal,
     autoGst18,
+    title: "Edit Rough Estimate",
     setSaveAction: (action) => { saveActionRef.current = action; },
   };
 

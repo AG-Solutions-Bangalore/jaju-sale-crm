@@ -43,6 +43,8 @@ const DesktopEstimateForm = ({
   amountToBeCollected = 0,
   displayGrandTotal = 0,
   setSaveAction,
+  title,
+  handleRoundOffChange,
 }) => {
   return (
     <div className="hidden sm:block">
@@ -59,7 +61,7 @@ const DesktopEstimateForm = ({
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <CardTitle>Add Estimate</CardTitle>
+              <CardTitle>{title || "Add Estimate"}</CardTitle>
             </div>
             <div className="text-sm font-medium">
               Estimate Ref: <span className="font-bold">{estimateRef}</span>
@@ -540,10 +542,12 @@ const DesktopEstimateForm = ({
                     type="text"
                     {...form.register("estimate_amount_round")}
                     onChange={(e) =>
-                      handleChargeChange(
-                        "estimate_amount_round",
-                        e.target.value,
-                      )
+                      handleRoundOffChange
+                        ? handleRoundOffChange(e)
+                        : handleChargeChange(
+                            "estimate_amount_round",
+                            e.target.value,
+                          )
                     }
                     placeholder="0"
                   />

@@ -246,7 +246,7 @@ const MobileSingleItemStockReport = ({
             <table className="w-full border-collapse text-[10px]">
               <thead>
                 <tr className="bg-gray-100 border-b border-gray-200">
-                  <th className="text-left font-bold border-r p-1.5 text-gray-700 min-w-20">JFC NUMBER</th>
+                  <th className="text-left font-bold border-r p-1.5 text-gray-700 min-w-20">BILL NUMBER</th>
                   <th className="text-left font-bold border-r p-1.5 text-gray-700 min-w-24">CUSTOMER NAME</th>
                   <th className="text-right font-bold border-r p-1.5 text-green-800 bg-green-50/30">IN (pcs)</th>
                   <th className="text-right font-bold border-r p-1.5 text-green-800 bg-green-50/30">IN (sqft)</th>
@@ -335,7 +335,7 @@ const MobileSingleItemStockReport = ({
             <DialogTitle className="text-sm font-bold text-gray-900 flex justify-between items-center pr-4">
               <span>{selectedTxDetail?.type === "purchase" ? "Purchase Product Detail" : "Sales Product Detail"}</span>
               <span className="text-[11px] px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full font-mono font-semibold">
-                JFC #{selectedTxDetail?.jfcNumber}
+                {selectedTxDetail?.type === "purchase" ? "Supplier Bill #" : "Bill #"}{selectedTxDetail?.billNumber || selectedTxDetail?.jfcNumber}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -345,23 +345,22 @@ const MobileSingleItemStockReport = ({
               <p className="font-bold text-gray-800 text-xs mt-0.5">{selectedTxDetail?.itemName || selectedItem}</p>
               {selectedTxDetail?.customerName && selectedTxDetail?.customerName !== "-" && (
                 <p className="text-[11px] text-gray-600 mt-1">
-                  <span className="font-semibold text-gray-700">Party:</span> {selectedTxDetail?.customerName}
+                  <span className="font-semibold text-gray-700">{selectedTxDetail?.type === "purchase" ? "Supplier:" : "Customer:"}</span> {selectedTxDetail?.customerName}
                 </p>
               )}
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-slate-50 p-2 rounded-md border border-slate-200">
-                <p className="text-[10px] text-slate-500 font-semibold mb-0.5">Price / Rate</p>
-                <p className="text-xs font-bold text-slate-900">₹ {parseFloat(selectedTxDetail?.rate || 0).toFixed(2)}</p>
+                <p className="text-[10px] text-slate-500 font-semibold mb-0.5">Pieces</p>
+                <p className="text-xs font-bold text-slate-900">{selectedTxDetail?.pcs || 0} Pcs</p>
               </div>
               <div className="bg-blue-50 p-2 rounded-md border border-blue-200">
-                <p className="text-[10px] text-blue-600 font-semibold mb-0.5">Quantity</p>
-                <p className="text-xs font-bold text-blue-900">{selectedTxDetail?.pcs || 0} Pcs</p>
-                <p className="text-[10px] text-blue-700 font-bold">{parseFloat(selectedTxDetail?.sqft || 0).toFixed(2)} Sqft</p>
+                <p className="text-[10px] text-blue-600 font-semibold mb-0.5">Square Quantity</p>
+                <p className="text-xs font-bold text-blue-900">{parseFloat(selectedTxDetail?.sqft || 0).toFixed(2)} Sqft</p>
               </div>
               <div className="bg-emerald-50 p-2 rounded-md border border-emerald-200">
-                <p className="text-[10px] text-emerald-600 font-semibold mb-0.5">Rate / Unit</p>
+                <p className="text-[10px] text-emerald-600 font-semibold mb-0.5">Rate</p>
                 <p className="text-xs font-bold text-emerald-900">₹ {parseFloat(selectedTxDetail?.rate || 0).toFixed(2)}</p>
               </div>
             </div>
