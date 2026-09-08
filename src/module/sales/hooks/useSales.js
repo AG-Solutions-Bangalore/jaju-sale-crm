@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchSalesList,
@@ -14,56 +15,205 @@ import {
   deleteSales,
 } from "../api/sales";
 import { useToast } from "@/hooks/use-toast";
+import { runProgressivePaginationFetch } from "@/utils/paginationFetcher";
+
+const STALE_TIME = 1000 * 60 * 10; // 10 minutes cache validity
 
 export const useSalesList = () => {
-  return useQuery({
-    queryKey: ["sales"],
-    queryFn: async () => {
-      const first = await fetchSalesList();
-      const rawData = first?.data;
-      const raw = rawData?.data;
-      
-      let salesData = [];
-      let pagination = null;
-      
-      if (raw && raw.data && raw.last_page && raw.last_page > 1) {
-        const pages = [raw.data];
-        for (let p = 2; p <= raw.last_page; p++) {
-          const res = await fetchSalesList(p);
-          const d = res?.data?.data;
-          if (Array.isArray(d?.data)) pages.push(d.data);
-        }
-        salesData = pages.flat();
-        pagination = {
-          current_page: 1,
-          last_page: 1,
-          per_page: salesData.length,
-          total: salesData.length,
-        };
-      } else {
-        if (rawData?.data && Array.isArray(rawData.data.data)) {
-          salesData = rawData.data.data;
-          pagination = {
-            current_page: rawData.data.current_page,
-            last_page: rawData.data.last_page,
-            per_page: rawData.data.per_page,
-            total: rawData.data.total,
-          };
-        } else if (Array.isArray(rawData?.sales)) {
-          salesData = rawData.sales;
-        } else if (Array.isArray(rawData?.data)) {
-          salesData = rawData.data;
-        } else if (Array.isArray(rawData)) {
-          salesData = rawData;
-        }
-      }
-      
-      return {
-        sales: salesData,
-        pagination,
-      };
-    },
+  const queryClient = useQueryClient();
+
+  const getCachedSales = useCallback(() => {
+    const cached = queryClient.getQueryData(["sales"]);
+    const state = queryClient.getQueryState(["sales"]);
+    const isFresh = Boolean(state && Date.now() - state.dataUpdatedAt < STALE_TIME && !state.isInvalidated);
+    const hasData = Boolean(Array.isArray(cached?.sales) && cached.sales.length > 0);
+    const isAllLoaded = Boolean(cached?.isAllDataLoaded);
+    return { cached, isFresh, hasData, isAllLoaded };
+  }, [queryClient]);
+
+  const [data, setData] = useState(() => {
+    const { cached, hasData } = getCachedSales();
+    return hasData ? cached : { sales: [], pagination: null };
   });
+
+  const [isLoading, setIsLoading] = useState(() => {
+    const { hasData } = getCachedSales();
+    return !hasData;
+  });
+
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState(null);
+  const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
+
+  const [isAllDataLoaded, setIsAllDataLoaded] = useState(() => {
+    const { isFresh, isAllLoaded } = getCachedSales();
+    return isFresh && isAllLoaded;
+  });
+
+  const [loadedCount, setLoadedCount] = useState(() => {
+    const { cached } = getCachedSales();
+    return cached?.sales?.length || 0;
+  });
+
+  const [totalCount, setTotalCount] = useState(() => {
+    const { cached } = getCachedSales();
+    return cached?.pagination?.total || cached?.sales?.length || 0;
+  });
+
+  const abortControllerRef = useRef(null);
+  const fetchCycleRef = useRef(0);
+
+  const extractSalesPageData = useCallback((res) => {
+    const rawData = res?.data;
+    const raw = rawData?.data;
+
+    let records = [];
+    let lastPage = 1;
+    let total = 0;
+    let currentPage = 1;
+
+    if (raw && Array.isArray(raw.data)) {
+      records = raw.data;
+      lastPage = raw.last_page || 1;
+      total = raw.total || records.length;
+      currentPage = raw.current_page || 1;
+    } else if (rawData?.data && Array.isArray(rawData.data.data)) {
+      records = rawData.data.data;
+      lastPage = rawData.data.last_page || 1;
+      total = rawData.data.total || records.length;
+      currentPage = rawData.data.current_page || 1;
+    } else if (Array.isArray(rawData?.sales)) {
+      records = rawData.sales;
+      total = rawData.sales.length;
+    } else if (Array.isArray(rawData?.data)) {
+      records = rawData.data;
+      total = rawData.data.length;
+    } else if (Array.isArray(rawData)) {
+      records = rawData;
+      total = rawData.length;
+    }
+
+    return { records, lastPage, total, currentPage };
+  }, []);
+
+  const startFetch = useCallback((force = false) => {
+    if (!force) {
+      const { cached, isFresh, hasData, isAllLoaded } = getCachedSales();
+      if (hasData && isFresh && isAllLoaded) {
+        // Data is already completely cached and fresh - skip all network requests!
+        setData(cached);
+        setIsLoading(false);
+        setIsBackgroundLoading(false);
+        setIsAllDataLoaded(true);
+        setLoadedCount(cached.sales.length);
+        setTotalCount(cached.pagination?.total || cached.sales.length);
+        return;
+      }
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const currentCycle = ++fetchCycleRef.current;
+
+    setIsError(false);
+    setError(null);
+    setIsAllDataLoaded(false);
+
+    const { hasData } = getCachedSales();
+    if (!hasData) {
+      setIsLoading(true);
+    }
+
+    runProgressivePaginationFetch({
+      fetchPage: (page, signal) => fetchSalesList(page, signal),
+      extractPageData: extractSalesPageData,
+      onInitialReady: ({ records, pagination, lastPage, total }) => {
+        if (currentCycle !== fetchCycleRef.current) return;
+        const isDone = lastPage <= 1;
+        const payload = { sales: records, pagination, isAllDataLoaded: isDone };
+        setData(payload);
+        queryClient.setQueryData(["sales"], payload);
+        setIsLoading(false);
+        setLoadedCount(records.length);
+        setTotalCount(total);
+        if (lastPage > 1) {
+          setIsBackgroundLoading(true);
+        } else {
+          setIsBackgroundLoading(false);
+          setIsAllDataLoaded(true);
+        }
+      },
+      onProgress: ({ records, loadedCount: lCount, totalCount: tCount, isComplete }) => {
+        if (currentCycle !== fetchCycleRef.current) return;
+        setData((prev) => {
+          const payload = {
+            sales: records,
+            pagination: prev?.pagination
+              ? { ...prev.pagination, total: tCount || records.length }
+              : { current_page: 1, last_page: 1, per_page: records.length, total: tCount || records.length },
+            isAllDataLoaded: isComplete,
+          };
+          queryClient.setQueryData(["sales"], payload);
+          return payload;
+        });
+        setLoadedCount(lCount);
+        setTotalCount(tCount);
+        if (isComplete) {
+          setIsBackgroundLoading(false);
+          setIsAllDataLoaded(true);
+        } else {
+          setIsBackgroundLoading(true);
+        }
+      },
+      onError: (err) => {
+        if (currentCycle !== fetchCycleRef.current) return;
+        setIsError(true);
+        setError(err);
+        setIsLoading(false);
+        setIsBackgroundLoading(false);
+      },
+      signal: controller.signal,
+      concurrency: 5,
+    });
+  }, [getCachedSales, queryClient, extractSalesPageData]);
+
+  useEffect(() => {
+    startFetch(false);
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [startFetch]);
+
+  // Listen for query invalidation triggered by mutations (createSalesDirect, updateSalesDirect, deleteSales)
+  useEffect(() => {
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (
+        event?.type === "updated" &&
+        event.query?.queryKey?.[0] === "sales" &&
+        event.action?.type === "invalidate"
+      ) {
+        startFetch(true); // Force refetch when cache is invalidated!
+      }
+    });
+    return () => unsubscribe();
+  }, [queryClient, startFetch]);
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch: () => startFetch(true),
+    isBackgroundLoading,
+    isAllDataLoaded,
+    loadedCount,
+    totalCount,
+  };
 };
 
 export const useCurrentYear = () => {

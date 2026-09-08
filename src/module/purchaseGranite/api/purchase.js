@@ -1,7 +1,7 @@
 import axiosInstance from "@/api/axios";
 
-export const fetchPurchaseList = (page = 1) => {
-  return axiosInstance.get(`/api/purchase?page=${page}`);
+export const fetchPurchaseList = (page = 1, signal) => {
+  return axiosInstance.get(`/api/purchase?page=${page}`, { signal });
 };
 
 export const fetchPurchaseReport = (data) => {

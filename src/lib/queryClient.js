@@ -1,7 +1,17 @@
 import { QueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Prevents refetching every time user switches browser tabs!
+      refetchOnReconnect: false,
+      staleTime: 1000 * 60 * 10,   // 10 minutes cache freshness
+      gcTime: 1000 * 60 * 60,      // 1 hour memory cache retention
+      retry: 1,
+    },
+  },
+});
 
 export const logoutUser = () => {
   // Clear all cookies
