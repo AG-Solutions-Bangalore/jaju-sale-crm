@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Edit,
   Eye,
+  Loader2,
   Search,
   SquarePlus,
   Trash2,
@@ -67,6 +68,10 @@ const PurchaseListPage = () => {
     isLoading,
     isError,
     refetch,
+    isBackgroundLoading,
+    isAllDataLoaded,
+    loadedCount,
+    totalCount,
   } = usePurchaseList();
 
   const [sorting, setSorting] = useState([]);
@@ -389,7 +394,15 @@ const PurchaseListPage = () => {
           >
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center px-2 py-2">
-                <h1 className="text-base font-bold text-gray-800">Purchase Estimate List</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base font-bold text-gray-800">Purchase Estimate List</h1>
+                  {isBackgroundLoading && (
+                    <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 flex items-center gap-1 font-normal">
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                      Syncing {loadedCount}/{totalCount || "..."}
+                    </span>
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
@@ -562,8 +575,16 @@ const PurchaseListPage = () => {
 
         {/* Desktop View */}
         <div className="hidden sm:block">
-          <div className="flex text-left text-2xl text-gray-800 font-[400]">
-            Purchase Estimate List
+          <div className="flex items-center gap-3">
+            <div className="text-left text-2xl text-gray-800 font-[400]">
+              Purchase Estimate List
+            </div>
+            {isBackgroundLoading && (
+              <span className="text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                Syncing all records ({loadedCount}/{totalCount || "..."})...
+              </span>
+            )}
           </div>
 
           <div className="flex flex-col md:flex-row md:items-center py-4 gap-2">
