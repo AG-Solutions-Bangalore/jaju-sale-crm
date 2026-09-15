@@ -7,8 +7,6 @@ import { Navigate, Outlet } from "react-router-dom";
 const ProtectedRoute = () => {
   const { data: authData, isLoading } = useAuth();
   const user = authData?.user;
-   
-  console.log("ProtectedRoute auth check:", { isLoading, hasUser: !!user, user });
 
   if (isLoading) {
     return <DashboardSkeleton />;

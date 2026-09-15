@@ -156,7 +156,7 @@ const EstimateEditPage = () => {
           estimate_sub_item: sub.estimate_sub_item || "",
           estimate_sub_qnty: sub.estimate_sub_qnty || sub.estimate_sub_pcs || "",
           estimate_sub_qnty_sqr: sub.estimate_sub_qnty_sqr || "",
-          estimate_sub_pcs: sub.estimate_sub_pcs || "",
+          estimate_sub_pcs: sub.estimate_sub_pcs || sub.estimate_sub_qnty || "",
           estimate_sub_rate: formatToInteger(sub.estimate_sub_rate),
           estimate_sub_amount: formatToInteger(sub.estimate_sub_amount),
         }));
@@ -351,11 +351,13 @@ const EstimateEditPage = () => {
         : isNaN(entry.estimate_sub_qnty_sqr)
         ? "Quantity (sqr) must be a number"
         : "",
-      pcs: !entry.estimate_sub_pcs
-        ? "required"
-        : isNaN(entry.estimate_sub_pcs)
-        ? "Pcs must be a number"
-        : "",
+      // pcs field is hidden in the form (commented out in Desktop/MobileEstimateForm)
+      // so do not require it here — keep in sync with EstimateAddPage.jsx
+      // pcs: !entry.estimate_sub_pcs
+      //   ? "required"
+      //   : isNaN(entry.estimate_sub_pcs)
+      //   ? "Pcs must be a number"
+      //   : "",
       rate: !entry.estimate_sub_rate
         ? "required"
         : isNaN(entry.estimate_sub_rate)
@@ -380,15 +382,165 @@ const EstimateEditPage = () => {
       validateForm(formData);
 
     if (hasFormErrors || hasItemErrors) {
+      // ---- Debug: show exactly what failed in console ----
+      console.groupCollapsed(
+        "%cEstimate Edit Validation Failed",
+        "color:red;font-weight:bold"
+      );
+      console.log("Form values:", formData);
+      console.log("Item entries:", itemEntries);
+      console.log("Custom items:", customItems, "isCustomItem:", isCustomItem);
+      console.log("Form errors:", formErrors);
+      console.log("Item errors:", itemErrors);
+      // Row-by-row table: value vs error
+      console.table(
+        itemEntries.map((entry, i) => ({
+          row: i + 1,
+          item_value: isCustomItem[i]
+            ? customItems[i] || "(empty custom)"
+            : entry.estimate_sub_item || "(empty)",
+          item_error: itemErrors[i]?.item || "-",
+          qnty_value: entry.estimate_sub_qnty || "(empty)",
+          qnty_error: itemErrors[i]?.qnty || "-",
+          sqr_value: entry.estimate_sub_qnty_sqr || "(empty)",
+          sqr_error: itemErrors[i]?.qntySqr || "-",
+          rate_value: entry.estimate_sub_rate || "(empty)",
+          rate_error: itemErrors[i]?.rate || "-",
+        }))
+      );
+      console.groupEnd();
+
       toast({
         title: "Validation Errors",
-        description: "Please fill in all required fields",
+        description: (
+          <div className="w-full space-y-3 text-xs max-h-[60vh] overflow-y-auto">
+            {hasFormErrors && (
+              <div className="w-full">
+                <div className="font-medium mb-2 text-white">Form Errors</div>
+                <div className="w-full">
+                  <table className="w-full border-collapse border border-red-200 rounded-md">
+                    <thead>
+                      <tr className="bg-red-50 text-red-800">
+                        <th className="px-2 py-1.5 text-left text-xs font-medium border-b border-red-200">
+                          Field
+                        </th>
+                        <th className="px-2 py-1.5 text-left text-xs font-medium border-b border-red-200">
+                          Error
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {formErrors.date && (
+                        <tr className="bg-white text-gray-700">
+                          <td className="px-2 py-1.5 border-b border-gray-200 font-medium">
+                            Date (value: "{formData.estimate_date || "empty"}")
+                          </td>
+                          <td className="px-2 py-1.5 text-red-600 border-b border-gray-200">
+                            {formErrors.date}
+                          </td>
+                        </tr>
+                      )}
+                      {formErrors.customer && (
+                        <tr className="bg-white text-gray-700">
+                          <td className="px-2 py-1.5 border-b border-gray-200 font-medium">
+                            Customer (value: "{formData.estimate_customer || "empty"}")
+                          </td>
+                          <td className="px-2 py-1.5 text-red-600 border-b border-gray-200">
+                            {formErrors.customer}
+                          </td>
+                        </tr>
+                      )}
+                      {formErrors.mobile && (
+                        <tr className="bg-white text-gray-700">
+                          <td className="px-2 py-1.5 border-b border-gray-200 font-medium">
+                            Mobile No (value: "{formData.estimate_mobile || "empty"}")
+                          </td>
+                          <td className="px-2 py-1.5 text-red-600 border-b border-gray-200">
+                            {formErrors.mobile}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {hasItemErrors && (
+              <div className="w-full">
+                <div className="font-medium mb-2 text-white">
+                  Item Errors (check console for values)
+                </div>
+                <div className="w-full">
+                  <table className="w-full border-collapse border border-red-200 rounded-md">
+                    <thead>
+                      <tr className="bg-red-50 text-red-800">
+                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200 w-8">
+                          #
+                        </th>
+                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
+                          Item
+                        </th>
+                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
+                          Qty (pcs/box)
+                        </th>
+                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
+                          Qty (sqr)
+                        </th>
+                        <th className="px-1.5 py-1.5 text-left text-xs font-medium border-b border-red-200">
+                          Rate
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {itemErrors.map(
+                        (error, i) =>
+                          (error.item ||
+                            error.qnty ||
+                            error.qntySqr ||
+                            error.rate) && (
+                            <tr key={i} className="bg-white text-gray-700">
+                              <td className="px-1.5 py-1.5 text-center border-b border-gray-200 font-medium">
+                                {i + 1}
+                              </td>
+                              <td className="px-1.5 py-1.5 text-red-600 border-b border-gray-200">
+                                {error.item
+                                  ? `${error.item} (value: "${isCustomItem[i] ? customItems[i] || "empty" : itemEntries[i]?.estimate_sub_item || "empty"}")`
+                                  : ""}
+                              </td>
+                              <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
+                                {error.qnty
+                                  ? `${error.qnty} (value: "${itemEntries[i]?.estimate_sub_qnty || "empty"}")`
+                                  : ""}
+                              </td>
+                              <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
+                                {error.qntySqr
+                                  ? `${error.qntySqr} (value: "${itemEntries[i]?.estimate_sub_qnty_sqr || "empty"}")`
+                                  : ""}
+                              </td>
+                              <td className="px-1.5 py-1.5 text-red-600 text-right border-b border-gray-200">
+                                {error.rate
+                                  ? `${error.rate} (value: "${itemEntries[i]?.estimate_sub_rate || "empty"}")`
+                                  : ""}
+                              </td>
+                            </tr>
+                          )
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        ),
         variant: "destructive",
         duration: 10000,
       });
       setIsSubmitting(false);
       return;
     }
+
+    console.log("Estimate Edit Validation Passed", { formData, itemEntries });
 
     await onSubmit(formData);
   };
