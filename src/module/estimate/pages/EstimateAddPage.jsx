@@ -140,7 +140,7 @@ const EstimateAddPage = () => {
     calculateAndSetTotals(updatedEntries);
   };
 
-  const calculateAndSetTotals = (entries, skipGst = false) => {
+  const calculateAndSetTotals = (entries, skipGst = false, currentLoadingType = loadingType) => {
     const itemsTotal = entries.reduce(
       (sum, entry) => sum + (parseFloat(entry.estimate_sub_amount) || 0),
       0
@@ -148,10 +148,12 @@ const EstimateAddPage = () => {
     const tempo = parseFloat(form.getValues("estimate_tempo") || 0);
     const loading = parseFloat(form.getValues("estimate_loading") || 0);
     const unloading = parseFloat(form.getValues("estimate_unloading") || 0);
+    const activeType = currentLoadingType || loadingType;
+    const labour = activeType === "Loading & Unloading" ? unloading : loading;
     const other = parseFloat(form.getValues("estimate_other") || 0);
     const other1 = parseFloat(form.getValues("estimate_other1") || 0);
 
-    const grandTotal = itemsTotal + tempo + loading + unloading + other + other1;
+    const grandTotal = itemsTotal + tempo + labour + other + other1;
     setAutoGst18(grandTotal * 0.18);
 
     if (!skipGst && !gstEdited) {
@@ -184,7 +186,6 @@ const EstimateAddPage = () => {
     if (value === "" || value === "-" || value === "-." || value === ".") {
       form.setValue("estimate_amount_round", value);
       const netTotal = parseFloat(form.getValues("estimate_temp_amount") || 0);
-      form.setValue("estimate_gross", netTotal.toString());
       form.setValue("estimate_amount", netTotal.toString());
       return;
     }
@@ -195,7 +196,6 @@ const EstimateAddPage = () => {
 
       const netTotal = parseFloat(form.getValues("estimate_temp_amount") || 0);
       const finalAmount = netTotal + roundOffVal;
-      form.setValue("estimate_gross", netTotal.toString());
       form.setValue("estimate_amount", finalAmount.toString());
     }
   };
@@ -439,10 +439,11 @@ const EstimateAddPage = () => {
       const tempo = parseFloat(data.estimate_tempo) || 0;
       const loading = parseFloat(data.estimate_loading) || 0;
       const unloading = parseFloat(data.estimate_unloading) || 0;
+      const labour = loadingType === "Loading & Unloading" ? unloading : loading;
       const other = parseFloat(data.estimate_other) || 0;
       const other1 = parseFloat(data.estimate_other1) || 0;
 
-      const grandTotal = itemsTotal + tempo + loading + unloading + other + other1;
+      const grandTotal = itemsTotal + tempo + labour + other + other1;
       const gstAmount = parseFloat(data.estimate_tax) || 0;
       const netTotal = grandTotal + gstAmount;
       const roundOff = parseFloat(data.estimate_amount_round) || 0;
@@ -456,7 +457,7 @@ const EstimateAddPage = () => {
         estimate_tax: gstAmount.toString(),
         estimate_tempo: tempo.toString(),
         estimate_labour_label: loadingType || data.estimate_labour_label || "Labour Charges",
-        estimate_labour_value: (loading + unloading).toString(),
+        estimate_labour_value: labour.toString(),
         estimate_other_label: data.estimate_other_label || "Other Charges",
         estimate_other: other.toString(),
         estimate_other1_label: data.estimate_other1_label || "Other Charges 1",
@@ -500,15 +501,20 @@ const EstimateAddPage = () => {
     navigate("/rough-estimate");
   };
 
-  const displayGrandTotal = itemEntries.reduce(
-    (sum, entry) => sum + (parseFloat(entry.estimate_sub_amount) || 0),
-    0
-  ) +
-  (parseFloat(form.watch("estimate_tempo")) || 0) +
-  (parseFloat(form.watch("estimate_loading")) || 0) +
-  (parseFloat(form.watch("estimate_unloading")) || 0) +
-  (parseFloat(form.watch("estimate_other")) || 0) +
-  (parseFloat(form.watch("estimate_other1")) || 0);
+  const displayLabour =
+    loadingType === "Loading & Unloading"
+      ? parseFloat(form.watch("estimate_unloading")) || 0
+      : parseFloat(form.watch("estimate_loading")) || 0;
+
+  const displayGrandTotal =
+    itemEntries.reduce(
+      (sum, entry) => sum + (parseFloat(entry.estimate_sub_amount) || 0),
+      0
+    ) +
+    (parseFloat(form.watch("estimate_tempo")) || 0) +
+    displayLabour +
+    (parseFloat(form.watch("estimate_other")) || 0) +
+    (parseFloat(form.watch("estimate_other1")) || 0);
 
   const displayGst = parseFloat(form.watch("estimate_tax")) || 0;
   const displayNetTotal = displayGrandTotal + displayGst;
@@ -537,7 +543,8 @@ const EstimateAddPage = () => {
     handleToggleCustomItem,
     amountToBeCollected,
     displayGrandTotal,
-    autoGst18,
+    displayNetTotal,
+    autoGst18: Math.round(displayGrandTotal * 0.18),
     setSaveAction: (action) => { saveActionRef.current = action; },
   };
 

@@ -126,6 +126,14 @@ const EstimateEditPage = () => {
         return isNaN(parsed) ? "" : parsed.toFixed(2);
       };
 
+      const labourLabel = est.estimate_labour_label || "Loading Only";
+      const isUnloading =
+        labourLabel === "Loading & Unloading" ||
+        (est.estimate_unloading && parseFloat(est.estimate_unloading) > 0);
+      const labourVal = formatToInteger(
+        est.estimate_labour_value || est.estimate_loading || est.estimate_unloading
+      );
+
       form.setValue("estimate_date", est.estimate_date ? moment(est.estimate_date).format("YYYY-MM-DD") : "");
       form.setValue("estimate_year", est.estimate_year || currentYear || "");
       form.setValue("estimate_customer", est.estimate_customer || "");
@@ -133,8 +141,8 @@ const EstimateEditPage = () => {
       form.setValue("estimate_mobile", est.estimate_mobile || "");
       form.setValue("estimate_tax", formatToDecimal(est.estimate_tax));
       form.setValue("estimate_tempo", formatToInteger(est.estimate_tempo));
-      form.setValue("estimate_loading", formatToInteger(est.estimate_labour_value));
-      form.setValue("estimate_unloading", "");
+      form.setValue("estimate_loading", isUnloading ? "" : labourVal);
+      form.setValue("estimate_unloading", isUnloading ? labourVal : "");
       form.setValue("estimate_other_label", est.estimate_other_label || "");
       form.setValue("estimate_other", formatToInteger(est.estimate_other));
       form.setValue("estimate_other1_label", est.estimate_other1_label || "");
@@ -146,9 +154,7 @@ const EstimateEditPage = () => {
       form.setValue("estimate_temp_amount", formatToDecimal(est.estimate_net_total || est.estimate_temp_amount));
       form.setValue("estimate_amount_round", formatToDecimal(est.estimate_amount_round));
 
-      if (est.estimate_labour_label) {
-        setLoadingType(est.estimate_labour_label);
-      }
+      setLoadingType(labourLabel);
 
       if (subs.length > 0) {
         const mappedSubs = subs.map((sub) => ({
@@ -163,7 +169,7 @@ const EstimateEditPage = () => {
         setItemEntries(mappedSubs);
         setGstEdited(true);
         setTimeout(() => {
-          calculateAndSetTotals(mappedSubs, true);
+          calculateAndSetTotals(mappedSubs, true, labourLabel);
         }, 100);
       } else {
         setItemEntries([{
@@ -230,7 +236,7 @@ const EstimateEditPage = () => {
     calculateAndSetTotals(updatedEntries);
   };
 
-  const calculateAndSetTotals = (entries, skipGst = false) => {
+  const calculateAndSetTotals = (entries, skipGst = false, currentLoadingType = loadingType) => {
     const itemsTotal = entries.reduce(
       (sum, entry) => sum + (parseFloat(entry.estimate_sub_amount) || 0),
       0
@@ -238,10 +244,12 @@ const EstimateEditPage = () => {
     const tempo = parseFloat(form.getValues("estimate_tempo") || 0);
     const loading = parseFloat(form.getValues("estimate_loading") || 0);
     const unloading = parseFloat(form.getValues("estimate_unloading") || 0);
+    const activeType = currentLoadingType || loadingType;
+    const labour = activeType === "Loading & Unloading" ? unloading : loading;
     const other = parseFloat(form.getValues("estimate_other") || 0);
     const other1 = parseFloat(form.getValues("estimate_other1") || 0);
 
-    const grandTotal = itemsTotal + tempo + loading + unloading + other + other1;
+    const grandTotal = itemsTotal + tempo + labour + other + other1;
     setAutoGst18(grandTotal * 0.18);
 
     if (!skipGst && !gstEdited) {
@@ -274,7 +282,6 @@ const EstimateEditPage = () => {
     if (value === "" || value === "-" || value === "-." || value === ".") {
       form.setValue("estimate_amount_round", value);
       const netTotal = parseFloat(form.getValues("estimate_temp_amount") || 0);
-      form.setValue("estimate_gross", netTotal.toString());
       form.setValue("estimate_amount", netTotal.toString());
       return;
     }
@@ -285,7 +292,6 @@ const EstimateEditPage = () => {
 
       const netTotal = parseFloat(form.getValues("estimate_temp_amount") || 0);
       const finalAmount = netTotal + roundOffVal;
-      form.setValue("estimate_gross", netTotal.toString());
       form.setValue("estimate_amount", finalAmount.toString());
     }
   };
@@ -554,10 +560,11 @@ const EstimateEditPage = () => {
       const tempo = parseFloat(data.estimate_tempo) || 0;
       const loading = parseFloat(data.estimate_loading) || 0;
       const unloading = parseFloat(data.estimate_unloading) || 0;
+      const labour = loadingType === "Loading & Unloading" ? unloading : loading;
       const other = parseFloat(data.estimate_other) || 0;
       const other1 = parseFloat(data.estimate_other1) || 0;
 
-      const grandTotal = itemsTotal + tempo + loading + unloading + other + other1;
+      const grandTotal = itemsTotal + tempo + labour + other + other1;
       const gstAmount = parseFloat(data.estimate_tax) || 0;
       const netTotal = grandTotal + gstAmount;
       const roundOff = parseFloat(data.estimate_amount_round) || 0;
@@ -571,7 +578,7 @@ const EstimateEditPage = () => {
         estimate_tax: gstAmount.toString(),
         estimate_tempo: tempo.toString(),
         estimate_labour_label: loadingType || data.estimate_labour_label || "Labour Charges",
-        estimate_labour_value: (loading + unloading).toString(),
+        estimate_labour_value: labour.toString(),
         estimate_other_label: data.estimate_other_label || "Other Charges",
         estimate_other: other.toString(),
         estimate_other1_label: data.estimate_other1_label || "Other Charges 1",
@@ -614,15 +621,20 @@ const EstimateEditPage = () => {
     navigate("/rough-estimate");
   };
 
-  const displayGrandTotal = itemEntries.reduce(
-    (sum, entry) => sum + (parseFloat(entry.estimate_sub_amount) || 0),
-    0
-  ) +
-  (parseFloat(form.watch("estimate_tempo")) || 0) +
-  (parseFloat(form.watch("estimate_loading")) || 0) +
-  (parseFloat(form.watch("estimate_unloading")) || 0) +
-  (parseFloat(form.watch("estimate_other")) || 0) +
-  (parseFloat(form.watch("estimate_other1")) || 0);
+  const displayLabour =
+    loadingType === "Loading & Unloading"
+      ? parseFloat(form.watch("estimate_unloading")) || 0
+      : parseFloat(form.watch("estimate_loading")) || 0;
+
+  const displayGrandTotal =
+    itemEntries.reduce(
+      (sum, entry) => sum + (parseFloat(entry.estimate_sub_amount) || 0),
+      0
+    ) +
+    (parseFloat(form.watch("estimate_tempo")) || 0) +
+    displayLabour +
+    (parseFloat(form.watch("estimate_other")) || 0) +
+    (parseFloat(form.watch("estimate_other1")) || 0);
 
   const displayGst = parseFloat(form.watch("estimate_tax")) || 0;
   const displayNetTotal = displayGrandTotal + displayGst;
@@ -653,7 +665,8 @@ const EstimateEditPage = () => {
     handleToggleCustomItem,
     amountToBeCollected,
     displayGrandTotal,
-    autoGst18,
+    displayNetTotal,
+    autoGst18: Math.round(displayGrandTotal * 0.18),
     title: "Edit Rough Estimate",
     setSaveAction: (action) => { saveActionRef.current = action; },
   };

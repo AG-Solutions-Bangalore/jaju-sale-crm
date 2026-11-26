@@ -42,6 +42,7 @@ const DesktopEstimateForm = ({
   autoGst18 = 0,
   amountToBeCollected = 0,
   displayGrandTotal = 0,
+  displayNetTotal = 0,
   setSaveAction,
   title,
   handleRoundOffChange,
@@ -325,20 +326,17 @@ const DesktopEstimateForm = ({
 
             {/* Charges and Totals */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Spacer container to match layout */}
-              <div className="border-none rounded-lg p-3 bg-white"></div>
-
-              {/* Totals and Charges */}
+              {/* Totals and Charges - Left side */}
               <div className="border rounded-lg p-3 bg-white space-y-2">
                 {/* Tempo Charges */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="w-[305px] shrink-0 flex items-center">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center">
                     <Label className="font-medium" htmlFor="estimate_tempo">
                       Tempo Charges
                     </Label>
                   </div>
                   <Input
-                    className="w-[220px] text-right shrink-0 bg-white"
+                    className="w-40 sm:w-44 h-9 text-right shrink-0 bg-white"
                     id="estimate_tempo"
                     type="tel"
                     {...form.register("estimate_tempo")}
@@ -352,33 +350,37 @@ const DesktopEstimateForm = ({
                 </div>
 
                 {/* Labour Charges */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="w-[305px] shrink-0 flex items-center justify-between gap-2">
-                    <Label className="font-medium shrink-0 w-28">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                    <Label className="font-medium shrink-0">
                       Labour Charges
                     </Label>
                     <SelectShadcn
                       value={loadingType}
                       onValueChange={(val) => {
                         if (setLoadingType) setLoadingType(val);
+                        const currentVal =
+                          form.getValues(
+                            val === "Loading Only"
+                              ? "estimate_unloading"
+                              : "estimate_loading"
+                          ) || "";
                         if (val === "Loading Only") {
+                          form.setValue("estimate_loading", currentVal);
                           form.setValue("estimate_unloading", "");
                         } else {
+                          form.setValue("estimate_unloading", currentVal);
                           form.setValue("estimate_loading", "");
                         }
                         handleChargeChange(
                           val === "Loading Only"
                             ? "estimate_loading"
                             : "estimate_unloading",
-                          form.watch(
-                            val === "Loading Only"
-                              ? "estimate_loading"
-                              : "estimate_unloading",
-                          ) || "0",
+                          currentVal
                         );
                       }}
                     >
-                      <SelectTrigger className="h-9 w-[180px] bg-white">
+                      <SelectTrigger className="h-9 w-[160px] bg-white">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -392,7 +394,7 @@ const DesktopEstimateForm = ({
                     </SelectShadcn>
                   </div>
                   <Input
-                    className="w-[220px] h-9 text-right shrink-0 bg-white"
+                    className="w-40 sm:w-44 h-9 text-right shrink-0 bg-white"
                     id={
                       loadingType === "Loading Only"
                         ? "estimate_loading"
@@ -421,8 +423,8 @@ const DesktopEstimateForm = ({
                 </div>
 
                 {/* Other 1 */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="w-[305px] shrink-0">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
                     <Input
                       type="text"
                       placeholder="Other Charges 1"
@@ -431,7 +433,7 @@ const DesktopEstimateForm = ({
                     />
                   </div>
                   <Input
-                    className="w-[220px] h-9 text-right shrink-0 bg-white"
+                    className="w-40 sm:w-44 h-9 text-right shrink-0 bg-white"
                     id="estimate_other"
                     type="tel"
                     {...form.register("estimate_other")}
@@ -445,8 +447,8 @@ const DesktopEstimateForm = ({
                 </div>
 
                 {/* Other 2 */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="w-[305px] shrink-0">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
                     <Input
                       type="text"
                       placeholder="Other Charges 2"
@@ -455,7 +457,7 @@ const DesktopEstimateForm = ({
                     />
                   </div>
                   <Input
-                    className="w-[220px] h-9 text-right shrink-0 bg-white"
+                    className="w-40 sm:w-44 h-9 text-right shrink-0 bg-white"
                     id="estimate_other1"
                     type="tel"
                     {...form.register("estimate_other1")}
@@ -469,26 +471,25 @@ const DesktopEstimateForm = ({
                 </div>
 
                 {/* Gross Total */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="w-[305px] shrink-0 flex items-center">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center">
                     <Label htmlFor="estimate_gross" className="font-medium">
                       Gross Total
                     </Label>
                   </div>
                   <Input
-                    className="w-[220px] text-right font-medium shrink-0 bg-gray-100 font-semibold"
+                    className="w-40 sm:w-44 h-9 text-right font-medium shrink-0 bg-gray-100 font-semibold"
                     id="estimate_gross"
-                    type="tel"
-                    {...form.register("estimate_gross")}
+                    type="text"
+                    value={Number(displayGrandTotal).toFixed(0)}
                     disabled
-                    onKeyDown={handleKeyDown}
                     placeholder="0"
                   />
                 </div>
 
                 {/* Tax */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="w-[305px] shrink-0 flex items-center">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center">
                     <Label className="font-medium">
                       Tax{" "}
                       <span className="font-medium text-xs text-gray-500">
@@ -497,7 +498,7 @@ const DesktopEstimateForm = ({
                     </Label>
                   </div>
                   <Input
-                    className="w-[220px] text-right shrink-0 bg-white"
+                    className="w-40 sm:w-44 h-9 text-right shrink-0 bg-white"
                     id="estimate_tax"
                     type="tel"
                     {...form.register("estimate_tax")}
@@ -511,8 +512,8 @@ const DesktopEstimateForm = ({
                 </div>
 
                 {/* Net Total */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="w-[305px] shrink-0 flex items-center">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center">
                     <Label
                       htmlFor="estimate_temp_amount"
                       className="font-medium"
@@ -521,23 +522,22 @@ const DesktopEstimateForm = ({
                     </Label>
                   </div>
                   <Input
-                    className="w-[220px] text-right font-medium shrink-0 bg-gray-100 font-semibold"
+                    className="w-40 sm:w-44 h-9 text-right font-medium shrink-0 bg-gray-100 font-semibold"
                     id="estimate_temp_amount"
-                    type="tel"
-                    {...form.register("estimate_temp_amount")}
+                    type="text"
+                    value={Number(displayNetTotal ?? 0).toFixed(2)}
                     disabled
-                    onKeyDown={handleKeyDown}
                     placeholder="0"
                   />
                 </div>
 
                 {/* Round Off */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="w-[305px] shrink-0 flex items-center">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center">
                     <Label className="font-medium">Round Off</Label>
                   </div>
                   <Input
-                    className="w-[220px] text-right font-medium bg-white border border-gray-200 shrink-0"
+                    className="w-40 sm:w-44 h-9 text-right font-medium bg-white border border-gray-200 shrink-0"
                     id="estimate_amount_round"
                     type="text"
                     {...form.register("estimate_amount_round")}
@@ -554,20 +554,23 @@ const DesktopEstimateForm = ({
                 </div>
 
                 {/* Final Amount */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="w-[305px] shrink-0 flex items-center">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0 flex items-center">
                     <Label className="font-semibold text-blue-900">
                       Final Amount
                     </Label>
                   </div>
                   <Input
-                    className="w-[220px] bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
+                    className="w-40 sm:w-44 h-9 bg-gradient-to-r from-blue-700 to-blue-900 font-bold border-blue-800 text-white text-right rounded-md shrink-0"
                     type="text"
                     value={Number(amountToBeCollected).toFixed(0)}
                     disabled
                   />
                 </div>
               </div>
+
+              {/* Spacer container to match layout */}
+              <div className="hidden md:block"></div>
             </div>
 
             {/* Action Buttons */}

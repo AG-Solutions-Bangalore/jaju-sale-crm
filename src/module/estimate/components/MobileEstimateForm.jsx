@@ -40,6 +40,7 @@ const MobileEstimateForm = ({
   handleToggleCustomItem,
   amountToBeCollected,
   displayGrandTotal,
+  displayNetTotal,
   autoGst18,
   setSaveAction,
   title,
@@ -66,7 +67,7 @@ const MobileEstimateForm = ({
           <div className="bg-green-50 border border-green-100 rounded-md p-2">
             <p className="text-xs text-green-800 font-medium">Gross</p>
             <p className="text-sm font-bold">
-              {form.watch("estimate_gross") || 0}
+              {Number(displayGrandTotal).toFixed(0)}
             </p>
           </div>
           <div className="bg-red-50 border border-red-100 rounded-md p-2">
@@ -317,20 +318,24 @@ const MobileEstimateForm = ({
                   value={loadingType}
                   onValueChange={(val) => {
                     if (setLoadingType) setLoadingType(val);
+                    const currentVal =
+                      form.getValues(
+                        val === "Loading Only"
+                          ? "estimate_unloading"
+                          : "estimate_loading"
+                      ) || "";
                     if (val === "Loading Only") {
+                      form.setValue("estimate_loading", currentVal);
                       form.setValue("estimate_unloading", "");
                     } else {
+                      form.setValue("estimate_unloading", currentVal);
                       form.setValue("estimate_loading", "");
                     }
                     handleChargeChange(
                       val === "Loading Only"
                         ? "estimate_loading"
                         : "estimate_unloading",
-                      form.watch(
-                        val === "Loading Only"
-                          ? "estimate_loading"
-                          : "estimate_unloading"
-                      ) || "0"
+                      currentVal
                     );
                   }}
                 >
@@ -427,11 +432,10 @@ const MobileEstimateForm = ({
                 <Label htmlFor="mob_estimate_gross">Gross Total</Label>
                 <Input
                   id="mob_estimate_gross"
-                  type="tel"
-                  {...form.register("estimate_gross")}
+                  type="text"
+                  value={Number(displayGrandTotal).toFixed(0)}
                   disabled
-                  onKeyDown={handleKeyDown}
-                  className="mt-1 bg-gray-100 font-semibold"
+                  className="mt-1 bg-gray-100 font-semibold text-right"
                 />
               </div>
               <div>
@@ -453,10 +457,9 @@ const MobileEstimateForm = ({
                 <Label htmlFor="mob_estimate_temp_amount">Net Total</Label>
                 <Input
                   id="mob_estimate_temp_amount"
-                  type="tel"
-                  {...form.register("estimate_temp_amount")}
+                  type="text"
+                  value={Number(displayNetTotal ?? 0).toFixed(2)}
                   disabled
-                  onKeyDown={handleKeyDown}
                   className="mt-1 bg-gray-100 font-semibold text-right"
                 />
               </div>
